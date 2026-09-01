@@ -47,3 +47,16 @@ def chat_with_agent(req: ChatRequest):
         decision = result.get("final_decision", "HUMAN_INTERVENTION")
         return {"status": "decided", "decision": decision, "chat_history": result["messages"]}
 
+from app.mocks import check_logistics_weight, check_payment_network, analyze_vision_evidence
+
+@app.get("/api/telemetry/logistics/{order_id}")
+def get_logistics_telemetry(order_id: int):
+    return check_logistics_weight(order_id)
+
+@app.get("/api/telemetry/payment/{customer_id}")
+def get_payment_telemetry(customer_id: str):
+    return check_payment_network(customer_id)
+
+@app.get("/api/telemetry/vision")
+def get_vision_telemetry(image_url: str):
+    return analyze_vision_evidence(image_url)
