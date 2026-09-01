@@ -1,0 +1,33 @@
+{
+  "dataset_meta": {
+    "title": "RazorSense_Edge_Case_Taxonomy_v1",
+    "total_cases": 500,
+    "categories": [
+      "Physical_Defect_Ambiguity",
+      "Logistics_Telemetry_Discrepancies",
+      "Digital_Goods_Software_Constraints",
+      "Wardrobing_Rental_Abuse",
+      "Multi_Accounting_Identity_Fraud"
+    ]
+  },
+  "cases": [
+    {
+      "case_id": "RS-042",
+      "sector": "E-commerce",
+      "scenario_description": "User claims 'Empty Box' for an iPhone. The shipping box is intact, but they carefully peeled the factory seal using a heat gun.",
+      "fraud_vector": "High-Fidelity Tampering",
+      "legal_precedent": "CPA 2019 Sec 2(47) - Unfair Trade Practice claims by consumer",
+      "ai_detection_signal": ["Courier_Hub_Weight_Check", "Device_Activation_Ping_AppleAPI"],
+      "autonomous_resolution_action": "Deny claim. Telemetry shows device was activated with user's iCloud ID 10 minutes prior to claim."
+    },
+    {
+      "case_id": "RS-043",
+      "sector": "Food Delivery",
+      "scenario_description": "Customer places an insect into a nearly finished ₹800 meal, snaps a photo, and claims instant refund.",
+      "fraud_vector": "Foreign Object Planting",
+      "legal_precedent": "CPA 2019 - Strict Liability vs. Malicious Intent",
+      "ai_detection_signal": ["EXIF_Timestamp_Check", "Visual_Consumption_Level"],
+      "autonomous_resolution_action": "Reject full refund. Offer ₹100 wallet credit for inconvenience since meal was 90% consumed before reporting."
+    }
+  ]
+}
