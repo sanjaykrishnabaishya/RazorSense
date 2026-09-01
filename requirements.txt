@@ -7,3 +7,4 @@ scikit-learn
 pandas
 python-dotenv
 langchain-openai
+sqlalchemy
