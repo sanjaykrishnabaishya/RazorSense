@@ -7,6 +7,15 @@ export default function PurchaseResults({ results, selectedPurchase, setSelected
     setTimeout(() => setStage('verify-details'), 400); // Advance automatically
   };
 
+  const getLogo = (merchant: string) => {
+    const domainMap: Record<string, string> = {
+      'Zomato': 'zomato.com',
+      'Amazon': 'amazon.com',
+      'Nike': 'nike.com'
+    };
+    return "https://logo.clearbit.com/" + (domainMap[merchant] || merchant.toLowerCase() + ".com");
+  };
+
   return (
     <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
       <h3 className="text-[14px] font-semibold text-[var(--text-secondary)] mb-3">Select the matching transaction</h3>
@@ -29,8 +38,11 @@ export default function PurchaseResults({ results, selectedPurchase, setSelected
             >
               {idx === 0 && <div className="absolute top-0 right-0 bg-[var(--mint)] text-white text-[10px] font-bold px-2 py-0.5 rounded-bl-lg">BEST MATCH</div>}
               
-              <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center font-bold text-gray-500 mr-4">
-                {p.merchant.charAt(0)}
+              <div className="w-10 h-10 rounded-lg bg-white border border-gray-100 flex items-center justify-center mr-4 p-1 overflow-hidden shrink-0">
+                <img src={getLogo(p.merchant)} alt={p.merchant} className="w-full h-full object-contain" onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.parentElement!.innerHTML = '<span class="font-bold text-gray-500">' + p.merchant.charAt(0) + '</span>';
+                }} />
               </div>
               <div className="flex-1">
                 <p className="font-semibold text-[15px] leading-tight">{p.item}</p>

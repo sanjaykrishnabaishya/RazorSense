@@ -22,9 +22,9 @@ export default function IdentificationPanel() {
 
       {/* Right Cards Stack */}
       <div className="w-full md:w-[280px] h-[180px] relative hidden md:block">
-        <MockCard top="0px" left="40px" zIndex={10} merchant="Zomato" order="#ZOM1234567890" price="₹299" date="12 Aug 2024" logoColor="bg-red-500" />
-        <MockCard top="45px" left="20px" zIndex={20} merchant="amazon" order="#AMZ884512" price="₹1,499" date="5 Aug 2024" logoColor="bg-orange-500" />
-        <MockCard top="90px" left="0px" zIndex={30} merchant="eBay" order="#EB12345" price="$45" date="1 Aug 2024" logoColor="bg-blue-600" />
+        <MockCard top="0px" left="40px" zIndex={10} merchant="Zomato" logo="https://logo.clearbit.com/zomato.com" order="#ZOM1234567890" price="₹299" date="12 Aug 2024" />
+        <MockCard top="45px" left="20px" zIndex={20} merchant="Amazon" logo="https://logo.clearbit.com/amazon.com" order="#AMZ884512" price="₹1,499" date="5 Aug 2024" />
+        <MockCard top="90px" left="0px" zIndex={30} merchant="eBay" logo="https://logo.clearbit.com/ebay.com" order="#EB12345" price="$45" date="1 Aug 2024" />
       </div>
 
     </div>
@@ -40,15 +40,14 @@ function ListItem({ text }: { text: string }) {
   );
 }
 
-function MockCard({ top, left, zIndex, merchant, order, price, date, logoColor }: any) {
-  const badgeClass = "w-10 h-10 rounded-md flex items-center justify-center text-white font-bold text-xs " + logoColor;
+function MockCard({ top, left, zIndex, merchant, logo, order, price, date }: any) {
   return (
     <div 
       className="absolute bg-white rounded-xl p-3 flex items-center gap-3 shadow-[var(--shadow-sm)] border border-[var(--border-soft)] w-[240px]"
       style={{ top, left, zIndex }}
     >
-      <div className={badgeClass}>
-        {merchant.charAt(0).toUpperCase()}
+      <div className="w-10 h-10 rounded-md flex items-center justify-center border border-gray-100 overflow-hidden bg-white p-1 shrink-0">
+        <img src={logo} alt={merchant} className="w-full h-full object-contain" />
       </div>
       <div>
         <div className="text-[13px] font-bold text-[var(--text)]">{merchant}</div>
