@@ -33,27 +33,29 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
     setTimeout(() => {
       const lower = text.toLowerCase();
       
-      // History Request
-      if (lower.includes('ticket history') || lower.includes('track')) {
+      // History Request (typos handled)
+      if (/ticket|history|track|status/.test(lower)) {
         addBotMessage('widget_history', 'Here is the status of your recent support tickets:');
         return;
       }
 
-      // Advanced Search / Don't remember Request
-      if (lower.includes("don't know") || lower.includes("don't remember") || lower.includes("forgot") || lower.includes("find") || lower.includes("search") || lower.includes("advanced")) {
+      // Advanced Search / Don't remember Request (typo tolerant)
+      const forgotRegex = /don'?t\s+(know|knwo|kno|remember|rember|rmbr)|forgot|find|search|advanced/i;
+      if (forgotRegex.test(lower)) {
         addBotMessage('widget_search', "No worries! Let's locate your transaction. You can use the search tool below or try the Advanced Search:");
         return;
       }
 
       // Step 3: Resolution / Ticket Creation
-      if (chatStep >= 2 || lower.includes('upload') || lower.includes('attached') || lower.includes('here is')) {
+      const uploadRegex = /upload|attached|here\s+is|pic|photo|video/i;
+      if (chatStep >= 2 || uploadRegex.test(lower)) {
         addBotMessage('widget_ticket', 'Thank you. I have successfully logged your request in our system and created a unique Ticket ID for internal review.');
         setChatStep(0); // reset
         return;
       }
 
       // Step 2: Found order, ask for details & pictures
-      if (chatStep >= 1 || lower.includes('#') || lower.includes('amazon') || lower.includes('flipkart') || lower.includes('zomato')) {
+      if (chatStep >= 1) {
         addBotMessage('text', 'I found your order! Could you please describe the issue in detail? If you have any pictures or videos (e.g. damaged item, wrong product), please upload them using the attachment icon below.');
         return;
       }
