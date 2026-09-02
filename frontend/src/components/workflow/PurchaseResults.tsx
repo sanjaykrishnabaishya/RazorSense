@@ -15,11 +15,11 @@ export default function PurchaseResults({ results, selectedPurchase, setSelected
           <div 
             key={p.id}
             onClick={() => handleSelect(p)}
-            className={\`flex items-center p-3 rounded-xl border cursor-pointer transition-all hover:shadow-sm relative overflow-hidden
-              \${selectedPurchase?.id === p.id 
+            className={`flex items-center p-3 rounded-xl border cursor-pointer transition-all hover:shadow-sm relative overflow-hidden
+              ${selectedPurchase?.id === p.id 
                 ? 'border-[var(--primary)] bg-[var(--primary-soft)]' 
                 : 'border-[var(--border-soft)] bg-white hover:border-[var(--border)]'}
-            \`}
+            `}
           >
             {idx === 0 && <div className="absolute top-0 right-0 bg-[var(--mint)] text-white text-[10px] font-bold px-2 py-0.5 rounded-bl-lg">BEST MATCH</div>}
             
@@ -36,9 +36,9 @@ export default function PurchaseResults({ results, selectedPurchase, setSelected
             </div>
             
             <div className="ml-4 mr-2">
-              <div className={\`w-5 h-5 rounded-full border flex items-center justify-center
-                \${selectedPurchase?.id === p.id ? 'border-[var(--primary)] bg-[var(--primary)]' : 'border-[var(--border)]'}
-              \`}>
+              <div className={`w-5 h-5 rounded-full border flex items-center justify-center
+                ${selectedPurchase?.id === p.id ? 'border-[var(--primary)] bg-[var(--primary)]' : 'border-[var(--border)]'}
+              `}>
                 {selectedPurchase?.id === p.id && <div className="w-2 h-2 bg-white rounded-full"></div>}
               </div>
             </div>

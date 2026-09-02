@@ -46,7 +46,7 @@ function MockCard({ top, left, zIndex, merchant, order, price, date, logoColor }
       className="absolute bg-white rounded-xl p-3 flex items-center gap-3 shadow-[var(--shadow-sm)] border border-[var(--border-soft)] w-[240px]"
       style={{ top, left, zIndex }}
     >
-      <div className={\`w-10 h-10 \${logoColor} rounded-md flex items-center justify-center text-white font-bold text-xs\`}>
+      <div className={`w-10 h-10 ${logoColor} rounded-md flex items-center justify-center text-white font-bold text-xs`}>
         {merchant.charAt(0).toUpperCase()}
       </div>
       <div>

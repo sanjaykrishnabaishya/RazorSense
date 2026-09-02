@@ -20,7 +20,7 @@ export default function IssueSelector({ selectedIssue, setSelectedIssue, setStag
       id: msgId,
       role: 'assistant',
       kind: 'text',
-      text: \`You selected: \${id.replace('-', ' ')}. Can you provide more details or upload an image?\`,
+      text: `You selected: ${id.replace('-', ' ')}. Can you provide more details or upload an image?`,
       timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
     }]);
   };
@@ -44,14 +44,14 @@ export default function IssueSelector({ selectedIssue, setSelectedIssue, setStag
             <button
               key={issue.id}
               onClick={() => handleSelect(issue.id)}
-              className={\`flex flex-col items-center text-center p-4 rounded-[10px] border transition-all duration-200 
-                \${isActive 
+              className={`flex flex-col items-center text-center p-4 rounded-[10px] border transition-all duration-200 
+                ${isActive 
                   ? 'border-[var(--mint)] bg-[var(--mint-soft)] shadow-[inset_0_0_0_1px_var(--mint)]' 
                   : 'border-[var(--border)] bg-white hover:border-[var(--primary)] ' + issue.bgHover
                 }
-              \`}
+              `}
             >
-              <issue.icon size={28} className={\`mb-3 \${isActive ? 'text-[var(--mint-dark)]' : issue.color}\`} />
+              <issue.icon size={28} className={`mb-3 ${isActive ? 'text-[var(--mint-dark)]' : issue.color}`} />
               <span className="text-[14px] font-bold text-[var(--text)] leading-tight">{issue.label}</span>
               <span className="text-[12px] text-[var(--text-secondary)] mt-1 leading-tight">{issue.desc}</span>
             </button>

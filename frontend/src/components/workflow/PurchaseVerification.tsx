@@ -20,7 +20,7 @@ export default function PurchaseVerification({ selectedPurchase, setStage }: any
         <div className="grid grid-cols-2 gap-y-6 gap-x-4">
           <Detail label="Merchant" value={selectedPurchase.merchant} verified />
           <Detail label="Item" value={selectedPurchase.item} />
-          <Detail label="Amount" value={\`\${selectedPurchase.currency === 'INR' ? '₹' : '$'}\${selectedPurchase.amount}\`} />
+          <Detail label="Amount" value={`${selectedPurchase.currency === 'INR' ? '₹' : '$'}${selectedPurchase.amount}`} />
           <Detail label="Date" value={selectedPurchase.date} />
           <Detail label="Order ID" value={selectedPurchase.orderId} mask />
           <Detail label="Transaction" value={selectedPurchase.transactionId} mask verified />

@@ -24,7 +24,6 @@ export default function ChatPanel({ messages, setMessages, selectedPurchase }: a
       timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
     }]);
 
-    // Simulate AI typing and response
     setTimeout(() => {
       setMessages((prev: any) => [...prev, {
         id: (Date.now() + 1).toString(),
@@ -48,7 +47,7 @@ export default function ChatPanel({ messages, setMessages, selectedPurchase }: a
           </div>
           <div>
             <h3 className="text-[15px] font-bold text-[var(--text)] leading-tight">Razor AI</h3>
-            <p className="text-[12px] text-[var(--text-secondary)]">Always here to help • Powered by Razorpay</p>
+            <p className="text-[12px] text-[var(--text-secondary)]">Always here to help &bull; Powered by Razorpay</p>
           </div>
         </div>
         <div className="flex items-center gap-1 text-[var(--text-muted)]">
@@ -61,20 +60,20 @@ export default function ChatPanel({ messages, setMessages, selectedPurchase }: a
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-6">
         {messages.map((m: ChatMessage) => (
-          <div key={m.id} className={\`flex \${m.role === 'user' ? 'justify-end' : 'justify-start'}\`}>
+          <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {m.role === 'assistant' && (
                <div className="w-8 h-8 rounded-full bg-[var(--hero-deep)] flex items-center justify-center mr-3 mt-1 shrink-0 shadow-sm">
                  <Bot size={16} className="text-[var(--cyan)]" />
                </div>
             )}
             
-            <div className={\`flex flex-col \${m.role === 'user' ? 'items-end' : 'items-start'} max-w-[78%]\`}>
+            <div className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} max-w-[78%]`}>
               {m.kind === 'text' && (
-                <div className={\`p-4 text-[15px] leading-[1.45] shadow-[var(--shadow-sm)]
-                  \${m.role === 'user' 
+                <div className={`p-4 text-[15px] leading-[1.45] shadow-[var(--shadow-sm)]
+                  ${m.role === 'user' 
                     ? 'bg-[#F1EDFF] text-[var(--text)] rounded-2xl rounded-tr-sm border border-[var(--violet)]/10' 
                     : 'bg-[#F5F7FB] text-[var(--text)] rounded-2xl rounded-tl-sm border border-[var(--border-soft)]'}
-                \`}>
+                `}>
                   {m.text}
                 </div>
               )}
@@ -153,7 +152,7 @@ function ProgressRow({ text, done, active }: any) {
       {done ? <CheckCircle2 size={16} className="text-[var(--mint-dark)]" /> 
        : active ? <div className="w-4 h-4 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin"></div>
        : <div className="w-4 h-4 border-2 border-[var(--border)] rounded-full"></div>}
-      <span className={\`text-[13px] \${done || active ? 'text-[var(--text)]' : 'text-[var(--text-muted)]'}\`}>{text}</span>
+      <span className={`text-[13px] ${done || active ? 'text-[var(--text)]' : 'text-[var(--text-muted)]'}`}>{text}</span>
     </div>
   );
 }
@@ -161,7 +160,7 @@ function ProgressRow({ text, done, active }: any) {
 function QuickAction({ label, color }: any) {
   return (
     <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--page-bg)] border border-[var(--border)] rounded-full text-[13px] font-semibold text-[var(--text-secondary)] hover:bg-white hover:border-[var(--primary)] transition whitespace-nowrap">
-      <span className={color}>•</span> {label}
+      <span className={color}>&bull;</span> {label}
     </button>
   );
 }
