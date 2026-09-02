@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SendHorizontal, Paperclip, Loader2, CheckCircle2, RefreshCcw, Package, PackageX, AlertTriangle, CreditCard, Search } from 'lucide-react';
+import { SendHorizontal, Paperclip, Loader2, CheckCircle2, RefreshCcw, Package, PackageX, AlertTriangle, CreditCard, Search, Clock, HelpCircle, FileText, ChevronRight } from 'lucide-react';
 import { ChatMessage } from '../../types/support';
 import PurchaseSearch from '../workflow/PurchaseSearch';
 
@@ -12,6 +12,7 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [selectedIssue, setSelectedIssue] = useState('refund');
+  const [chatStep, setChatStep] = useState(0);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -27,27 +28,50 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
     };
     setMessages((prev: any) => [...prev, userMsg]);
     setInput('');
+    setChatStep(prev => prev + 1);
 
-    // Simulate AI response
     setTimeout(() => {
-      if (text.toLowerCase().includes('find') || text.toLowerCase().includes('search') || text.toLowerCase().includes('purchase')) {
-        setMessages((prev: any) => [...prev, {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          kind: 'widget_search', // custom kind for widget
-          text: 'Sure, I can help you find that. You can search below:',
-          timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-        }]);
-      } else {
-        setMessages((prev: any) => [...prev, {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          kind: 'text',
-          text: `I'm analyzing your request regarding "${text}". Could you provide an Order ID or let me search your recent transactions?`,
-          timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-        }]);
+      const lower = text.toLowerCase();
+      
+      // History Request
+      if (lower.includes('ticket history') || lower.includes('track')) {
+        addBotMessage('widget_history', 'Here is the status of your recent support tickets:');
+        return;
       }
-    }, 800);
+
+      // Advanced Search / Don't remember Request
+      if (lower.includes("don't know") || lower.includes("don't remember") || lower.includes("forgot") || lower.includes("find") || lower.includes("search") || lower.includes("advanced")) {
+        addBotMessage('widget_search', "No worries! Let's locate your transaction. You can use the search tool below or try the Advanced Search:");
+        return;
+      }
+
+      // Step 3: Resolution / Ticket Creation
+      if (chatStep >= 2 || lower.includes('upload') || lower.includes('attached') || lower.includes('here is')) {
+        addBotMessage('widget_ticket', 'Thank you. I have successfully logged your request in our system and created a unique Ticket ID for internal review.');
+        setChatStep(0); // reset
+        return;
+      }
+
+      // Step 2: Found order, ask for details & pictures
+      if (chatStep >= 1 || lower.includes('#') || lower.includes('amazon') || lower.includes('flipkart') || lower.includes('zomato')) {
+        addBotMessage('text', 'I found your order! Could you please describe the issue in detail? If you have any pictures or videos (e.g. damaged item, wrong product), please upload them using the attachment icon below.');
+        return;
+      }
+
+      // Step 1: Default Issue received, ask for Order ID
+      addBotMessage('text', `I'm analyzing your request regarding "${text}". Could you provide the Order ID and the Merchant Name? (If you don't remember, just say "I don't know")`);
+
+    }, 1000);
+  };
+
+  const addBotMessage = (kind: string, text: string) => {
+    setMessages((prev: any) => [...prev, {
+      id: (Date.now() + 1).toString(),
+      role: 'assistant',
+      kind,
+      text,
+      timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+    }]);
   };
 
   const handleSend = () => {
@@ -78,17 +102,19 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
             <h2 className="text-[32px] font-[800] text-white mb-2 tracking-tight">Hi! I'm Krish 👋</h2>
             <p className="text-white/50 mb-10 text-[16px]">Tell me what happened, and I'll look into it for you.</p>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 w-full max-w-3xl px-2">
-              <IssuePrompt icon={RefreshCcw} label="I want a refund" onClick={() => sendText("I want a refund for a recent purchase")} color="text-emerald-400" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full max-w-4xl px-2">
+              <IssuePrompt icon={RefreshCcw} label="I want a refund" onClick={() => sendText("I want a refund")} color="text-emerald-400" />
               <IssuePrompt icon={Package} label="I need a replacement" onClick={() => sendText("I need a replacement")} color="text-blue-400" />
               <IssuePrompt icon={PackageX} label="Received wrong item" onClick={() => sendText("I received the wrong item")} color="text-purple-400" />
-              <IssuePrompt icon={AlertTriangle} label="Product was damaged" onClick={() => sendText("My product was damaged")} color="text-orange-400" />
+              <IssuePrompt icon={AlertTriangle} label="Return item" onClick={() => sendText("I want to return an item")} color="text-orange-400" />
               <IssuePrompt icon={CreditCard} label="Payment issue" onClick={() => sendText("I have a payment issue")} color="text-red-400" />
               <IssuePrompt icon={Search} label="Find a purchase" onClick={() => sendText("Can you help me find a purchase?")} color="text-cyan-400" />
+              <IssuePrompt icon={Clock} label="Ticket History" onClick={() => sendText("Show my ticket history")} color="text-pink-400" />
+              <IssuePrompt icon={HelpCircle} label="Other Issue" onClick={() => sendText("I have an other issue (delay, tech issue, etc.)")} color="text-zinc-300" />
             </div>
           </motion.div>
         ) : (
-          <div className="space-y-6 pb-20">
+          <div className="space-y-6 pb-32">
             {messages.map((m: any) => {
               const isUser = m.role === 'user';
               return (
@@ -121,8 +147,51 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
                             query={query} setQuery={setQuery}
                             results={results} setResults={setResults}
                             selectedIssue={selectedIssue} setSelectedIssue={setSelectedIssue}
-                            setStage={() => {}} // dummy
+                            setStage={() => {}}
                           />
+                        </div>
+                      </div>
+                    )}
+
+                    {m.kind === 'widget_history' && (
+                      <div className="flex flex-col gap-3 w-full">
+                        <div className="p-4 text-[15px] leading-[1.5] shadow-lg bg-[#111] text-white rounded-2xl rounded-tl-sm border border-white/[0.05] self-start max-w-fit">
+                          {m.text}
+                        </div>
+                        <div className="w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl p-5 shadow-2xl mt-2 space-y-3">
+                          <div className="flex justify-between items-center p-4 bg-[#111] rounded-xl border border-white/5">
+                            <div>
+                              <p className="text-white font-medium text-[14px]">Ticket #RZ-99412</p>
+                              <p className="text-white/40 text-[12px]">Amazon • Wireless Earbuds</p>
+                            </div>
+                            <span className="px-3 py-1 bg-blue-500/10 text-blue-400 text-[12px] font-bold rounded-full">In Review</span>
+                          </div>
+                          <div className="flex justify-between items-center p-4 bg-[#111] rounded-xl border border-white/5">
+                            <div>
+                              <p className="text-white font-medium text-[14px]">Ticket #RZ-88102</p>
+                              <p className="text-white/40 text-[12px]">Zomato • Late Delivery</p>
+                            </div>
+                            <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-[12px] font-bold rounded-full">Resolved</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {m.kind === 'widget_ticket' && (
+                      <div className="flex flex-col gap-3 w-full">
+                        <div className="p-4 text-[15px] leading-[1.5] shadow-lg bg-[#111] text-white rounded-2xl rounded-tl-sm border border-white/[0.05] self-start max-w-fit">
+                          {m.text}
+                        </div>
+                        <div className="w-full max-w-md bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-blue-500/30 rounded-2xl p-6 shadow-2xl mt-2 relative overflow-hidden">
+                           <FileText className="absolute -right-4 -bottom-4 text-white/5 w-32 h-32" />
+                           <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2"><CheckCircle2 className="text-emerald-400" /> Ticket Created</h3>
+                           <div className="space-y-2 text-[13px]">
+                             <div className="flex justify-between"><span className="text-white/50">Ticket ID</span><span className="text-white font-mono">RZ-99413</span></div>
+                             <div className="flex justify-between"><span className="text-white/50">Status</span><span className="text-blue-400 font-semibold">Investigation Active</span></div>
+                             <div className="flex justify-between"><span className="text-white/50">Merchant</span><span className="text-white">Amazon</span></div>
+                             <div className="flex justify-between"><span className="text-white/50">Date</span><span className="text-white">02 Sep 2026</span></div>
+                           </div>
+                           <button className="w-full mt-5 bg-white/10 hover:bg-white/20 text-white font-medium py-2.5 rounded-xl transition text-[13px]">View Full Details</button>
                         </div>
                       </div>
                     )}
@@ -138,7 +207,7 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
       </div>
 
       {/* Composer */}
-      <div className="p-4 bg-transparent sticky bottom-0 z-20">
+      <div className="p-4 pb-12 bg-transparent sticky bottom-0 z-20">
         <div className="relative flex items-end border border-white/[0.1] rounded-2xl bg-[#0a0a0a]/80 backdrop-blur-xl shadow-[0_0_30px_rgba(0,0,0,0.8)] focus-within:border-white/30 transition-colors p-1.5 mx-auto max-w-3xl">
           <button className="p-3 text-white/40 hover:text-white transition rounded-xl">
             <Paperclip size={20} />
@@ -164,7 +233,7 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
             <SendHorizontal size={18} />
           </button>
         </div>
-        <p className="text-center text-white/30 text-[11px] mt-3">RazorSense AI can make mistakes. Please verify important information.</p>
+        <p className="text-center text-white/30 text-[11px] mt-4">RazorSense AI can make mistakes. Please verify important information.</p>
       </div>
     </div>
   );
