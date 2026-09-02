@@ -59,53 +59,59 @@ export default function ChatPanel({ messages, setMessages, selectedPurchase }: a
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-6">
-        {messages.map((m: ChatMessage) => (
-          <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            {m.role === 'assistant' && (
-               <div className="w-8 h-8 rounded-full bg-[var(--hero-deep)] flex items-center justify-center mr-3 mt-1 shrink-0 shadow-sm">
-                 <Bot size={16} className="text-[var(--cyan)]" />
-               </div>
-            )}
-            
-            <div className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} max-w-[78%]`}>
-              {m.kind === 'text' && (
-                <div className={`p-4 text-[15px] leading-[1.45] shadow-[var(--shadow-sm)]
-                  ${m.role === 'user' 
-                    ? 'bg-[#F1EDFF] text-[var(--text)] rounded-2xl rounded-tr-sm border border-[var(--violet)]/10' 
-                    : 'bg-[#F5F7FB] text-[var(--text)] rounded-2xl rounded-tl-sm border border-[var(--border-soft)]'}
-                `}>
-                  {m.text}
-                </div>
+        {messages.map((m: ChatMessage) => {
+          const isUser = m.role === 'user';
+          const containerClass = "flex " + (isUser ? 'justify-end' : 'justify-start');
+          const innerContainerClass = "flex flex-col max-w-[78%] " + (isUser ? 'items-end' : 'items-start');
+          const bubbleClass = "p-4 text-[15px] leading-[1.45] shadow-[var(--shadow-sm)] " + 
+            (isUser 
+              ? 'bg-[#F1EDFF] text-[var(--text)] rounded-2xl rounded-tr-sm border border-[var(--violet)]/10' 
+              : 'bg-[#F5F7FB] text-[var(--text)] rounded-2xl rounded-tl-sm border border-[var(--border-soft)]');
+
+          return (
+            <div key={m.id} className={containerClass}>
+              {!isUser && (
+                 <div className="w-8 h-8 rounded-full bg-[var(--hero-deep)] flex items-center justify-center mr-3 mt-1 shrink-0 shadow-sm">
+                   <Bot size={16} className="text-[var(--cyan)]" />
+                 </div>
               )}
               
-              {m.kind === 'progress' && (
-                <div className="bg-[#F5F7FB] border border-[var(--border)] rounded-2xl p-5 shadow-[var(--shadow-sm)] w-full">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Loader2 size={16} className="text-[var(--primary)] animate-spin" />
-                    <span className="text-[14px] font-semibold text-[var(--text)]">Searching your transactions...</span>
+              <div className={innerContainerClass}>
+                {m.kind === 'text' && (
+                  <div className={bubbleClass}>
+                    {m.text}
                   </div>
-                  <div className="h-1.5 bg-[var(--border)] rounded-full mb-4 overflow-hidden">
-                    <div className="h-full bg-[var(--primary)] w-3/4 animate-pulse rounded-full"></div>
+                )}
+                
+                {m.kind === 'progress' && (
+                  <div className="bg-[#F5F7FB] border border-[var(--border)] rounded-2xl p-5 shadow-[var(--shadow-sm)] w-full">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Loader2 size={16} className="text-[var(--primary)] animate-spin" />
+                      <span className="text-[14px] font-semibold text-[var(--text)]">Searching your transactions...</span>
+                    </div>
+                    <div className="h-1.5 bg-[var(--border)] rounded-full mb-4 overflow-hidden">
+                      <div className="h-full bg-[var(--primary)] w-3/4 animate-pulse rounded-full"></div>
+                    </div>
+                    <div className="space-y-2">
+                      <ProgressRow text="Checking your payments on Razorpay" done />
+                      <ProgressRow text="Matching with Merchant" done />
+                      <ProgressRow text="Fetching order details" active />
+                      <ProgressRow text="Verifying item information" />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <ProgressRow text="Checking your payments on Razorpay" done />
-                    <ProgressRow text="Matching with Merchant" done />
-                    <ProgressRow text="Fetching order details" active />
-                    <ProgressRow text="Verifying item information" />
-                  </div>
-                </div>
+                )}
+
+                <span className="text-[11px] text-[var(--text-muted)] mt-1 px-1">{m.timestamp}</span>
+              </div>
+
+              {isUser && (
+                 <div className="w-8 h-8 rounded-full bg-[var(--violet)] flex items-center justify-center ml-3 mt-1 shrink-0 text-white font-bold text-[13px] shadow-sm">
+                   S
+                 </div>
               )}
-
-              <span className="text-[11px] text-[var(--text-muted)] mt-1 px-1">{m.timestamp}</span>
             </div>
-
-            {m.role === 'user' && (
-               <div className="w-8 h-8 rounded-full bg-[var(--violet)] flex items-center justify-center ml-3 mt-1 shrink-0 text-white font-bold text-[13px] shadow-sm">
-                 S
-               </div>
-            )}
-          </div>
-        ))}
+          );
+        })}
         <div ref={messagesEndRef} />
       </div>
 
@@ -147,12 +153,13 @@ export default function ChatPanel({ messages, setMessages, selectedPurchase }: a
 }
 
 function ProgressRow({ text, done, active }: any) {
+  const textClass = done || active ? 'text-[var(--text)]' : 'text-[var(--text-muted)]';
   return (
     <div className="flex items-center gap-2">
       {done ? <CheckCircle2 size={16} className="text-[var(--mint-dark)]" /> 
        : active ? <div className="w-4 h-4 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin"></div>
        : <div className="w-4 h-4 border-2 border-[var(--border)] rounded-full"></div>}
-      <span className={`text-[13px] ${done || active ? 'text-[var(--text)]' : 'text-[var(--text-muted)]'}`}>{text}</span>
+      <span className={"text-[13px] " + textClass}>{text}</span>
     </div>
   );
 }

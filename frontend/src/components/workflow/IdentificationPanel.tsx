@@ -41,18 +41,19 @@ function ListItem({ text }: { text: string }) {
 }
 
 function MockCard({ top, left, zIndex, merchant, order, price, date, logoColor }: any) {
+  const badgeClass = "w-10 h-10 rounded-md flex items-center justify-center text-white font-bold text-xs " + logoColor;
   return (
     <div 
       className="absolute bg-white rounded-xl p-3 flex items-center gap-3 shadow-[var(--shadow-sm)] border border-[var(--border-soft)] w-[240px]"
       style={{ top, left, zIndex }}
     >
-      <div className={`w-10 h-10 ${logoColor} rounded-md flex items-center justify-center text-white font-bold text-xs`}>
+      <div className={badgeClass}>
         {merchant.charAt(0).toUpperCase()}
       </div>
       <div>
         <div className="text-[13px] font-bold text-[var(--text)]">{merchant}</div>
         <div className="text-[11px] text-[var(--text-muted)]">Order {order}</div>
-        <div className="text-[11px] text-[var(--text-muted)]">{price} • {date}</div>
+        <div className="text-[11px] text-[var(--text-muted)]">{price} &bull; {date}</div>
       </div>
     </div>
   );

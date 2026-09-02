@@ -4,6 +4,8 @@ import { ShieldCheck, Check, ArrowRight } from 'lucide-react';
 export default function PurchaseVerification({ selectedPurchase, setStage }: any) {
   if (!selectedPurchase) return null;
 
+  const amountStr = (selectedPurchase.currency === 'INR' ? '₹' : '$') + selectedPurchase.amount;
+
   return (
     <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-4 duration-300">
       <div className="flex items-center gap-4">
@@ -20,7 +22,7 @@ export default function PurchaseVerification({ selectedPurchase, setStage }: any
         <div className="grid grid-cols-2 gap-y-6 gap-x-4">
           <Detail label="Merchant" value={selectedPurchase.merchant} verified />
           <Detail label="Item" value={selectedPurchase.item} />
-          <Detail label="Amount" value={`${selectedPurchase.currency === 'INR' ? '₹' : '$'}${selectedPurchase.amount}`} />
+          <Detail label="Amount" value={amountStr} />
           <Detail label="Date" value={selectedPurchase.date} />
           <Detail label="Order ID" value={selectedPurchase.orderId} mask />
           <Detail label="Transaction" value={selectedPurchase.transactionId} mask verified />
