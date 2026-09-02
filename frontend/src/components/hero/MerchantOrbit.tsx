@@ -14,28 +14,27 @@ export default function MerchantOrbit() {
         </div>
 
         {/* Speech Bubble */}
-        <div className="absolute -top-12 -left-32 bg-white rounded-2xl rounded-br-sm px-4 py-3 shadow-lg transform -rotate-2">
-          <p className="text-[13px] font-semibold text-[var(--primary-dark)]">Hi! I’m Razor</p>
-          <p className="text-[11px] text-[var(--text-secondary)] leading-tight max-w-[140px] mt-0.5">I can help you with refunds, replacements and any payment issue across all merchants.</p>
+        <div className="absolute -top-16 -left-10 bg-white rounded-2xl rounded-br-sm px-4 py-3 shadow-lg transform -rotate-2 z-30">
+          <p className="text-[13px] font-semibold text-primary-dark">Hi! Iâ€™m Razor</p>
+          <p className="text-[11px] text-text-secondary leading-tight max-w-[140px] mt-0.5">I can help you with refunds, replacements and any payment issue across all merchants.</p>
           {/* Handwritten Annotation */}
-          <div className="absolute -right-20 top-14 text-white text-[12px] rotate-6 opacity-80 flex flex-col items-start font-mono">
+          <div className="absolute -right-20 top-14 text-white text-[12px] rotate-6 opacity-80 flex flex-col items-start font-mono whitespace-nowrap drop-shadow-md">
             <span>One chat.</span>
             <span>All your payments.</span>
-            <span>Any merchant.</span>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--cyan)] -mt-1 ml-2"><path d="m9 18 6-6-6-6"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-main -mt-1 ml-2"><path d="m9 18 6-6-6-6"/></svg>
           </div>
         </div>
       </div>
 
       {/* Orbiting Tiles */}
       <div className="absolute inset-0 z-10 hidden lg:block">
-         <MerchantTile logo="https://logo.clearbit.com/zomato.com" name="zomato" top="10%" left="60%" delay="0s" rotate="12deg" />
-         <MerchantTile logo="https://logo.clearbit.com/amazon.com" name="amazon" top="30%" left="75%" delay="1s" rotate="-5deg" />
-         <MerchantTile logo="https://logo.clearbit.com/ebay.com" name="eBay" top="15%" left="85%" delay="2s" rotate="8deg" />
-         <MerchantTile logo="https://logo.clearbit.com/swiggy.com" name="swiggy" top="50%" left="65%" delay="0.5s" rotate="-12deg" />
-         <MerchantTile logo="https://logo.clearbit.com/steampowered.com" name="steam" top="60%" left="80%" delay="1.5s" rotate="15deg" />
+         <MerchantTile logo="/logos/zomato.png" name="zomato" top="10%" left="60%" delay="0s" rotate="12deg" />
+         <MerchantTile logo="/logos/amazon.png" name="amazon" top="30%" left="75%" delay="1s" rotate="-5deg" />
+         <MerchantTile logo="/logos/ebay.png" name="eBay" top="15%" left="85%" delay="2s" rotate="8deg" />
+         <MerchantTile logo="/logos/swiggy.png" name="swiggy" top="50%" left="65%" delay="0.5s" rotate="-12deg" />
+         <MerchantTile logo="/logos/steam.png" name="steam" top="60%" left="80%" delay="1.5s" rotate="15deg" />
          
-         <div className="absolute bottom-[20%] right-[5%] text-[12px] text-[var(--text-muted)] font-mono opacity-60">... and 1000+ more</div>
+         <div className="absolute bottom-[20%] right-[5%] text-[12px] text-text-muted font-mono opacity-60">... and 1000+ more</div>
       </div>
       
       <style dangerouslySetInnerHTML={{__html: `

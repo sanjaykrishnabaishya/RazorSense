@@ -16,7 +16,7 @@ export default function ProgressStepper({ stage }: { stage: WorkflowStage }) {
     <div className="flex items-center justify-between relative w-full px-2">
       <div className="absolute top-4 left-4 right-4 h-[1px] bg-[var(--border-soft)] -z-10"></div>
       <div 
-        className="absolute top-4 left-4 h-[2px] bg-[var(--primary)] -z-10 transition-all duration-500" 
+        className="absolute top-4 left-4 h-[2px] bg-primary -z-10 transition-all duration-500" 
         style={{ width: ((currentIndex / (steps.length - 1)) * 100) + '%' }}
       ></div>
 
@@ -24,16 +24,16 @@ export default function ProgressStepper({ stage }: { stage: WorkflowStage }) {
         const isPast = idx < currentIndex;
         const isActive = idx === currentIndex;
         
-        let circleClass = 'bg-[var(--page-bg)] text-[var(--text-muted)] border border-[var(--border)]';
-        if (isPast) circleClass = 'bg-[var(--mint)] text-white';
-        else if (isActive) circleClass = 'bg-[var(--primary)] text-white';
+        let circleClass = 'bg-page-bg text-text-muted border border-border-main';
+        if (isPast) circleClass = 'bg-mint text-white';
+        else if (isActive) circleClass = 'bg-primary text-white';
         
-        let textClass = 'text-[var(--text-muted)]';
-        if (isActive) textClass = 'text-[var(--primary)]';
-        else if (isPast) textClass = 'text-[var(--text-secondary)]';
+        let textClass = 'text-text-muted';
+        if (isActive) textClass = 'text-primary';
+        else if (isPast) textClass = 'text-text-secondary';
 
         return (
-          <div key={step.id} className="flex flex-col items-center gap-2 bg-[var(--surface)] px-2" aria-current={isActive ? 'step' : undefined}>
+          <div key={step.id} className="flex flex-col items-center gap-2 bg-surface px-2" aria-current={isActive ? 'step' : undefined}>
             <div className={"w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-bold transition-colors " + circleClass}>
               {isPast ? <Check size={16} strokeWidth={3} /> : idx + 1}
             </div>

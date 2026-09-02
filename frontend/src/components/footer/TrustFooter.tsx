@@ -3,13 +3,13 @@ import { ShieldCheck, Globe2, Zap } from 'lucide-react';
 
 export default function TrustFooter() {
   return (
-    <footer className="w-full bg-white border-t border-[var(--border)] py-6 mt-auto z-10 relative">
+    <footer className="w-full bg-white border-t border-border-main py-6 mt-auto z-10 relative">
       <div className="max-w-[1440px] mx-auto px-4 lg:px-11 flex flex-col md:flex-row items-center justify-between gap-6">
         
         {/* Logo Placeholder */}
         <div className="flex items-center gap-1">
-          <div className="w-4 h-4 bg-[var(--primary)] rotate-45 transform"></div>
-          <span className="font-[800] text-[18px] tracking-tight text-[var(--hero-deep)]">Razor<span className="text-[var(--primary)]">Sense</span></span>
+          <div className="w-4 h-4 bg-primary rotate-45 transform"></div>
+          <span className="font-[800] text-[18px] tracking-tight text-[var(--hero-deep)]">Razor<span className="text-primary">Sense</span></span>
         </div>
 
         {/* Trust Indicators */}
@@ -39,10 +39,10 @@ export default function TrustFooter() {
 function TrustItem({ icon: Icon, title, desc }: any) {
   return (
     <div className="flex items-center gap-3">
-      <Icon size={24} className="text-[var(--text-secondary)] shrink-0" strokeWidth={1.5} />
+      <Icon size={24} className="text-text-secondary shrink-0" strokeWidth={1.5} />
       <div className="flex flex-col">
-        <span className="text-[13px] font-bold text-[var(--text)]">{title}</span>
-        <span className="text-[12px] text-[var(--text-muted)]">{desc}</span>
+        <span className="text-[13px] font-bold text-text-main">{title}</span>
+        <span className="text-[12px] text-text-muted">{desc}</span>
       </div>
     </div>
   );

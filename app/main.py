@@ -7,6 +7,8 @@ import os
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
+from fastapi.middleware.cors import CORSMiddleware
+
 # Ingest edge cases into ChromaDB if taxonomy exists
 if os.path.exists("taxonomy.json"):
     ingest_edge_cases("taxonomy.json")
@@ -17,18 +19,32 @@ app = FastAPI(
     version="0.1.0"
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # For MVP, allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 from pydantic import BaseModel
 from app.agent import razorsense_agent
 
 class ChatRequest(BaseModel):
-    order_id: int
+    order_id: str
     message: str
+    image_url: str = None
     chat_history: list = [] # List of dicts: {"role": "user"/"ai", "content": "..."}
 
 @app.post("/api/chat")
 def chat_with_agent(req: ChatRequest):
     # Prepare state
     messages = req.chat_history + [{"role": "user", "content": req.message}]
+    
+    # If image is provided, append it to the context
+    if req.image_url:
+        messages[-1]["content"] += f" [Attached Image: {req.image_url}]"
+
     initial_state = {
         "messages": messages,
         "dispute_context": "",

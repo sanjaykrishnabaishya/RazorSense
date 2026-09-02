@@ -29,7 +29,7 @@ export default function SupportWorkspace(props: Props) {
     <div className="flex flex-col lg:flex-row gap-4 w-full h-[760px]">
       
       {/* Left Column (64%) */}
-      <div className="w-full lg:w-[64%] bg-[var(--surface)] rounded-[16px] shadow-[var(--shadow-lg)] border border-[var(--border)] overflow-y-auto custom-scrollbar flex flex-col p-8">
+      <div className="w-full lg:w-[64%] bg-surface rounded-[16px] shadow-custom-lg border border-border-main overflow-y-auto custom-scrollbar flex flex-col p-8">
         <ProgressStepper stage={props.stage} />
         
         <div className="mt-8 flex-1">
@@ -51,7 +51,7 @@ export default function SupportWorkspace(props: Props) {
       </div>
 
       {/* Right Column (36%) */}
-      <div className="w-full lg:w-[36%] bg-[var(--surface)] rounded-[16px] shadow-[var(--shadow-lg)] border border-[var(--border)] overflow-hidden flex flex-col h-full">
+      <div className="w-full lg:w-[36%] bg-surface rounded-[16px] shadow-custom-lg border border-border-main overflow-hidden flex flex-col h-full">
         <ChatPanel {...props} />
       </div>
 

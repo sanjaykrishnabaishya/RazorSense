@@ -8,3 +8,5 @@ pandas
 python-dotenv
 langchain-openai
 sqlalchemy
+
+python-multipart
