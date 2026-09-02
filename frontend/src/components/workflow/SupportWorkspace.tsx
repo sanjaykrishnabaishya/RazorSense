@@ -6,6 +6,7 @@ import PurchaseVerification from './PurchaseVerification';
 import IssueSelector from './IssueSelector';
 import ChatPanel from '../chat/ChatPanel';
 import { WorkflowStage, Purchase, IssueType, ChatMessage } from '../../types/support';
+import { motion } from 'framer-motion';
 
 interface Props {
   stage: WorkflowStage;
@@ -29,31 +30,45 @@ export default function SupportWorkspace(props: Props) {
     <div className="flex flex-col lg:flex-row gap-4 w-full h-[760px]">
       
       {/* Left Column (64%) */}
-      <div className="w-full lg:w-[64%] bg-surface rounded-[16px] shadow-custom-lg border border-border-main overflow-y-auto custom-scrollbar flex flex-col p-8">
+      <motion.div 
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+        className="w-full lg:w-[64%] bg-surface rounded-[16px] shadow-custom-lg border border-border-main overflow-y-auto custom-scrollbar flex flex-col p-8"
+      >
         <ProgressStepper stage={props.stage} />
         
         <div className="mt-8 flex-1">
           {props.stage === 'find-purchase' && (
-            <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
               <PurchaseSearch {...props} />
               {props.results.length > 0 && <PurchaseResults {...props} />}
-            </>
+            </motion.div>
           )}
 
           {props.stage === 'verify-details' && (
-            <PurchaseVerification {...props} />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
+              <PurchaseVerification {...props} />
+            </motion.div>
           )}
 
           {props.stage === 'analyse-issue' && (
-            <IssueSelector {...props} />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
+              <IssueSelector {...props} />
+            </motion.div>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Right Column (36%) */}
-      <div className="w-full lg:w-[36%] bg-surface rounded-[16px] shadow-custom-lg border border-border-main overflow-hidden flex flex-col h-full">
+      <motion.div 
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
+        className="w-full lg:w-[36%] bg-surface rounded-[16px] shadow-custom-lg border border-border-main overflow-hidden flex flex-col h-full"
+      >
         <ChatPanel {...props} />
-      </div>
+      </motion.div>
 
     </div>
   );

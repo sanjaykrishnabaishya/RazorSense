@@ -1,21 +1,41 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 
 export default function MerchantOrbit() {
+  const floatTransition = (delay: number) => ({
+    y: ["-10px", "10px"],
+    transition: {
+      y: {
+        duration: 2.5 + Math.random(),
+        repeat: Infinity,
+        repeatType: "reverse",
+        ease: "easeInOut",
+        delay: delay
+      }
+    }
+  });
+
   return (
-    <div className="relative w-full h-[300px] flex items-center justify-center pointer-events-none">
-      
-      {/* Robot Center */}
-      <div className="relative z-20 flex flex-col items-center">
-        {/* Floating Animation Wrapper */}
-        <div className="animate-[float_6s_ease-in-out_infinite]">
-          <div className="w-32 h-32 flex items-center justify-center relative overflow-visible drop-shadow-[0_0_20px_rgba(66,232,255,0.4)]">
-             <img src="/robot.png" alt="Razor AI Bot" className="w-[180px] h-[180px] object-contain max-w-none ml-2 mt-4" />
-          </div>
-        </div>
+    <div className="relative w-full max-w-[400px] h-[300px] flex items-center justify-center">
+      <div className="relative w-full h-full flex items-center justify-center -mr-16 mt-8">
+        
+        {/* Core Robot */}
+        <motion.div 
+          animate={{ y: ["-10px", "10px"] }}
+          transition={{ duration: 3, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+          className="relative z-20 w-[220px] h-[220px] rounded-full bg-hero-deep border border-border-main/20 flex items-center justify-center shadow-custom-lg overflow-hidden"
+        >
+          <img src="/robot.png" alt="AI Bot" className="w-[110%] h-[110%] object-contain mt-4" />
+        </motion.div>
 
         {/* Speech Bubble */}
-        <div className="absolute -top-16 -left-10 bg-white rounded-2xl rounded-br-sm px-4 py-3 shadow-lg transform -rotate-2 z-30">
-          <p className="text-[13px] font-semibold text-primary-dark">Hi! IÃ¢â‚¬â„¢m Razor</p>
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
+          animate={{ opacity: 1, scale: 1, rotate: -2 }}
+          transition={{ duration: 0.5, delay: 0.8, type: "spring" }}
+          className="absolute -top-16 -left-10 bg-white rounded-2xl rounded-br-sm px-4 py-3 shadow-lg z-30"
+        >
+          <p className="text-[13px] font-semibold text-primary-dark">Hi! I’m Razor</p>
           <p className="text-[11px] text-text-secondary leading-tight max-w-[140px] mt-0.5">I can help you with refunds, replacements and any payment issue across all merchants.</p>
           {/* Handwritten Annotation */}
           <div className="absolute -right-20 top-14 text-white text-[12px] rotate-6 opacity-80 flex flex-col items-start font-mono whitespace-nowrap drop-shadow-md">
@@ -23,37 +43,35 @@ export default function MerchantOrbit() {
             <span>All your payments.</span>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-main -mt-1 ml-2"><path d="m9 18 6-6-6-6"/></svg>
           </div>
+        </motion.div>
+
+        {/* Orbiting Elements */}
+        <div className="absolute inset-0 z-10">
+           <OrbitalNode logo="/logos/zomato.svg" name="Zomato" className="top-10 -left-6" delay={0.1} />
+           <OrbitalNode logo="/logos/amazon.svg" name="Amazon" className="bottom-12 -left-2" delay={0.4} />
+           <OrbitalNode logo="/logos/ebay.svg" name="eBay" className="-top-4 right-10" delay={0.7} />
+           <OrbitalNode logo="/logos/swiggy.svg" name="Swiggy" className="bottom-10 right-4" delay={0.2} />
+           <OrbitalNode logo="/logos/steam.svg" name="Steam" className="top-1/2 -right-8" delay={0.9} />
+           <OrbitalNode logo="/logos/nike.svg" name="Nike" className="bottom-[-10px] left-1/2" delay={0.5} />
         </div>
       </div>
-
-      {/* Orbiting Tiles */}
-      <div className="absolute inset-0 z-10 hidden lg:block">
-         <MerchantTile logo="/logos/zomato.svg" name="zomato" top="10%" left="60%" delay="0s" rotate="12deg" />
-         <MerchantTile logo="/logos/amazon.svg" name="amazon" top="30%" left="75%" delay="1s" rotate="-5deg" />
-         <MerchantTile logo="/logos/ebay.svg" name="eBay" top="15%" left="85%" delay="2s" rotate="8deg" />
-         <MerchantTile logo="/logos/swiggy.svg" name="swiggy" top="50%" left="65%" delay="0.5s" rotate="-12deg" />
-         <MerchantTile logo="/logos/steam.svg" name="steam" top="60%" left="80%" delay="1.5s" rotate="15deg" />
-         
-         <div className="absolute bottom-[20%] right-[5%] text-[12px] text-text-muted font-mono opacity-60">... and 1000+ more</div>
-      </div>
-      
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-15px); }
-        }
-      `}} />
     </div>
   );
 }
 
-function MerchantTile({ logo, name, top, left, delay, rotate }: any) {
+function OrbitalNode({ logo, name, className, delay }: { logo: string, name: string, className: string, delay: number }) {
   return (
-    <div 
-      className={"absolute w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg border border-white/20 animate-[float_8s_ease-in-out_infinite] overflow-hidden p-2.5"}
-      style={{ top, left, animationDelay: delay, transform: "rotate(" + rotate + ")" }}
+    <motion.div 
+      initial={{ opacity: 0, scale: 0 }}
+      animate={{ opacity: 1, scale: 1, y: ["-10px", "10px"] }}
+      transition={{ 
+        opacity: { duration: 0.5, delay },
+        scale: { duration: 0.5, delay, type: "spring" },
+        y: { duration: 2.5 + delay, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay } 
+      }}
+      className={`absolute ${className} w-12 h-12 bg-white rounded-xl shadow-custom-sm border border-border-main p-2.5 flex items-center justify-center hover:scale-110 transition-transform`}
     >
       <img src={logo} alt={name} className="w-full h-full object-contain" onError={(e) => e.currentTarget.style.display = 'none'} />
-    </div>
+    </motion.div>
   );
 }

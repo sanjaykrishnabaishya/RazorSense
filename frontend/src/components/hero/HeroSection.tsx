@@ -1,20 +1,31 @@
 import React from 'react';
 import { Sparkles, Zap, ShieldCheck, Clock3 } from 'lucide-react';
 import MerchantOrbit from './MerchantOrbit';
+import { motion } from 'framer-motion';
 
 export default function HeroSection() {
   return (
     <section className="relative w-full h-[370px] bg-hero overflow-hidden">
       {/* Background Gradients */}
-      <div className="absolute inset-0 pointer-events-none">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.5, ease: "easeOut" }}
+        className="absolute inset-0 pointer-events-none"
+      >
         <div className="absolute top-0 right-[10%] w-[600px] h-[600px] bg-gradient-to-br from-[var(--color-violet-main)] to-[var(--color-cyan-main)] rounded-full mix-blend-screen opacity-20 blur-[120px]"></div>
         <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-primary rounded-full mix-blend-screen opacity-30 blur-[100px]"></div>
-      </div>
+      </motion.div>
 
       <div className="relative z-10 w-full max-w-[1440px] mx-auto px-4 lg:px-11 h-full flex flex-col md:flex-row items-center pt-8">
         
         {/* Left Copy */}
-        <div className="w-full lg:w-[60%] flex flex-col items-start gap-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+          className="w-full lg:w-[60%] flex flex-col items-start gap-4"
+        >
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-main/20 border border-violet-main/30 text-violet-soft text-xs font-semibold">
             <Sparkles size={14} className="text-violet-soft" /> AI Support & Vision Diagnostics
           </div>
@@ -33,12 +44,17 @@ export default function HeroSection() {
             <Feature icon={ShieldCheck} text="Verifies with merchant & payment records" />
             <Feature icon={Clock3} text="Fast resolution 24/7" />
           </div>
-        </div>
+        </motion.div>
 
         {/* Right Illustration */}
-        <div className="w-full lg:w-[40%] h-full flex items-center justify-end relative mt-10 md:mt-0">
+        <motion.div 
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
+          className="w-full lg:w-[40%] h-full flex items-center justify-end relative mt-10 md:mt-0"
+        >
            <MerchantOrbit />
-        </div>
+        </motion.div>
 
       </div>
     </section>

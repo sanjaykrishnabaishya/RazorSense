@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bot, Minus, Maximize2, X, Paperclip, SendHorizontal, CheckCircle2, Loader2 } from 'lucide-react';
 import { ChatMessage } from '../../types/support';
+import { motion } from 'framer-motion';
 
 export default function ChatPanel(props: any) {
   const { messages, setMessages, selectedPurchase } = props;
@@ -106,9 +107,15 @@ export default function ChatPanel(props: any) {
               : 'bg-[#F5F7FB] text-text-main rounded-2xl rounded-tl-sm border border-border-soft');
 
           return (
-            <div key={m.id} className={containerClass}>
+            <motion.div 
+              key={m.id} 
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.3, type: "spring", stiffness: 200, damping: 20 }}
+              className={containerClass}
+            >
               {!isUser && (
-                 <div className="w-8 h-8 rounded-full bg-hero-deep flex items-center justify-center mr-3 mt-1 shrink-0 shadow-sm overflow-hidden">
+                 <div className="w-8 h-8 rounded-full bg-[var(--hero-deep)] flex items-center justify-center mr-3 mt-1 shrink-0 shadow-sm overflow-hidden">
                    <img src="/robot.png" alt="Bot" className="w-[120%] h-[120%] object-contain" />
                  </div>
               )}
