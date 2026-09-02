@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 export default function HeroSection() {
   return (
-    <section className="relative w-full h-[370px] bg-hero overflow-hidden">
+    <section className="relative w-full h-[450px] bg-hero overflow-hidden">
       {/* Background Gradients */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.8 }}
@@ -24,10 +24,10 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-          className="w-full lg:w-[60%] flex flex-col items-start gap-4"
+          className="w-full lg:w-[60%] flex flex-col items-start gap-4 -mt-10"
         >
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-main/20 border border-violet-main/30 text-violet-soft text-xs font-semibold">
-            <Sparkles size={14} className="text-violet-soft" /> AI Support & Vision Diagnostics
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 text-xs font-semibold">
+            <Sparkles size={14} className="text-yellow-400" /> AI Support & Vision Diagnostics
           </div>
           
           <h1 className="text-[48px] leading-[1.05] font-[800] tracking-tight text-white max-w-[600px]">

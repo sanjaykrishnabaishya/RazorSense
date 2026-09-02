@@ -44,7 +44,7 @@ export const initialMessages: ChatMessage[] = [
     id: 'm1',
     role: 'assistant',
     kind: 'text',
-    text: 'Hi! I’m Razor, your AI support assistant.\nI can help you with refunds, replacements, and any payment issue across all merchants.\n\nJust tell me what happened or share any details like order ID, merchant name, or what you bought.',
+    text: 'Hi! I’m Krish 👋\nI’m here to help you sort things out. Tell me what happened, and I’ll look into it for you.',
     timestamp: '10:00 AM',
   }
 ];

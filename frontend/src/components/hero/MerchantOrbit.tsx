@@ -23,9 +23,9 @@ export default function MerchantOrbit() {
         <motion.div 
           animate={{ y: ["-10px", "10px"] }}
           transition={{ duration: 3, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
-          className="relative z-20 w-[220px] h-[220px] rounded-full bg-hero-deep border border-white/[0.05]/20 flex items-center justify-center shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden"
+          className="relative z-20 w-[220px] h-[220px] flex items-center justify-center overflow-visible"
         >
-          <img src="/robot.png" alt="AI Bot" className="w-[110%] h-[110%] object-contain mt-4" />
+          <img src="/robot.png" alt="AI Bot" className="w-[120%] h-[120%] object-contain mt-4 mix-blend-screen" />
         </motion.div>
 
         {/* Speech Bubble */}
@@ -33,16 +33,10 @@ export default function MerchantOrbit() {
           initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
           animate={{ opacity: 1, scale: 1, rotate: -2 }}
           transition={{ duration: 0.5, delay: 0.8, type: "spring" }}
-          className="absolute -top-16 -left-10 bg-[#111] rounded-2xl rounded-br-sm px-4 py-3 shadow-lg z-30"
+          className="absolute -top-24 -left-20 bg-[#111] border border-white/10 rounded-2xl rounded-br-sm px-5 py-4 shadow-[0_0_30px_rgba(0,0,0,0.8)] z-50 min-w-[200px]"
         >
-          <p className="text-[13px] font-semibold text-white">Hi! Iâ€™m Razor</p>
-          <p className="text-[11px] text-white/60 leading-tight max-w-[140px] mt-0.5">I can help you with refunds, replacements and any payment issue across all merchants.</p>
-          {/* Handwritten Annotation */}
-          <div className="absolute -right-20 top-14 text-white text-[12px] rotate-6 opacity-80 flex flex-col items-start font-mono whitespace-nowrap drop-shadow-md">
-            <span>One chat.</span>
-            <span>All your payments.</span>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-main -mt-1 ml-2"><path d="m9 18 6-6-6-6"/></svg>
-          </div>
+          <p className="text-[14px] font-semibold text-white">Hi! I’m Krish 👋</p>
+          <p className="text-[12px] text-white/60 leading-tight mt-1">I’m here to help you sort things out. Tell me what happened, and I’ll look into it for you.</p>
         </motion.div>
 
         {/* Orbiting Elements */}

@@ -161,18 +161,13 @@ export default function ChatPanel(props: any) {
 
       {/* Composer */}
       <div className="p-4 border-t border-white/[0.05] bg-[#111] sticky bottom-0">
-        <div className="flex gap-2 mb-3 overflow-x-auto custom-scrollbar pb-1">
-           <QuickAction text="RefreshCcw" label="Refund" color="text-mint-dark" />
-           <QuickAction text="Package" label="Replacement" color="text-violet-main" />
-           <QuickAction text="PackageX" label="Wrong item" color="text-warning" />
-        </div>
-        <div className="relative flex items-end border border-white/[0.05] rounded-xl bg-[#111] shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition p-1">
-          <button className="p-3 text-white/60 hover:text-primary transition rounded-lg">
+        <div className="relative flex items-end border border-white/[0.05] rounded-xl bg-[#030303] shadow-[0_0_20px_rgba(0,0,0,0.5)] focus-within:border-white/20 transition p-1">
+          <button className="p-3 text-white/60 hover:text-white transition rounded-lg">
             <Paperclip size={20} />
           </button>
           <textarea 
             placeholder="Type your message here..."
-            className="flex-1 max-h-32 min-h-[44px] py-3 text-[15px] focus:outline-none resize-none custom-scrollbar"
+            className="flex-1 max-h-32 min-h-[44px] py-3 text-[15px] bg-transparent focus:outline-none resize-none custom-scrollbar text-white placeholder-white/30"
             rows={1}
             value={input}
             onChange={e => setInput(e.target.value)}
@@ -186,7 +181,7 @@ export default function ChatPanel(props: any) {
           <button 
             onClick={handleSend}
             disabled={!input.trim()}
-            className="p-3 m-1 bg-primary hover:bg-primary-dark text-white rounded-lg disabled:opacity-50 transition"
+            className="p-3 m-1 bg-white hover:bg-white/90 text-black rounded-lg disabled:opacity-50 transition"
           >
             <SendHorizontal size={18} />
           </button>
