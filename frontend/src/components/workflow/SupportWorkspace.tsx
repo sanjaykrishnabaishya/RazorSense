@@ -27,14 +27,14 @@ interface Props {
 
 export default function SupportWorkspace(props: Props) {
   return (
-    <div className="flex flex-col lg:flex-row gap-4 w-full h-[760px]">
+    <div className="flex flex-col lg:flex-row gap-4 w-full">
       
       {/* Left Column (64%) */}
       <motion.div 
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-        className="w-full lg:w-[64%] overflow-y-auto custom-scrollbar flex flex-col pt-8 pr-4"
+        className="w-full lg:w-[64%] flex flex-col pt-8 pr-4"
       >
         <div className="flex-1">
           {props.stage === 'find-purchase' && (
@@ -63,7 +63,7 @@ export default function SupportWorkspace(props: Props) {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-        className="w-full lg:w-[36%] bg-[#0a0a0a]/80 backdrop-blur-2xl rounded-[16px] shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/[0.05] overflow-hidden flex flex-col h-full"
+        className="w-full lg:w-[36%] bg-transparent border border-white/[0.05] rounded-[16px] overflow-hidden flex flex-col min-h-[600px] h-[calc(100vh-140px)] sticky top-24"
       >
         <ChatPanel {...props} />
       </motion.div>

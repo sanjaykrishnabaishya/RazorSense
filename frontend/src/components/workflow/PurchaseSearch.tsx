@@ -1,19 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Search, Sparkles, CheckCircle2, FileText, RefreshCcw, Package, PackageX, AlertTriangle, CreditCard, MoreHorizontal, ChevronDown, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import AdvancedSearchModal from './AdvancedSearchModal';
 
 export default function PurchaseSearch(props: any) {
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+
   const handleSearch = () => {
     props.setQuery('find recent orders');
-    // Simulate finding the Zomato order
+    // Simulate finding the order
     props.setResults([{
-      id: '2', merchant: 'Zomato', date: '12 Aug 2024', amount: 299, currency: 'INR', item: 'Margherita Pizza', status: 'delivered', orderId: '#ZOM1234567890'
+      id: '2', merchant: 'Amazon', date: '5 Aug 2024', amount: 1499, currency: 'INR', item: 'Wireless Earbuds', status: 'delivered', orderId: '#AMZ884512'
+    }]);
+    props.setStage('verify-details');
+  };
+
+  const handleAdvancedSearchSubmit = (data: any) => {
+    props.setQuery(`Searching for ${data.merchant} order ${data.orderId}`);
+    props.setResults([{
+      id: '3', merchant: data.merchant, date: 'Today', amount: 1499, currency: 'INR', item: 'Advanced Search Item', status: 'delivered', orderId: data.orderId
     }]);
     props.setStage('verify-details');
   };
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-6">
       
       {/* 1. Search Header */}
       <div className="flex gap-4">
@@ -49,10 +60,19 @@ export default function PurchaseSearch(props: any) {
             Find My Purchase <ArrowRight size={16} />
           </motion.button>
         </div>
-        <button className="text-blue-400 text-[13px] font-medium mt-3 flex items-center gap-1 hover:text-blue-300 transition-colors">
+        <button 
+          onClick={() => setIsAdvancedOpen(true)}
+          className="text-blue-400 text-[13px] font-medium mt-3 flex items-center gap-1 hover:text-blue-300 transition-colors"
+        >
           Can't find the details? Try advanced search <ChevronDown size={14} />
         </button>
       </div>
+
+      <AdvancedSearchModal 
+        isOpen={isAdvancedOpen} 
+        onClose={() => setIsAdvancedOpen(false)} 
+        onSearch={handleAdvancedSearchSubmit} 
+      />
 
       {/* 3. AI Identification Panel */}
       <div className="bg-emerald-900/10 border border-emerald-500/20 rounded-2xl p-8 relative overflow-hidden flex flex-col md:flex-row gap-8 justify-between">
@@ -79,48 +99,6 @@ export default function PurchaseSearch(props: any) {
               </div>
             ))}
           </div>
-        </div>
-
-        <div className="relative w-[280px] h-[160px] hidden md:block z-10 shrink-0 self-center">
-          <motion.div 
-            initial={{ opacity: 0, x: 20, y: 20 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 0.1 }}
-            className="absolute top-10 right-4 w-full bg-[#111] border border-white/[0.08] rounded-xl p-4 shadow-[0_10px_30px_rgba(0,0,0,0.5)] opacity-40 scale-90"
-          >
-            <div className="flex gap-3 items-center">
-              <img src="/logos/nike.svg" className="w-8 h-8 bg-white p-1 rounded-md" />
-              <div>
-                <p className="text-white text-[12px]">Order #NK99112</p>
-                <p className="text-white/40 text-[10px]">$120 • 28 Jul 2024</p>
-              </div>
-            </div>
-          </motion.div>
-          
-          <motion.div 
-            initial={{ opacity: 0, x: 20, y: 20 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ delay: 0.2 }}
-            className="absolute top-5 right-2 w-full bg-[#111] border border-white/[0.08] rounded-xl p-4 shadow-[0_10px_30px_rgba(0,0,0,0.5)] opacity-70 scale-95"
-          >
-            <div className="flex gap-3 items-center">
-              <img src="/logos/ebay.svg" className="w-8 h-8 bg-white p-1 rounded-md" />
-              <div>
-                <p className="text-white text-[12px]">Order #EB12345</p>
-                <p className="text-white/40 text-[10px]">$45 • 1 Aug 2024</p>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }}
-            className="absolute top-0 right-0 w-full bg-[#111] border border-white/[0.1] rounded-xl p-4 shadow-[0_20px_40px_rgba(0,0,0,0.8)]"
-          >
-            <div className="flex gap-3 items-center">
-              <img src="/logos/amazon.svg" className="w-8 h-8 bg-white p-1 rounded-md" />
-              <div>
-                <p className="text-white text-[13px] font-medium">Amazon</p>
-                <p className="text-white/60 text-[11px]">Order #AMZ884512</p>
-                <p className="text-white/40 text-[11px]">₹1,499 • 5 Aug 2024</p>
-              </div>
-            </div>
-          </motion.div>
         </div>
       </div>
 

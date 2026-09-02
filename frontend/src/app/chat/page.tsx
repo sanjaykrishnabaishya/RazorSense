@@ -21,7 +21,7 @@ export default function RazorSenseApp() {
       <HeroSection />
       
       {/* Overlapping Main Workspace */}
-      <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 lg:px-11 -mt-[76px] z-10 mb-12 drop-shadow-sm">
+      <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 lg:px-11 mt-2 z-10 mb-12 drop-shadow-sm">
         <SupportWorkspace 
           stage={stage} setStage={setStage}
           query={query} setQuery={setQuery}

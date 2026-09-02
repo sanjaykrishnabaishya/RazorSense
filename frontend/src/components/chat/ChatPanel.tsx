@@ -74,10 +74,10 @@ export default function ChatPanel(props: any) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#111] relative">
+    <div className="flex flex-col h-full bg-transparent relative">
       
       {/* Header */}
-      <div className="sticky top-0 bg-[#111] border-b border-white/[0.05] p-4 flex items-center justify-between z-10">
+      <div className="sticky top-0 bg-transparent border-b border-white/[0.05] p-4 flex items-center justify-between z-10 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-hero-deep flex items-center justify-center relative shadow-sm overflow-hidden">
              <img src="/robot.png" alt="Razor AI" className="w-[120%] h-[120%] object-contain" />
@@ -160,8 +160,8 @@ export default function ChatPanel(props: any) {
       </div>
 
       {/* Composer */}
-      <div className="p-4 border-t border-white/[0.05] bg-[#111] sticky bottom-0">
-        <div className="relative flex items-end border border-white/[0.05] rounded-xl bg-[#030303] shadow-[0_0_20px_rgba(0,0,0,0.5)] focus-within:border-white/20 transition p-1">
+      <div className="p-4 border-t border-white/[0.05] bg-transparent sticky bottom-0 backdrop-blur-md">
+        <div className="relative flex items-end border border-white/[0.05] rounded-xl bg-[#030303]/60 shadow-[0_0_20px_rgba(0,0,0,0.5)] focus-within:border-white/20 transition p-1">
           <button className="p-3 text-white/60 hover:text-white transition rounded-lg">
             <Paperclip size={20} />
           </button>

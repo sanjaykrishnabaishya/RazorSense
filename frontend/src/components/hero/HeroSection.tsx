@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 export default function HeroSection() {
   return (
-    <section className="relative w-full h-[450px] bg-transparent overflow-hidden">
+    <section className="relative w-full h-auto min-h-[350px] pb-10 bg-transparent overflow-hidden">
       {/* Background Gradients */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.8 }}
@@ -39,11 +39,6 @@ export default function HeroSection() {
             RazorSense AI will find your purchase, understand the issue using Vision AI (detecting wear & tear vs. deepfakes), verify details with the merchant, and execute a resolution.
           </p>
 
-          <div className="flex items-center gap-6 mt-4 hidden md:flex">
-            <Feature icon={Zap} text="Finds your purchase automatically" />
-            <Feature icon={ShieldCheck} text="Verifies with merchant & payment records" />
-            <Feature icon={Clock3} text="Fast resolution 24/7" />
-          </div>
         </motion.div>
 
         {/* Right Illustration */}
