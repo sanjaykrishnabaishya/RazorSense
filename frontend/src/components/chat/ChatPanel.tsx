@@ -153,7 +153,7 @@ export default function ChatPanel(props: any) {
                    S
                  </div>
               )}
-            </div>
+            </motion.div>
           );
         })}
         <div ref={messagesEndRef} />

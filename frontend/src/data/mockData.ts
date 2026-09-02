@@ -45,6 +45,6 @@ export const initialMessages: ChatMessage[] = [
     role: 'assistant',
     kind: 'text',
     text: 'Hi! I’m Razor, your AI support assistant.\nI can help you with refunds, replacements, and any payment issue across all merchants.\n\nJust tell me what happened or share any details like order ID, merchant name, or what you bought.',
-    timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+    timestamp: '10:00 AM',
   }
 ];
