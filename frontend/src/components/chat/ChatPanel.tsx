@@ -40,7 +40,7 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
       }
 
       // Advanced Search / Don't remember Request (typo tolerant)
-      const forgotRegex = /don'?t\s+(know|knwo|kno|remember|rember|rmbr)|forgot|find|search|advanced/i;
+      const forgotRegex = /don'?t|kno|knw|rem|forgot|find|search|advanced/i;
       if (forgotRegex.test(lower)) {
         addBotMessage('widget_search', "No worries! Let's locate your transaction. You can use the search tool below or try the Advanced Search:");
         return;
@@ -79,6 +79,31 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
   const handleSend = () => {
     if (!input.trim()) return;
     sendText(input);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const imageUrl = URL.createObjectURL(file);
+    
+    // Add user message with image
+    setMessages((prev: any) => [...prev, {
+      id: Date.now().toString(),
+      role: 'user',
+      kind: 'image',
+      text: 'Uploaded an attachment',
+      imageUrl: imageUrl,
+      timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+    }]);
+    
+    setChatStep(prev => prev + 1);
+
+    // AI confirms receipt and creates ticket
+    setTimeout(() => {
+      addBotMessage('widget_ticket', 'Thank you for the attachment. I have successfully logged your request in our system and created a unique Ticket ID for internal review.');
+      setChatStep(0);
+    }, 1500);
   };
 
   return (
@@ -136,6 +161,12 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
                     {m.kind === 'text' && (
                       <div className={`p-4 text-[15px] leading-[1.5] shadow-lg ${isUser ? 'bg-white text-black rounded-2xl rounded-tr-sm font-medium' : 'bg-[#111] text-white rounded-2xl rounded-tl-sm border border-white/[0.05]'}`}>
                         {m.text}
+                      </div>
+                    )}
+
+                    {m.kind === 'image' && (
+                      <div className={`p-2 shadow-lg ${isUser ? 'bg-white rounded-2xl rounded-tr-sm' : 'bg-[#111] rounded-2xl rounded-tl-sm border border-white/[0.05]'}`}>
+                        <img src={m.imageUrl} alt="attachment" className="max-w-[250px] rounded-xl object-contain" />
                       </div>
                     )}
 
@@ -209,11 +240,12 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
       </div>
 
       {/* Composer */}
-      <div className="p-4 pb-12 bg-transparent sticky bottom-0 z-20">
+      <div className="p-4 pb-24 bg-transparent sticky bottom-0 z-20">
         <div className="relative flex items-end border border-white/[0.1] rounded-2xl bg-[#0a0a0a]/80 backdrop-blur-xl shadow-[0_0_30px_rgba(0,0,0,0.8)] focus-within:border-white/30 transition-colors p-1.5 mx-auto max-w-3xl">
-          <button className="p-3 text-white/40 hover:text-white transition rounded-xl">
+          <label className="p-3 text-white/40 hover:text-white transition rounded-xl cursor-pointer">
             <Paperclip size={20} />
-          </button>
+            <input type="file" accept="image/*,video/*" className="hidden" onChange={handleFileUpload} />
+          </label>
           <textarea 
             placeholder="Message Krish..."
             className="flex-1 max-h-32 min-h-[44px] py-3 text-[15px] bg-transparent focus:outline-none resize-none custom-scrollbar text-white placeholder-white/30"
