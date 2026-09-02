@@ -1,45 +1,80 @@
 "use client";
-import React, { useState } from 'react';
-import { Search, CheckCircle2, ChevronRight, RefreshCcw, PackageX, AlertTriangle, CreditCard, MoreHorizontal, Paperclip, Send, Bot, Shield, Globe, Zap, X, Minus, Maximize2, Package } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Search, ShieldCheck, ChevronRight, RefreshCcw, PackageX, 
+  AlertTriangle, CreditCard, Paperclip, Send, Bot, Scan, 
+  CheckCircle2, Box, Zap, Sparkles, ServerCrash, CreditCard as CardIcon
+} from 'lucide-react';
 
-export default function RazorSensePortal() {
-  const [selectedIssue, setSelectedIssue] = useState<string | null>('refund');
+export default function ImmersiveDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [orderFound, setOrderFound] = useState(false);
+  const [activeStep, setActiveStep] = useState(1);
   const [chatInput, setChatInput] = useState('');
-  
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   type Message = {
-    role: string;
-    time: string;
+    id: string;
+    role: 'user' | 'ai' | 'system';
     content: string;
     isAction?: boolean;
-    isLoading?: boolean;
+    timestamp: string;
   };
 
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'ai', time: '10:24 AM', content: 'Hi! I\'m Razor, your AI support assistant.\nI can help you with refunds, replacements and any payment issue across all merchants.\n\nJust tell me what happened or share any details like order ID, merchant name, or what you bought.' },
-    { role: 'user', time: '10:25 AM', content: 'I want a refund. I ordered wireless earphones from Zomato but received a different product.' },
-    { role: 'ai', time: '10:25 AM', isAction: true, content: 'Got it! Let me find your purchase.\nI\'ll check your Razorpay transactions and match it with Zomato.' }
+    { 
+      id: '1', 
+      role: 'ai', 
+      timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
+      content: 'Greetings. I am RazorSense Neural Engine. I can autonomously resolve disputes, analyze evidence, and process refunds.\n\nPlease enter your transaction ID or describe your issue to begin.' 
+    }
   ]);
 
-  const issues = [
-    { id: 'refund', icon: RefreshCcw, label: 'Refund', desc: 'I want a refund' },
-    { id: 'replacement', icon: Package, label: 'Replacement', desc: 'I want a replacement' },
-    { id: 'wrong', icon: PackageX, label: 'Wrong or different item', desc: 'Received different product' },
-    { id: 'product', icon: AlertTriangle, label: 'Product issue', desc: 'Damaged / faulty' },
-    { id: 'payment', icon: CreditCard, label: 'Payment issue', desc: 'Charged twice, failed payment, etc.' },
-    { id: 'other', icon: MoreHorizontal, label: 'Other', desc: 'Something else' }
-  ];
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSearch = () => {
+    if(!searchQuery) return;
+    setOrderFound(true);
+    setActiveStep(2);
+    setMessages(prev => [...prev, {
+      id: Date.now().toString(),
+      role: 'system',
+      timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+      content: 'Transaction locked. Merchant: Zomato. Risk assessment initiated.'
+    }]);
+  };
 
   const handleSend = async () => {
     if (!chatInput.trim()) return;
     
     const userMsg = chatInput;
-    setMessages(prev => [...prev, { role: 'user', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), content: userMsg }]);
-    setChatInput('');
+    const newId = Date.now().toString();
     
-    // Add loading message
-    const loadingIdx = messages.length + 1;
-    setMessages(prev => [...prev, { role: 'ai', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), isAction: true, content: 'Analyzing your request...', isLoading: true }]);
+    setMessages(prev => [...prev, { 
+      id: newId,
+      role: 'user', 
+      timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
+      content: userMsg 
+    }]);
+    setChatInput('');
+    setActiveStep(3);
+    
+    // Add loading action
+    const loadingId = (Date.now() + 1).toString();
+    setMessages(prev => [...prev, { 
+      id: loadingId,
+      role: 'ai', 
+      timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
+      isAction: true, 
+      content: 'Analyzing neural pathways and cross-referencing merchant policies...' 
+    }]);
 
     try {
       const response = await fetch('http://localhost:8000/api/chat', {
@@ -48,329 +83,327 @@ export default function RazorSensePortal() {
         body: JSON.stringify({
           order_id: searchQuery || "UNKNOWN",
           message: userMsg,
-          chat_history: messages.map(m => ({ role: m.role, content: m.content })).filter(m => m.role !== 'system' && !m.isLoading)
+          chat_history: messages.map(m => ({ role: m.role, content: m.content })).filter(m => m.role !== 'system')
         })
       });
       
       const data = await response.json();
       
-      setMessages(prev => {
-        const newArr = [...prev];
-        newArr[loadingIdx] = { 
-          role: 'ai', 
-          time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
-          content: data.status === 'decided' ? `Final Decision: ${data.decision}` : data.reply,
-          isAction: data.status === 'decided'
-        };
-        return newArr;
-      });
+      setMessages(prev => prev.map(m => {
+        if (m.id === loadingId) {
+          return {
+            ...m,
+            content: data.status === 'decided' ? `Final Decision: ${data.decision}` : data.reply,
+            isAction: data.status === 'decided'
+          };
+        }
+        return m;
+      }));
       
     } catch (error) {
-      setMessages(prev => {
-        const newArr = [...prev];
-        newArr[loadingIdx] = { role: 'ai', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), content: 'Error connecting to RazorSense AI.' };
-        return newArr;
-      });
+      setMessages(prev => prev.map(m => {
+        if (m.id === loadingId) {
+          return {
+            ...m,
+            content: 'Neural connection lost. Ensure FastAPI backend is running on port 8000.',
+            isAction: false
+          };
+        }
+        return m;
+      }));
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FB] font-sans flex flex-col">
-      {/* Top Banner Area */}
-      <div className="bg-[#0B132B] text-white pt-12 pb-32 px-8 relative overflow-hidden">
-        {/* Background Gradients & Glows */}
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-blue-900/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"></div>
-        <div className="absolute top-1/2 right-1/4 w-[400px] h-[400px] bg-purple-900/40 rounded-full blur-3xl"></div>
-        
-        <div className="max-w-7xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <div className="inline-flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full text-sm font-medium mb-6 border border-white/20">
-              <span className="text-purple-400">✨</span> AI Support
-            </div>
-            <h1 className="text-5xl font-extrabold leading-tight mb-4 tracking-tight">
-              Tell us the issue,<br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">we'll handle the rest.</span>
-            </h1>
-            <p className="text-gray-300 text-lg mb-8 max-w-md">
-              Our AI will find your purchase, understand the issue, verify details with the merchant and help you with a <strong>refund, replacement or resolution.</strong>
-            </p>
-            
-            <div className="flex flex-wrap gap-6 text-sm font-medium text-gray-200">
-              <div className="flex items-center gap-2"><Zap className="text-green-400" size={20}/> Finds your purchase automatically</div>
-              <div className="flex items-center gap-2"><Shield className="text-green-400" size={20}/> Verifies with merchant & payment records</div>
-              <div className="flex items-center gap-2"><ClockIcon className="text-white" size={20}/> Fast resolution 24/7</div>
-            </div>
-          </div>
-          
-          <div className="hidden lg:flex justify-end items-center relative">
-            <div className="absolute left-0 top-1/4 -rotate-12 transform">
-              <p className="font-writing text-blue-200 text-lg">One chat.<br/>All your payments.<br/>Any merchant.</p>
-              <svg className="w-12 h-12 text-blue-300 ml-4 mt-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-            </div>
-            {/* Mock Robot & Logos representation */}
-            <div className="relative w-72 h-72">
-              <div className="absolute inset-0 bg-blue-500/20 rounded-full animate-pulse blur-xl"></div>
-              <Bot size={180} className="text-white drop-shadow-2xl absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
-              
-              {/* Floating Logos */}
-              <div className="absolute -right-12 top-4 bg-red-500 text-white font-bold px-3 py-1 rounded shadow-lg transform rotate-6">zomato</div>
-              <div className="absolute right-0 top-20 bg-white text-gray-900 font-bold px-3 py-1 rounded shadow-lg transform -rotate-6">amazon</div>
-              <div className="absolute -right-8 top-36 bg-white text-blue-600 font-bold px-3 py-1 rounded shadow-lg transform rotate-3">ebay</div>
-              <div className="absolute right-12 bottom-4 bg-orange-500 text-white font-bold px-3 py-1 rounded shadow-lg transform -rotate-12">swiggy</div>
-              <p className="absolute -right-4 bottom-[-20px] text-gray-400 text-sm italic">... and 1000+ more</p>
-            </div>
-          </div>
-        </div>
+    <div className="min-h-screen bg-[#05050A] text-white font-sans selection:bg-cyan-500/30 flex overflow-hidden">
+      
+      {/* Background Animated Gradients */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-blue-900/20 blur-[120px] mix-blend-screen animate-pulse duration-10000"></div>
+        <div className="absolute top-[40%] -right-[10%] w-[40%] h-[60%] rounded-full bg-purple-900/10 blur-[120px] mix-blend-screen"></div>
+        <div className="absolute -bottom-[20%] left-[20%] w-[60%] h-[50%] rounded-full bg-cyan-900/10 blur-[120px] mix-blend-screen"></div>
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
       </div>
 
-      {/* Main Content Area - Split View */}
-      <div className="max-w-7xl mx-auto w-full -mt-24 z-20 relative px-4 pb-12 flex-1 flex flex-col lg:flex-row gap-6">
+      {/* Sidebar */}
+      <aside className="w-20 lg:w-64 border-r border-white/5 bg-black/40 backdrop-blur-xl z-10 flex flex-col items-center lg:items-start py-8">
+        <div className="flex items-center gap-3 px-6 mb-12">
+          <div className="relative">
+            <div className="absolute inset-0 bg-cyan-400 blur-md opacity-50 rounded-full"></div>
+            <ShieldCheck className="relative text-cyan-400 z-10" size={32} />
+          </div>
+          <span className="hidden lg:block font-bold text-xl tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">RazorSense</span>
+        </div>
         
-        {/* LEFT PANEL - Form/Stepper */}
-        <div className="bg-white rounded-2xl shadow-xl flex-1 border border-gray-100 overflow-hidden flex flex-col">
-          {/* Stepper */}
-          <div className="flex items-center justify-between px-8 py-6 border-b border-gray-100">
-            {['Find Purchase', 'Verify Details', 'Analyse Issue', 'Resolution'].map((step, idx) => (
-              <div key={step} className="flex items-center gap-2">
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${idx === 0 ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
-                  {idx + 1}
-                </div>
-                <span className={`text-sm font-medium hidden sm:block ${idx === 0 ? 'text-blue-600' : 'text-gray-400'}`}>{step}</span>
-              </div>
-            ))}
+        <div className="w-full flex flex-col gap-2 px-3">
+          <SidebarItem icon={Box} label="Active Disputes" active />
+          <SidebarItem icon={ServerCrash} label="Root Cause Engine" />
+          <SidebarItem icon={Scan} label="Vision Analysis" />
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <main className="flex-1 flex flex-col lg:flex-row gap-6 p-6 lg:p-8 z-10 h-screen overflow-hidden">
+        
+        {/* Left Column: Context & Evidence */}
+        <div className="flex-1 flex flex-col gap-6 overflow-y-auto pr-2 custom-scrollbar">
+          
+          <header className="mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold tracking-widest uppercase mb-3">
+              <Sparkles size={12} /> AI Resolution Pipeline
+            </div>
+            <h1 className="text-3xl lg:text-4xl font-light tracking-tight mb-2">
+              Autonomous <span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Dispute Control</span>
+            </h1>
+            <p className="text-gray-400 text-sm max-w-md">Our neural engine securely processes claims, analyzes multimedia evidence, and resolves disputes instantly.</p>
+          </header>
+
+          {/* Timeline Stepper */}
+          <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-6 backdrop-blur-md">
+            <div className="flex justify-between relative">
+              <div className="absolute top-1/2 left-0 right-0 h-[2px] bg-white/5 -translate-y-1/2 z-0"></div>
+              <div className="absolute top-1/2 left-0 h-[2px] bg-gradient-to-r from-cyan-500 to-blue-500 -translate-y-1/2 z-0 transition-all duration-1000" style={{ width: `${((activeStep - 1) / 3) * 100}%` }}></div>
+              
+              {['Detect', 'Verify', 'Analyze', 'Resolve'].map((step, idx) => {
+                const isActive = activeStep >= idx + 1;
+                return (
+                  <div key={step} className="relative z-10 flex flex-col items-center gap-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500
+                      ${isActive ? 'bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.5)]' : 'bg-gray-800 text-gray-500 border border-white/10'}
+                    `}>
+                      {isActive ? <CheckCircle2 size={16} /> : idx + 1}
+                    </div>
+                    <span className={`text-xs font-medium ${isActive ? 'text-cyan-400' : 'text-gray-500'}`}>{step}</span>
+                  </div>
+                )
+              })}
+            </div>
           </div>
 
-          <div className="p-8 overflow-y-auto flex-1">
-            {/* Search Box */}
-            <div className="mb-8">
-              <div className="flex items-start gap-4 mb-4">
-                <div className="bg-blue-50 p-2 rounded-lg text-blue-600 mt-1"><Search size={24} /></div>
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">Let's find your purchase</h2>
-                  <p className="text-gray-500 text-sm">Enter any detail you remember. We'll locate your transaction across all merchants.</p>
-                </div>
-              </div>
+          {/* Search / Context Panel */}
+          <motion.div layout className="bg-white/[0.03] border border-white/10 rounded-2xl overflow-hidden backdrop-blur-md">
+            <div className="p-6 border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent">
+              <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2">
+                <Search size={16} className="text-cyan-400" /> Locate Transaction
+              </h3>
               <div className="flex gap-3">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                  <input 
-                    type="text" 
-                    placeholder="Order ID / Transaction ID / Merchant name (e.g. Zomato, Amazon, eBay) / Email / Phone"
-                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition text-sm"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                <button className="bg-[#0B132B] hover:bg-blue-900 text-white px-6 py-3 rounded-lg font-medium text-sm whitespace-nowrap flex items-center gap-2 transition">
-                  Find My Purchase <ChevronRight size={16} />
+                <input 
+                  type="text" 
+                  placeholder="Enter Order ID, Email, or Transaction Hash..."
+                  className="flex-1 bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition shadow-inner"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <button 
+                  onClick={handleSearch}
+                  className="bg-cyan-500 hover:bg-cyan-400 text-black px-6 py-3 rounded-xl font-semibold text-sm transition shadow-[0_0_20px_rgba(6,182,212,0.3)]"
+                >
+                  Fetch
                 </button>
               </div>
-              <button className="text-blue-600 text-sm font-medium mt-3 flex items-center gap-1 hover:underline">
-                Can't find the details? Try advanced search <ChevronRight size={14} className="rotate-90" />
-              </button>
             </div>
 
-            {/* Info Box */}
-            <div className="bg-[#F4FBFA] border border-[#E0F2F1] rounded-xl p-6 mb-8 flex flex-col md:flex-row gap-8 relative overflow-hidden">
-              <div className="flex-1 relative z-10">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="text-green-500">✨</div>
-                  <h3 className="font-bold text-gray-900">We'll identify everything for you</h3>
-                </div>
-                <p className="text-gray-600 text-sm mb-4">Our AI will automatically fetch and verify:</p>
-                <ul className="space-y-3 text-sm text-gray-700 font-medium">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="text-green-500 fill-green-100" size={18}/> Which company you purchased from</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="text-green-500 fill-green-100" size={18}/> Product or service details</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="text-green-500 fill-green-100" size={18}/> Payment details from Razorpay</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="text-green-500 fill-green-100" size={18}/> Whether the item matches your order</li>
-                </ul>
-              </div>
-              
-              {/* Floating Cards Graphic */}
-              <div className="hidden md:block w-64 relative">
-                <div className="absolute top-0 right-0 bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex items-center gap-3 w-56 z-30 transform hover:-translate-y-1 transition cursor-pointer">
-                  <div className="w-8 h-8 bg-red-500 rounded flex items-center justify-center text-white font-bold text-xs">z</div>
-                  <div>
-                    <p className="text-xs font-bold text-gray-900">Zomato</p>
-                    <p className="text-[10px] text-gray-400">Order #ZOM1234567890<br/>₹299 • 12 Aug 2024</p>
-                  </div>
-                </div>
-                <div className="absolute top-10 right-4 bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex items-center gap-3 w-56 z-20 opacity-80 scale-95">
-                  <div className="w-8 h-8 bg-gray-900 rounded flex items-center justify-center text-white font-bold text-xs">a</div>
-                  <div>
-                    <p className="text-xs font-bold text-gray-900">Amazon</p>
-                    <p className="text-[10px] text-gray-400">Order #AMZ884512<br/>₹1,499 • 5 Aug 2024</p>
-                  </div>
-                </div>
-                <div className="absolute top-20 right-8 bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex items-center gap-3 w-56 z-10 opacity-60 scale-90">
-                  <div className="w-8 h-8 text-blue-600 border rounded flex items-center justify-center font-bold text-xs">eBay</div>
-                  <div>
-                    <p className="text-xs font-bold text-gray-900">eBay</p>
-                    <p className="text-[10px] text-gray-400">Order #EB12345<br/>$45 • 1 Aug 2024</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Issue Selection */}
-            <div>
-              <div className="flex items-start gap-4 mb-4">
-                <div className="bg-blue-50 p-2 rounded-lg text-blue-600 mt-1"><FileTextIcon size={24} /></div>
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">What's the issue?</h2>
-                  <p className="text-gray-500 text-sm">Select the option that best describes your issue.</p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-                {issues.map((issue) => {
-                  const isSelected = selectedIssue === issue.id;
-                  const Icon = issue.icon;
-                  return (
-                    <div 
-                      key={issue.id}
-                      onClick={() => setSelectedIssue(issue.id)}
-                      className={`cursor-pointer rounded-xl p-4 border transition flex flex-col items-center text-center
-                        ${isSelected ? 'border-green-500 bg-[#F4FBFA]' : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'}
-                      `}
-                    >
-                      <Icon className={`mb-3 ${isSelected ? 'text-green-600' : 'text-blue-600'}`} size={28} />
-                      <h4 className="font-bold text-sm text-gray-900 mb-1">{issue.label}</h4>
-                      <p className="text-xs text-gray-500 leading-tight">{issue.desc}</p>
+            <AnimatePresence>
+              {orderFound && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="p-6 bg-gradient-to-r from-blue-900/10 to-transparent"
+                >
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-red-500/20 border border-red-500/30 flex items-center justify-center text-red-500 font-bold text-xl">
+                      Z
                     </div>
-                  );
-                })}
-              </div>
-            </div>
+                    <div>
+                      <h4 className="font-semibold text-white">Zomato Delivery</h4>
+                      <p className="text-xs text-gray-400">Order ID: #{searchQuery || 'ZOM-882910'} • 2 hrs ago</p>
+                    </div>
+                    <div className="ml-auto text-right">
+                      <p className="font-mono text-cyan-400 font-semibold">₹499.00</p>
+                      <p className="text-[10px] text-gray-500 flex items-center gap-1 justify-end"><CheckCircle2 size={10} className="text-green-500"/> Payment Verified</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">AI Verification Checklist</div>
+                    <VerificationItem text="Merchant identity cryptographically verified" />
+                    <VerificationItem text="Payment gateway transaction matched" />
+                    <VerificationItem text="User purchase history analyzed for fraud risk" />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+
+          {/* Quick Issue Chips */}
+          <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+             <IssueChip icon={RefreshCcw} label="Refund Request" />
+             <IssueChip icon={PackageX} label="Missing Item" />
+             <IssueChip icon={AlertTriangle} label="Damaged Goods" />
+             <IssueChip icon={CardIcon} label="Double Charge" />
           </div>
-          
-          {/* Footer Action */}
-          <div className="px-8 py-4 border-t border-gray-100 flex items-center gap-4 bg-gray-50/50">
-            <button className="bg-gray-200 text-gray-400 cursor-not-allowed px-8 py-3 rounded-lg font-medium text-sm flex items-center gap-2">
-              Continue <ChevronRight size={16} />
-            </button>
-            <span className="text-gray-400 text-sm">Find your purchase first to continue</span>
-          </div>
+
         </div>
 
-        {/* RIGHT PANEL - Chatbot */}
-        <div className="w-full lg:w-[450px] bg-white rounded-2xl shadow-xl flex flex-col border border-gray-100 overflow-hidden shrink-0">
-          {/* Chat Header */}
-          <div className="bg-[#F8F9FB] border-b border-gray-100 px-4 py-3 flex justify-between items-center">
+        {/* Right Column: AI Neural Interface (Chat) */}
+        <div className="w-full lg:w-[480px] h-[calc(100vh-4rem)] flex flex-col bg-[#0A0D14]/80 backdrop-blur-2xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl relative">
+          
+          {/* Neural Header */}
+          <div className="px-6 py-4 bg-gradient-to-r from-white/5 to-transparent border-b border-white/5 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#0B132B] rounded-full flex items-center justify-center">
-                <Bot className="text-white" size={20}/>
+              <div className="relative">
+                <div className="absolute inset-0 bg-cyan-500 blur-md opacity-40 rounded-full animate-pulse"></div>
+                <div className="w-10 h-10 bg-gray-900 border border-cyan-500/30 rounded-full flex items-center justify-center relative z-10">
+                  <Bot size={18} className="text-cyan-400" />
+                </div>
               </div>
               <div>
-                <h3 className="font-bold text-gray-900 text-sm leading-tight">Razor AI</h3>
-                <p className="text-xs text-gray-500">Always here to help • Powered by Razorpay</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1 text-gray-400">
-              <button className="p-1.5 hover:bg-gray-200 rounded"><Minus size={16}/></button>
-              <button className="p-1.5 hover:bg-gray-200 rounded"><Maximize2 size={16}/></button>
-              <button className="p-1.5 hover:bg-gray-200 rounded"><X size={16}/></button>
-            </div>
-          </div>
-
-          {/* Chat Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-white">
-            {messages.map((m, idx) => (
-              <div key={idx} className={`flex gap-3 ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                {m.role === 'ai' ? (
-                  <div className="w-8 h-8 bg-[#0B132B] rounded-full flex items-center justify-center shrink-0 mt-1">
-                    <Bot className="text-white" size={16}/>
-                  </div>
-                ) : (
-                  <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center shrink-0 mt-1 text-white text-xs font-bold">
-                    S
-                  </div>
-                )}
-                
-                <div className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} max-w-[85%]`}>
-                  <div className={`p-4 text-sm leading-relaxed whitespace-pre-wrap shadow-sm
-                    ${m.role === 'user' 
-                      ? 'bg-purple-100 text-purple-900 rounded-2xl rounded-tr-sm' 
-                      : m.isAction 
-                        ? 'bg-gray-50 text-gray-800 border border-gray-100 rounded-2xl rounded-tl-sm' 
-                        : 'bg-white border border-gray-100 text-gray-800 rounded-2xl rounded-tl-sm'
-                    }
-                  `}>
-                    {m.content}
-                    
-                    {/* Render action block if present */}
-                    {m.isAction && (
-                      <div className="mt-4 bg-white rounded-lg border border-gray-200 p-4 shadow-sm w-full">
-                        <div className="flex items-center gap-2 text-sm font-medium text-blue-600 mb-3">
-                          <Search size={16} /> Searching your transactions...
-                        </div>
-                        <div className="w-full bg-gray-100 h-1.5 rounded-full mb-4 overflow-hidden">
-                          <div className="bg-blue-600 h-full w-[60%] rounded-full animate-pulse"></div>
-                        </div>
-                        <ul className="space-y-2 text-xs text-gray-500">
-                          <li className="flex items-center gap-2 text-green-600"><CheckCircle2 size={14}/> Checking your payments on Razorpay</li>
-                          <li className="flex items-center gap-2 text-green-600"><CheckCircle2 size={14}/> Matching with Zomato</li>
-                          <li className="flex items-center gap-2 text-blue-600"><div className="w-3.5 h-3.5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div> Fetching order details</li>
-                          <li className="flex items-center gap-2"><div className="w-3 h-3 rounded-full border border-gray-300 ml-[1px]"></div> Verifying item information</li>
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                  <span className="text-[10px] text-gray-400 mt-1 px-1">{m.time}</span>
+                <h2 className="font-semibold text-sm text-gray-100">RazorSense AI</h2>
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></div>
+                  <span className="text-[10px] text-gray-400 uppercase tracking-wider">Neural Link Active</span>
                 </div>
               </div>
-            ))}
+            </div>
+            <button className="text-gray-500 hover:text-white transition"><Scan size={18} /></button>
           </div>
 
-          {/* Quick Replies & Input */}
-          <div className="p-4 bg-white border-t border-gray-100">
-            <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide">
-              <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F4FBFA] text-green-700 border border-green-200 rounded-full text-xs font-medium whitespace-nowrap hover:bg-green-50 transition">
-                <RefreshCcw size={12}/> Refund
-              </button>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-700 border border-purple-200 rounded-full text-xs font-medium whitespace-nowrap hover:bg-purple-100 transition">
-                <Package size={12}/> Replacement
-              </button>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 text-orange-700 border border-orange-200 rounded-full text-xs font-medium whitespace-nowrap hover:bg-orange-100 transition">
-                <AlertTriangle size={12}/> Wrong item
-              </button>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-full text-xs font-medium whitespace-nowrap hover:bg-blue-100 transition">
-                <CreditCard size={12}/> Payment issue
-              </button>
+          {/* Chat History */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+            <AnimatePresence initial={false}>
+              {messages.map((m) => (
+                <motion.div 
+                  key={m.id}
+                  initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                  className={`flex flex-col ${m.role === 'user' ? 'items-end' : m.role === 'system' ? 'items-center' : 'items-start'} gap-1`}
+                >
+                  {m.role === 'system' ? (
+                    <div className="text-[10px] text-gray-500 uppercase tracking-widest my-2 flex items-center gap-2">
+                      <div className="w-4 h-[1px] bg-gray-600"></div>
+                      {m.content}
+                      <div className="w-4 h-[1px] bg-gray-600"></div>
+                    </div>
+                  ) : (
+                    <div className={`max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed shadow-lg
+                      ${m.role === 'user' 
+                        ? 'bg-gradient-to-br from-cyan-600 to-blue-700 text-white rounded-tr-sm' 
+                        : m.isAction
+                          ? 'bg-white/5 border border-white/10 text-gray-300 rounded-tl-sm'
+                          : 'bg-[#151A26] border border-white/5 text-gray-200 rounded-tl-sm'
+                      }
+                    `}>
+                      {m.content}
+
+                      {/* Animated Action Block inside AI message */}
+                      {m.isAction && (
+                        <div className="mt-4 bg-black/40 border border-white/5 rounded-xl p-4">
+                           <div className="flex items-center justify-between mb-3">
+                             <span className="text-xs text-cyan-400 font-medium flex items-center gap-2">
+                               <Zap size={12} className="animate-pulse" /> Processing logic branch...
+                             </span>
+                             <div className="w-3 h-3 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+                           </div>
+                           <div className="h-1 w-full bg-gray-800 rounded-full overflow-hidden">
+                              <motion.div 
+                                className="h-full bg-cyan-500"
+                                initial={{ width: "0%" }}
+                                animate={{ width: "100%" }}
+                                transition={{ duration: 2.5, ease: "easeInOut" }}
+                              ></motion.div>
+                           </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {m.role !== 'system' && <span className="text-[10px] text-gray-500 px-2">{m.timestamp}</span>}
+                </motion.div>
+              ))}
+            </AnimatePresence>
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input Area */}
+          <div className="p-4 bg-gradient-to-t from-[#0A0D14] to-transparent">
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-2xl blur-md opacity-0 group-hover:opacity-100 transition duration-500"></div>
+              <div className="relative flex items-end gap-2 bg-[#1A1F2C] border border-white/10 rounded-2xl p-2 shadow-inner">
+                <button className="p-3 text-gray-400 hover:text-cyan-400 transition bg-black/20 rounded-xl">
+                  <Paperclip size={18} />
+                </button>
+                <textarea 
+                  placeholder="Describe your issue or upload evidence..." 
+                  className="flex-1 bg-transparent text-sm text-white focus:outline-none py-3 resize-none max-h-32 min-h-[44px] custom-scrollbar"
+                  rows={1}
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if(e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSend();
+                    }
+                  }}
+                />
+                <button 
+                  onClick={handleSend}
+                  className="p-3 bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.4)] hover:shadow-[0_0_25px_rgba(6,182,212,0.6)] transition"
+                >
+                  <Send size={18} className="ml-0.5" />
+                </button>
+              </div>
             </div>
-            
-            <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl p-1 pr-1.5">
-              <button className="p-2 text-gray-400 hover:text-gray-600 transition">
-                <Paperclip size={18} />
-              </button>
-              <input 
-                type="text" 
-                placeholder="Type your message here..." 
-                className="flex-1 bg-transparent text-sm focus:outline-none py-2"
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              />
-              <button 
-                onClick={handleSend}
-                className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-              >
-                <Send size={18} className="ml-0.5" />
-              </button>
+            <div className="text-center mt-3">
+              <span className="text-[9px] text-gray-500 uppercase tracking-widest">End-to-End Encrypted AI Processing</span>
             </div>
           </div>
+
         </div>
+      </main>
 
-      </div>
-
+      {/* Global CSS for scrollbars */}
+      <style dangerouslySetInnerHTML={{__html: `
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.2);
+        }
+      `}} />
     </div>
   );
 }
 
-// Missing icons mocked inline to prevent import errors if they aren't exported by lucide-react standard
-function ClockIcon(props: any) {
-  return <svg {...props} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>;
+function SidebarItem({ icon: Icon, label, active = false }: { icon: any, label: string, active?: boolean }) {
+  return (
+    <button className={`w-full flex items-center justify-center lg:justify-start gap-3 px-4 py-3 rounded-xl transition ${active ? 'bg-white/10 text-white border border-white/5 shadow-inner' : 'text-gray-400 hover:bg-white/5 hover:text-gray-200'}`}>
+      <Icon size={20} className={active ? "text-cyan-400" : ""} />
+      <span className="hidden lg:block text-sm font-medium">{label}</span>
+    </button>
+  );
 }
-function FileTextIcon(props: any) {
-  return <svg {...props} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>;
+
+function VerificationItem({ text }: { text: string }) {
+  return (
+    <div className="flex items-start gap-3 bg-black/20 p-2.5 rounded-lg border border-white/5">
+      <div className="bg-green-500/20 rounded-full p-0.5 mt-0.5"><CheckCircle2 size={12} className="text-green-500" /></div>
+      <span className="text-xs text-gray-300 leading-tight">{text}</span>
+    </div>
+  );
+}
+
+function IssueChip({ icon: Icon, label }: { icon: any, label: string }) {
+  return (
+    <button className="flex flex-col items-center justify-center gap-2 p-4 bg-white/[0.02] border border-white/10 hover:border-cyan-500/50 hover:bg-cyan-500/5 rounded-2xl transition group text-center">
+      <Icon size={24} className="text-gray-500 group-hover:text-cyan-400 transition" />
+      <span className="text-[11px] font-semibold text-gray-300 group-hover:text-white">{label}</span>
+    </button>
+  );
 }
