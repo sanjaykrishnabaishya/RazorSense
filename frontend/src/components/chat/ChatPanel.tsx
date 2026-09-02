@@ -64,15 +64,15 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
         {messages.length === 0 ? (
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-            className="flex-1 flex flex-col items-center justify-center -mt-10"
+            className="w-full flex flex-col items-center justify-center pt-8 pb-20 mt-auto mb-auto"
           >
             <motion.div 
-              animate={{ y: ["-10px", "10px"] }}
+              animate={{ y: ["-10px", "10px"], rotate: [-2, 2] }}
               transition={{ duration: 4, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
-              className="w-48 h-48 mb-6"
+              className="w-48 h-48 mb-6 shrink-0"
             >
               {/* Fallback to /robot.png if krish.png is not ready */}
-              <img src="/krish.png" alt="Krish AI" className="w-full h-full object-contain" onError={(e) => e.currentTarget.src='/robot.png'} />
+              <img src="/krish.png" alt="Krish AI" className="w-full h-full object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]" onError={(e) => e.currentTarget.src='/robot.png'} />
             </motion.div>
             
             <h2 className="text-[32px] font-[800] text-white mb-2 tracking-tight">Hi! I'm Krish 👋</h2>

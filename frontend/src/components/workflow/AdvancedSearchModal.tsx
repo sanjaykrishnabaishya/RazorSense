@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Search, ChevronRight, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
 
 export default function AdvancedSearchModal({ isOpen, onClose, onSearch }: any) {
   const [step, setStep] = useState(1);
@@ -12,6 +13,11 @@ export default function AdvancedSearchModal({ isOpen, onClose, onSearch }: any) 
   const [bankName, setBankName] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [selectedResult, setSelectedResult] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSearchClick = () => {
     // If orderId is not given, show history step, else direct search
@@ -37,9 +43,9 @@ export default function AdvancedSearchModal({ isOpen, onClose, onSearch }: any) 
     onClose();
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <motion.div 
@@ -171,6 +177,7 @@ export default function AdvancedSearchModal({ isOpen, onClose, onSearch }: any) 
           </div>
         </motion.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
