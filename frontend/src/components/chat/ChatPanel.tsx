@@ -1,172 +1,150 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Minus, Maximize2, X, Paperclip, SendHorizontal, CheckCircle2, Loader2 } from 'lucide-react';
+import React, { useRef, useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { SendHorizontal, Paperclip, Loader2, CheckCircle2, RefreshCcw, Package, PackageX, AlertTriangle, CreditCard, Search } from 'lucide-react';
 import { ChatMessage } from '../../types/support';
-import { motion } from 'framer-motion';
+import PurchaseSearch from '../workflow/PurchaseSearch';
 
-export default function ChatPanel(props: any) {
-  const { messages, setMessages, selectedPurchase } = props;
+export default function ChatPanel({ messages, setMessages }: { messages: ChatMessage[], setMessages: any }) {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Widget state (Simulated global state for the purchase widget)
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [selectedIssue, setSelectedIssue] = useState('refund');
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
-    
-    const userMsg = input;
-    setInput('');
-    
-    setMessages((prev: any) => [...prev, {
+  const sendText = (text: string) => {
+    const userMsg: ChatMessage = {
       id: Date.now().toString(),
       role: 'user',
       kind: 'text',
-      text: userMsg,
+      text: text,
       timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-    }]);
+    };
+    setMessages((prev: any) => [...prev, userMsg]);
+    setInput('');
 
-    try {
-      const res = await fetch('http://localhost:8000/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMsg, stage: 'find-purchase' }) // pass actual stage if possible
-      });
-      const data = await res.json();
-      
-      setMessages((prev: any) => [...prev, {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        kind: 'text',
-        text: data.reply,
-        timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-      }]);
+    // Simulate AI response
+    setTimeout(() => {
+      if (text.toLowerCase().includes('find') || text.toLowerCase().includes('search') || text.toLowerCase().includes('purchase')) {
+        setMessages((prev: any) => [...prev, {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          kind: 'widget_search', // custom kind for widget
+          text: 'Sure, I can help you find that. You can search below:',
+          timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+        }]);
+      } else {
+        setMessages((prev: any) => [...prev, {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          kind: 'text',
+          text: `I'm analyzing your request regarding "${text}". Could you provide an Order ID or let me search your recent transactions?`,
+          timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+        }]);
+      }
+    }, 800);
+  };
 
-      if (data.action === 'trigger_search') {
-        props.setQuery(data.search_query || 'zomato');
-        props.setIsSearching(true);
-        setTimeout(() => {
-          props.setIsSearching(false);
-          props.setResults([
-            { id: '1', merchant: 'Zomato', date: '12 Aug 2024', amount: 299, currency: 'INR', item: 'Truffle Mushroom Pasta', status: 'delivered', orderId: '#ZOM1234567890' },
-            { id: '2', merchant: 'Zomato', date: '5 Aug 2024', amount: 450, currency: 'INR', item: 'Margherita Pizza', status: 'delivered', orderId: '#ZOM9876543210' }
-          ]);
-        }, 1500);
-      }
-      
-      if (data.action === 'trigger_verify') {
-        props.setStage('verify-details');
-      }
-
-      if (data.action === 'request_upload' || data.action === 'show_resolution') {
-        props.setStage('analyse-issue');
-        if (data.action === 'request_upload') props.setSelectedIssue('product');
-      }
-    } catch (e) {
-      setMessages((prev: any) => [...prev, {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        kind: 'text',
-        text: 'Sorry, my backend is currently offline. Please ensure the FastAPI server is running.',
-        timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-      }]);
-    }
+  const handleSend = () => {
+    if (!input.trim()) return;
+    sendText(input);
   };
 
   return (
-    <div className="flex flex-col h-full bg-transparent relative">
+    <div className="flex flex-col h-full bg-transparent relative w-full h-[calc(100vh-120px)]">
       
-      {/* Header */}
-      <div className="sticky top-0 bg-transparent border-b border-white/[0.05] p-4 flex items-center justify-between z-10 backdrop-blur-md">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-hero-deep flex items-center justify-center relative shadow-sm overflow-hidden">
-             <img src="/robot.png" alt="Razor AI" className="w-[120%] h-[120%] object-contain" />
-             <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white"></div>
-          </div>
-          <div>
-            <h3 className="text-[15px] font-bold text-white leading-tight">Razor AI</h3>
-            <p className="text-[12px] text-white/60">Always here to help &bull; Powered by Razorpay</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-1 text-white/40">
-          <button className="p-1.5 hover:bg-gray-100 rounded-md transition"><Minus size={16} /></button>
-          <button className="p-1.5 hover:bg-gray-100 rounded-md transition"><Maximize2 size={14} /></button>
-          <button className="p-1.5 hover:bg-gray-100 rounded-md transition"><X size={16} /></button>
-        </div>
-      </div>
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-6">
-        {messages.map((m: ChatMessage) => {
-          const isUser = m.role === 'user';
-          const containerClass = "flex " + (isUser ? 'justify-end' : 'justify-start');
-          const innerContainerClass = "flex flex-col max-w-[78%] " + (isUser ? 'items-end' : 'items-start');
-          const bubbleClass = "p-4 text-[15px] leading-[1.45] shadow-[0_0_20px_rgba(0,0,0,0.5)] " + 
-            (isUser 
-              ? 'bg-indigo-500/20 text-white rounded-2xl rounded-tr-sm border border-indigo-500/30' 
-              : 'bg-[#030303] text-white rounded-2xl rounded-tl-sm border border-white/[0.02]');
-
-          return (
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-4 custom-scrollbar flex flex-col relative z-10">
+        
+        {messages.length === 0 ? (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+            className="flex-1 flex flex-col items-center justify-center -mt-10"
+          >
             <motion.div 
-              key={m.id} 
-              initial={{ opacity: 0, y: 10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.3, type: "spring", stiffness: 200, damping: 20 }}
-              className={containerClass}
+              animate={{ y: ["-10px", "10px"] }}
+              transition={{ duration: 4, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+              className="w-48 h-48 mb-6"
             >
-              {!isUser && (
-                 <div className="w-8 h-8 rounded-full bg-[var(--hero-deep)] flex items-center justify-center mr-3 mt-1 shrink-0 shadow-sm overflow-hidden">
-                   <img src="/robot.png" alt="Bot" className="w-[120%] h-[120%] object-contain" />
-                 </div>
-              )}
-              
-              <div className={innerContainerClass}>
-                {m.kind === 'text' && (
-                  <div className={bubbleClass}>
-                    {m.text}
-                  </div>
-                )}
-                
-                {m.kind === 'progress' && (
-                  <div className="bg-[#030303] border border-white/[0.05] rounded-2xl p-5 shadow-[0_0_20px_rgba(0,0,0,0.5)] w-full">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Loader2 size={16} className="text-primary animate-spin" />
-                      <span className="text-[14px] font-semibold text-white">Searching your transactions...</span>
-                    </div>
-                    <div className="h-1.5 bg-border-main rounded-full mb-4 overflow-hidden">
-                      <div className="h-full bg-primary w-3/4 animate-pulse rounded-full"></div>
-                    </div>
-                    <div className="space-y-2">
-                      <ProgressRow text="Checking your payments on Razorpay" done />
-                      <ProgressRow text="Matching with Merchant" done />
-                      <ProgressRow text="Fetching order details" active />
-                      <ProgressRow text="Verifying item information" />
-                    </div>
-                  </div>
-                )}
-
-                <span className="text-[11px] text-white/40 mt-1 px-1">{m.timestamp}</span>
-              </div>
-
-              {isUser && (
-                 <div className="w-8 h-8 rounded-full bg-violet-main flex items-center justify-center ml-3 mt-1 shrink-0 text-white font-bold text-[13px] shadow-sm">
-                   S
-                 </div>
-              )}
+              {/* Fallback to /robot.png if krish.png is not ready */}
+              <img src="/krish.png" alt="Krish AI" className="w-full h-full object-contain" onError={(e) => e.currentTarget.src='/robot.png'} />
             </motion.div>
-          );
-        })}
-        <div ref={messagesEndRef} />
+            
+            <h2 className="text-[32px] font-[800] text-white mb-2 tracking-tight">Hi! I'm Krish 👋</h2>
+            <p className="text-white/50 mb-10 text-[16px]">Tell me what happened, and I'll look into it for you.</p>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 w-full max-w-3xl px-2">
+              <IssuePrompt icon={RefreshCcw} label="I want a refund" onClick={() => sendText("I want a refund for a recent purchase")} color="text-emerald-400" />
+              <IssuePrompt icon={Package} label="I need a replacement" onClick={() => sendText("I need a replacement")} color="text-blue-400" />
+              <IssuePrompt icon={PackageX} label="Received wrong item" onClick={() => sendText("I received the wrong item")} color="text-purple-400" />
+              <IssuePrompt icon={AlertTriangle} label="Product was damaged" onClick={() => sendText("My product was damaged")} color="text-orange-400" />
+              <IssuePrompt icon={CreditCard} label="Payment issue" onClick={() => sendText("I have a payment issue")} color="text-red-400" />
+              <IssuePrompt icon={Search} label="Find a purchase" onClick={() => sendText("Can you help me find a purchase?")} color="text-cyan-400" />
+            </div>
+          </motion.div>
+        ) : (
+          <div className="space-y-6 pb-20">
+            {messages.map((m: any) => {
+              const isUser = m.role === 'user';
+              return (
+                <motion.div 
+                  key={m.id} 
+                  initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
+                >
+                  {!isUser && (
+                     <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center mr-3 mt-1 shrink-0 overflow-hidden border border-white/10">
+                       <img src="/krish.png" alt="Bot" className="w-[120%] h-[120%] object-contain" onError={(e) => e.currentTarget.src='/robot.png'} />
+                     </div>
+                  )}
+                  
+                  <div className={`flex flex-col max-w-[85%] ${isUser ? 'items-end' : 'items-start'}`}>
+                    {m.kind === 'text' && (
+                      <div className={`p-4 text-[15px] leading-[1.5] shadow-lg ${isUser ? 'bg-white text-black rounded-2xl rounded-tr-sm font-medium' : 'bg-[#111] text-white rounded-2xl rounded-tl-sm border border-white/[0.05]'}`}>
+                        {m.text}
+                      </div>
+                    )}
+
+                    {m.kind === 'widget_search' && (
+                      <div className="flex flex-col gap-3 w-full">
+                        <div className="p-4 text-[15px] leading-[1.5] shadow-lg bg-[#111] text-white rounded-2xl rounded-tl-sm border border-white/[0.05] self-start max-w-fit">
+                          {m.text}
+                        </div>
+                        <div className="w-[800px] max-w-full bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 shadow-2xl mt-2">
+                          <PurchaseSearch 
+                            query={query} setQuery={setQuery}
+                            results={results} setResults={setResults}
+                            selectedIssue={selectedIssue} setSelectedIssue={setSelectedIssue}
+                            setStage={() => {}} // dummy
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    <span className="text-[11px] text-white/30 mt-1.5 px-1">{m.timestamp}</span>
+                  </div>
+                </motion.div>
+              );
+            })}
+            <div ref={messagesEndRef} />
+          </div>
+        )}
       </div>
 
       {/* Composer */}
-      <div className="p-4 border-t border-white/[0.05] bg-transparent sticky bottom-0 backdrop-blur-md">
-        <div className="relative flex items-end border border-white/[0.05] rounded-xl bg-[#030303]/60 shadow-[0_0_20px_rgba(0,0,0,0.5)] focus-within:border-white/20 transition p-1">
-          <button className="p-3 text-white/60 hover:text-white transition rounded-lg">
+      <div className="p-4 bg-transparent sticky bottom-0 z-20">
+        <div className="relative flex items-end border border-white/[0.1] rounded-2xl bg-[#0a0a0a]/80 backdrop-blur-xl shadow-[0_0_30px_rgba(0,0,0,0.8)] focus-within:border-white/30 transition-colors p-1.5 mx-auto max-w-3xl">
+          <button className="p-3 text-white/40 hover:text-white transition rounded-xl">
             <Paperclip size={20} />
           </button>
           <textarea 
-            placeholder="Type your message here..."
+            placeholder="Message Krish..."
             className="flex-1 max-h-32 min-h-[44px] py-3 text-[15px] bg-transparent focus:outline-none resize-none custom-scrollbar text-white placeholder-white/30"
             rows={1}
             value={input}
@@ -181,32 +159,27 @@ export default function ChatPanel(props: any) {
           <button 
             onClick={handleSend}
             disabled={!input.trim()}
-            className="p-3 m-1 bg-white hover:bg-white/90 text-black rounded-lg disabled:opacity-50 transition"
+            className="p-3 m-1 bg-white hover:bg-gray-200 text-black rounded-xl disabled:opacity-30 transition-all shadow-sm"
           >
             <SendHorizontal size={18} />
           </button>
         </div>
+        <p className="text-center text-white/30 text-[11px] mt-3">RazorSense AI can make mistakes. Please verify important information.</p>
       </div>
     </div>
   );
 }
 
-function ProgressRow({ text, done, active }: any) {
-  const textClass = done || active ? 'text-white' : 'text-white/40';
+function IssuePrompt({ icon: Icon, label, onClick, color }: any) {
   return (
-    <div className="flex items-center gap-2">
-      {done ? <CheckCircle2 size={16} className="text-mint-dark" /> 
-       : active ? <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-       : <div className="w-4 h-4 border-2 border-white/[0.05] rounded-full"></div>}
-      <span className={"text-[13px] " + textClass}>{text}</span>
-    </div>
-  );
-}
-
-function QuickAction({ label, color }: any) {
-  return (
-    <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#030303] border border-white/[0.05] rounded-full text-[13px] font-semibold text-white/60 hover:bg-[#111] hover:border-primary transition whitespace-nowrap">
-      <span className={color}>&bull;</span> {label}
-    </button>
+    <motion.button 
+      whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.08)' }}
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+      className="flex flex-col items-center justify-center p-5 rounded-2xl border border-white/[0.05] bg-[#111]/50 backdrop-blur-sm transition-colors text-center h-full hover:border-white/20"
+    >
+      <Icon size={24} className={`mb-3 ${color}`} />
+      <span className="text-[13px] font-semibold text-white/90">{label}</span>
+    </motion.button>
   );
 }
