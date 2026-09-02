@@ -7,7 +7,15 @@ export default function RazorSensePortal() {
   const [searchQuery, setSearchQuery] = useState('');
   const [chatInput, setChatInput] = useState('');
   
-  const [messages, setMessages] = useState([
+  type Message = {
+    role: string;
+    time: string;
+    content: string;
+    isAction?: boolean;
+    isLoading?: boolean;
+  };
+
+  const [messages, setMessages] = useState<Message[]>([
     { role: 'ai', time: '10:24 AM', content: 'Hi! I\'m Razor, your AI support assistant.\nI can help you with refunds, replacements and any payment issue across all merchants.\n\nJust tell me what happened or share any details like order ID, merchant name, or what you bought.' },
     { role: 'user', time: '10:25 AM', content: 'I want a refund. I ordered wireless earphones from Zomato but received a different product.' },
     { role: 'ai', time: '10:25 AM', isAction: true, content: 'Got it! Let me find your purchase.\nI\'ll check your Razorpay transactions and match it with Zomato.' }
@@ -22,10 +30,48 @@ export default function RazorSensePortal() {
     { id: 'other', icon: MoreHorizontal, label: 'Other', desc: 'Something else' }
   ];
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!chatInput.trim()) return;
-    setMessages(prev => [...prev, { role: 'user', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), content: chatInput }]);
+    
+    const userMsg = chatInput;
+    setMessages(prev => [...prev, { role: 'user', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), content: userMsg }]);
     setChatInput('');
+    
+    // Add loading message
+    const loadingIdx = messages.length + 1;
+    setMessages(prev => [...prev, { role: 'ai', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), isAction: true, content: 'Analyzing your request...', isLoading: true }]);
+
+    try {
+      const response = await fetch('http://localhost:8000/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order_id: searchQuery || "UNKNOWN",
+          message: userMsg,
+          chat_history: messages.map(m => ({ role: m.role, content: m.content })).filter(m => m.role !== 'system' && !m.isLoading)
+        })
+      });
+      
+      const data = await response.json();
+      
+      setMessages(prev => {
+        const newArr = [...prev];
+        newArr[loadingIdx] = { 
+          role: 'ai', 
+          time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
+          content: data.status === 'decided' ? `Final Decision: ${data.decision}` : data.reply,
+          isAction: data.status === 'decided'
+        };
+        return newArr;
+      });
+      
+    } catch (error) {
+      setMessages(prev => {
+        const newArr = [...prev];
+        newArr[loadingIdx] = { role: 'ai', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), content: 'Error connecting to RazorSense AI.' };
+        return newArr;
+      });
+    }
   };
 
   return (
@@ -317,36 +363,6 @@ export default function RazorSensePortal() {
 
       </div>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 py-6 px-8 flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-gray-500 max-w-7xl mx-auto w-full">
-        <div className="flex items-center gap-2 text-blue-600 font-bold text-xl tracking-tight">
-          <div className="w-4 h-4 bg-blue-600 rotate-45 rounded-sm"></div> Razorpay
-        </div>
-        
-        <div className="flex flex-wrap justify-center gap-8 md:gap-12">
-          <div className="flex items-start gap-3">
-            <Shield className="text-gray-400 shrink-0" size={24}/>
-            <div>
-              <p className="font-bold text-gray-700">Secure & Private</p>
-              <p className="text-xs">Your data is safe with bank-grade security</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <Globe className="text-gray-400 shrink-0" size={24}/>
-            <div>
-              <p className="font-bold text-gray-700">Works with all merchants</p>
-              <p className="text-xs">From Zomato to eBay to any business</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <Zap className="text-gray-400 shrink-0" size={24}/>
-            <div>
-              <p className="font-bold text-gray-700">Trusted by millions</p>
-              <p className="text-xs">Powering payments for businesses across the world</p>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
