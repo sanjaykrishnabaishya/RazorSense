@@ -1,29 +1,29 @@
 @import "tailwindcss";
 
 @theme {
-  --color-page-bg: #f5f7fb;
-  --color-surface: #ffffff;
-  --color-hero: #07152f;
-  --color-hero-deep: #041025;
-  --color-text-main: #0b1738;
-  --color-text-secondary: #68748a;
-  --color-text-muted: #98a3b6;
-  --color-border-main: #dce3ee;
-  --color-border-soft: #e9edf4;
-  --color-primary: #1746e8;
-  --color-primary-dark: #10286d;
-  --color-primary-soft: #edf3ff;
-  --color-violet-main: #753ceb;
-  --color-violet-soft: #f1edff;
-  --color-cyan-main: #42e8ff;
-  --color-mint: #26d5b1;
-  --color-mint-dark: #12aa88;
-  --color-mint-soft: #ecfbf7;
-  --color-warning: #eaa824;
-  --color-warning-soft: #fff8e8;
-  --color-danger: #df3f59;
-  --shadow-custom-lg: 0 12px 36px rgba(10, 31, 68, 0.12);
-  --shadow-custom-sm: 0 4px 14px rgba(10, 31, 68, 0.08);
+  --color-page-bg: #030303;
+  --color-surface: rgba(10, 10, 10, 0.6);
+  --color-hero: #030303;
+  --color-hero-deep: #050505;
+  --color-text-main: #ffffff;
+  --color-text-secondary: rgba(255, 255, 255, 0.7);
+  --color-text-muted: rgba(255, 255, 255, 0.4);
+  --color-border-main: rgba(255, 255, 255, 0.1);
+  --color-border-soft: rgba(255, 255, 255, 0.05);
+  --color-primary: #3b82f6;
+  --color-primary-dark: #2563eb;
+  --color-primary-soft: rgba(59, 130, 246, 0.1);
+  --color-violet-main: #8b5cf6;
+  --color-violet-soft: rgba(139, 92, 246, 0.1);
+  --color-cyan-main: #06b6d4;
+  --color-mint: #10b981;
+  --color-mint-dark: #059669;
+  --color-mint-soft: rgba(16, 185, 129, 0.1);
+  --color-warning: #f59e0b;
+  --color-warning-soft: rgba(245, 158, 11, 0.1);
+  --color-danger: #ef4444;
+  --shadow-custom-lg: 0 20px 40px rgba(0, 0, 0, 0.5);
+  --shadow-custom-sm: 0 4px 14px rgba(0, 0, 0, 0.3);
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 

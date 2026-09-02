@@ -4,7 +4,7 @@ import { ShieldCheck, Check, ArrowRight } from 'lucide-react';
 export default function PurchaseVerification({ selectedPurchase, setStage }: any) {
   if (!selectedPurchase) return null;
 
-  const amountStr = (selectedPurchase.currency === 'INR' ? 'Ã¢â€šÂ¹' : '$') + selectedPurchase.amount;
+  const amountStr = (selectedPurchase.currency === 'INR' ? 'ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¹' : '$') + selectedPurchase.amount;
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -14,11 +14,11 @@ export default function PurchaseVerification({ selectedPurchase, setStage }: any
         </div>
         <div>
           <h2 className="text-[22px] font-[800] tracking-tight">Purchase Verified</h2>
-          <p className="text-[15px] text-text-secondary">We found your transaction and verified it cryptographically.</p>
+          <p className="text-[15px] text-white/60">We found your transaction and verified it cryptographically.</p>
         </div>
       </div>
 
-      <div className="bg-white border border-border-main rounded-xl p-6 shadow-custom-sm mt-2">
+      <div className="bg-[#111] border border-white/[0.05] rounded-xl p-6 shadow-[0_0_20px_rgba(0,0,0,0.5)] mt-2">
         <div className="grid grid-cols-2 gap-y-6 gap-x-4">
           <Detail label="Merchant" value={selectedPurchase.merchant} verified />
           <Detail label="Item" value={selectedPurchase.item} />
@@ -42,14 +42,14 @@ export default function PurchaseVerification({ selectedPurchase, setStage }: any
 function Detail({ label, value, mask, verified }: any) {
   let displayValue = value;
   if (mask && value.startsWith('pay_')) {
-    displayValue = 'pay_Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢' + value.slice(-4);
+    displayValue = 'pay_ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢' + value.slice(-4);
   }
 
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-[12px] text-text-muted font-medium uppercase tracking-wider">{label}</span>
+      <span className="text-[12px] text-white/40 font-medium uppercase tracking-wider">{label}</span>
       <div className="flex items-center gap-2">
-        <span className="text-[15px] font-semibold text-text-main">{displayValue}</span>
+        <span className="text-[15px] font-semibold text-white">{displayValue}</span>
         {verified && <Check size={14} className="text-mint-dark" />}
       </div>
     </div>

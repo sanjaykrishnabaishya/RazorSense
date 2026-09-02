@@ -35,7 +35,7 @@ export default function HeroSection() {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#B760FF] to-[#42E8FF]">we'll handle the rest.</span>
           </h1>
           
-          <p className="text-[17px] text-text-muted max-w-[500px] mt-2 leading-relaxed">
+          <p className="text-[17px] text-white/40 max-w-[500px] mt-2 leading-relaxed">
             RazorSense AI will find your purchase, understand the issue using Vision AI (detecting wear & tear vs. deepfakes), verify details with the merchant, and execute a resolution.
           </p>
 
@@ -65,7 +65,7 @@ function Feature({ icon: Icon, text }: { icon: any, text: string }) {
   return (
     <div className="flex items-start gap-2 max-w-[140px]">
       <Icon size={20} className="text-cyan-main shrink-0 mt-0.5" />
-      <span className="text-[13px] text-text-muted leading-tight">{text}</span>
+      <span className="text-[13px] text-white/40 leading-tight">{text}</span>
     </div>
   );
 }

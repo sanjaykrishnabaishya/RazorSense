@@ -34,7 +34,7 @@ export default function SupportWorkspace(props: Props) {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-        className="w-full lg:w-[64%] bg-surface rounded-[16px] shadow-custom-lg border border-border-main overflow-y-auto custom-scrollbar flex flex-col p-8"
+        className="w-full lg:w-[64%] bg-[#0a0a0a]/80 backdrop-blur-2xl rounded-[16px] shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/[0.05] overflow-y-auto custom-scrollbar flex flex-col p-8"
       >
         <ProgressStepper stage={props.stage} />
         
@@ -65,7 +65,7 @@ export default function SupportWorkspace(props: Props) {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-        className="w-full lg:w-[36%] bg-surface rounded-[16px] shadow-custom-lg border border-border-main overflow-hidden flex flex-col h-full"
+        className="w-full lg:w-[36%] bg-[#0a0a0a]/80 backdrop-blur-2xl rounded-[16px] shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/[0.05] overflow-hidden flex flex-col h-full"
       >
         <ChatPanel {...props} />
       </motion.div>

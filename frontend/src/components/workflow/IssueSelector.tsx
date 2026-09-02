@@ -33,7 +33,7 @@ export default function IssueSelector({ selectedIssue, setSelectedIssue, setStag
         </div>
         <div>
           <h2 className="text-[22px] font-[800] tracking-tight">What's the issue?</h2>
-          <p className="text-[15px] text-text-secondary">Select the option that best describes your issue.</p>
+          <p className="text-[15px] text-white/60">Select the option that best describes your issue.</p>
         </div>
       </div>
 
@@ -42,7 +42,7 @@ export default function IssueSelector({ selectedIssue, setSelectedIssue, setStag
           const isActive = selectedIssue === issue.id;
           const containerClass = isActive 
             ? 'border-mint bg-mint-soft shadow-[inset_0_0_0_1px_var(--color-mint)]' 
-            : 'border-border-main bg-white hover:border-primary ' + issue.bgHover;
+            : 'border-white/[0.05] bg-[#111] hover:border-primary ' + issue.bgHover;
             
           const iconColorClass = isActive ? 'text-mint-dark' : issue.color;
 
@@ -53,8 +53,8 @@ export default function IssueSelector({ selectedIssue, setSelectedIssue, setStag
               className={"flex flex-col items-center text-center p-4 rounded-[10px] border transition-all duration-200 " + containerClass}
             >
               <issue.icon size={28} className={"mb-3 " + iconColorClass} />
-              <span className="text-[14px] font-bold text-text-main leading-tight">{issue.label}</span>
-              <span className="text-[12px] text-text-secondary mt-1 leading-tight">{issue.desc}</span>
+              <span className="text-[14px] font-bold text-white leading-tight">{issue.label}</span>
+              <span className="text-[12px] text-white/60 mt-1 leading-tight">{issue.desc}</span>
             </button>
           )
         })}
@@ -67,7 +67,7 @@ export default function IssueSelector({ selectedIssue, setSelectedIssue, setStag
         >
           Continue <ArrowRight size={18} />
         </button>
-        <span className="text-[13px] text-text-muted">Upload evidence in chat first to continue</span>
+        <span className="text-[13px] text-white/40">Upload evidence in chat first to continue</span>
       </div>
     </div>
   );

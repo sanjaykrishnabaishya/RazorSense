@@ -18,17 +18,17 @@ export default function PurchaseResults({ results, selectedPurchase, setSelected
 
   return (
     <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <h3 className="text-[14px] font-semibold text-text-secondary mb-3">Select the matching transaction</h3>
+      <h3 className="text-[14px] font-semibold text-white/60 mb-3">Select the matching transaction</h3>
       <div className="flex flex-col gap-2">
         {results.map((p: Purchase, idx: number) => {
           const isSelected = selectedPurchase?.id === p.id;
           const containerClass = isSelected
             ? 'border-primary bg-primary-soft'
-            : 'border-border-soft bg-white hover:border-border-main';
+            : 'border-white/[0.02] bg-[#111] hover:border-white/[0.05]';
             
           const indicatorClass = isSelected
             ? 'border-primary bg-primary'
-            : 'border-border-main';
+            : 'border-white/[0.05]';
 
           return (
             <div 
@@ -38,7 +38,7 @@ export default function PurchaseResults({ results, selectedPurchase, setSelected
             >
               {idx === 0 && <div className="absolute top-0 right-0 bg-mint text-white text-[10px] font-bold px-2 py-0.5 rounded-bl-lg">BEST MATCH</div>}
               
-              <div className="w-10 h-10 rounded-lg bg-white border border-gray-100 flex items-center justify-center mr-4 p-1 overflow-hidden shrink-0">
+              <div className="w-10 h-10 rounded-lg bg-[#111] border border-gray-100 flex items-center justify-center mr-4 p-1 overflow-hidden shrink-0">
                 <img src={getLogo(p.merchant)} alt={p.merchant} className="w-full h-full object-contain" onError={(e) => {
                   e.currentTarget.style.display = 'none';
                   e.currentTarget.parentElement!.innerHTML = '<span class="font-bold text-gray-500">' + p.merchant.charAt(0) + '</span>';
@@ -46,16 +46,16 @@ export default function PurchaseResults({ results, selectedPurchase, setSelected
               </div>
               <div className="flex-1">
                 <p className="font-semibold text-[15px] leading-tight">{p.item}</p>
-                <p className="text-[13px] text-text-secondary">{p.merchant} &bull; Order {p.orderId}</p>
+                <p className="text-[13px] text-white/60">{p.merchant} &bull; Order {p.orderId}</p>
               </div>
               <div className="text-right">
-                <p className="font-semibold text-[15px]">{p.currency === 'INR' ? 'Ã¢â€šÂ¹' : '$'}{p.amount}</p>
-                <p className="text-[12px] text-text-muted">{p.date}</p>
+                <p className="font-semibold text-[15px]">{p.currency === 'INR' ? 'ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¹' : '$'}{p.amount}</p>
+                <p className="text-[12px] text-white/40">{p.date}</p>
               </div>
               
               <div className="ml-4 mr-2">
                 <div className={"w-5 h-5 rounded-full border flex items-center justify-center " + indicatorClass}>
-                  {isSelected && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                  {isSelected && <div className="w-2 h-2 bg-[#111] rounded-full"></div>}
                 </div>
               </div>
             </div>

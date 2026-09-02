@@ -23,7 +23,7 @@ export default function MerchantOrbit() {
         <motion.div 
           animate={{ y: ["-10px", "10px"] }}
           transition={{ duration: 3, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
-          className="relative z-20 w-[220px] h-[220px] rounded-full bg-hero-deep border border-border-main/20 flex items-center justify-center shadow-custom-lg overflow-hidden"
+          className="relative z-20 w-[220px] h-[220px] rounded-full bg-hero-deep border border-white/[0.05]/20 flex items-center justify-center shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden"
         >
           <img src="/robot.png" alt="AI Bot" className="w-[110%] h-[110%] object-contain mt-4" />
         </motion.div>
@@ -33,10 +33,10 @@ export default function MerchantOrbit() {
           initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
           animate={{ opacity: 1, scale: 1, rotate: -2 }}
           transition={{ duration: 0.5, delay: 0.8, type: "spring" }}
-          className="absolute -top-16 -left-10 bg-white rounded-2xl rounded-br-sm px-4 py-3 shadow-lg z-30"
+          className="absolute -top-16 -left-10 bg-[#111] rounded-2xl rounded-br-sm px-4 py-3 shadow-lg z-30"
         >
-          <p className="text-[13px] font-semibold text-primary-dark">Hi! I’m Razor</p>
-          <p className="text-[11px] text-text-secondary leading-tight max-w-[140px] mt-0.5">I can help you with refunds, replacements and any payment issue across all merchants.</p>
+          <p className="text-[13px] font-semibold text-white">Hi! Iâ€™m Razor</p>
+          <p className="text-[11px] text-white/60 leading-tight max-w-[140px] mt-0.5">I can help you with refunds, replacements and any payment issue across all merchants.</p>
           {/* Handwritten Annotation */}
           <div className="absolute -right-20 top-14 text-white text-[12px] rotate-6 opacity-80 flex flex-col items-start font-mono whitespace-nowrap drop-shadow-md">
             <span>One chat.</span>
@@ -69,7 +69,7 @@ function OrbitalNode({ logo, name, className, delay }: { logo: string, name: str
         scale: { duration: 0.5, delay, type: "spring" },
         y: { duration: 2.5 + delay, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay } 
       }}
-      className={`absolute ${className} w-12 h-12 bg-white rounded-xl shadow-custom-sm border border-border-main p-2.5 flex items-center justify-center hover:scale-110 transition-transform`}
+      className={`absolute ${className} w-12 h-12 bg-[#111] rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] border border-white/[0.05] p-2.5 flex items-center justify-center hover:scale-110 transition-transform`}
     >
       <img src={logo} alt={name} className="w-full h-full object-contain" onError={(e) => e.currentTarget.style.display = 'none'} />
     </motion.div>

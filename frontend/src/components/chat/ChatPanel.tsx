@@ -74,21 +74,21 @@ export default function ChatPanel(props: any) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white relative">
+    <div className="flex flex-col h-full bg-[#111] relative">
       
       {/* Header */}
-      <div className="sticky top-0 bg-white border-b border-border-main p-4 flex items-center justify-between z-10">
+      <div className="sticky top-0 bg-[#111] border-b border-white/[0.05] p-4 flex items-center justify-between z-10">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-hero-deep flex items-center justify-center relative shadow-sm overflow-hidden">
              <img src="/robot.png" alt="Razor AI" className="w-[120%] h-[120%] object-contain" />
              <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white"></div>
           </div>
           <div>
-            <h3 className="text-[15px] font-bold text-text-main leading-tight">Razor AI</h3>
-            <p className="text-[12px] text-text-secondary">Always here to help &bull; Powered by Razorpay</p>
+            <h3 className="text-[15px] font-bold text-white leading-tight">Razor AI</h3>
+            <p className="text-[12px] text-white/60">Always here to help &bull; Powered by Razorpay</p>
           </div>
         </div>
-        <div className="flex items-center gap-1 text-text-muted">
+        <div className="flex items-center gap-1 text-white/40">
           <button className="p-1.5 hover:bg-gray-100 rounded-md transition"><Minus size={16} /></button>
           <button className="p-1.5 hover:bg-gray-100 rounded-md transition"><Maximize2 size={14} /></button>
           <button className="p-1.5 hover:bg-gray-100 rounded-md transition"><X size={16} /></button>
@@ -101,10 +101,10 @@ export default function ChatPanel(props: any) {
           const isUser = m.role === 'user';
           const containerClass = "flex " + (isUser ? 'justify-end' : 'justify-start');
           const innerContainerClass = "flex flex-col max-w-[78%] " + (isUser ? 'items-end' : 'items-start');
-          const bubbleClass = "p-4 text-[15px] leading-[1.45] shadow-custom-sm " + 
+          const bubbleClass = "p-4 text-[15px] leading-[1.45] shadow-[0_0_20px_rgba(0,0,0,0.5)] " + 
             (isUser 
-              ? 'bg-[#F1EDFF] text-text-main rounded-2xl rounded-tr-sm border border-violet-main/10' 
-              : 'bg-[#F5F7FB] text-text-main rounded-2xl rounded-tl-sm border border-border-soft');
+              ? 'bg-indigo-500/20 text-white rounded-2xl rounded-tr-sm border border-indigo-500/30' 
+              : 'bg-[#030303] text-white rounded-2xl rounded-tl-sm border border-white/[0.02]');
 
           return (
             <motion.div 
@@ -128,10 +128,10 @@ export default function ChatPanel(props: any) {
                 )}
                 
                 {m.kind === 'progress' && (
-                  <div className="bg-[#F5F7FB] border border-border-main rounded-2xl p-5 shadow-custom-sm w-full">
+                  <div className="bg-[#030303] border border-white/[0.05] rounded-2xl p-5 shadow-[0_0_20px_rgba(0,0,0,0.5)] w-full">
                     <div className="flex items-center gap-2 mb-3">
                       <Loader2 size={16} className="text-primary animate-spin" />
-                      <span className="text-[14px] font-semibold text-text-main">Searching your transactions...</span>
+                      <span className="text-[14px] font-semibold text-white">Searching your transactions...</span>
                     </div>
                     <div className="h-1.5 bg-border-main rounded-full mb-4 overflow-hidden">
                       <div className="h-full bg-primary w-3/4 animate-pulse rounded-full"></div>
@@ -145,7 +145,7 @@ export default function ChatPanel(props: any) {
                   </div>
                 )}
 
-                <span className="text-[11px] text-text-muted mt-1 px-1">{m.timestamp}</span>
+                <span className="text-[11px] text-white/40 mt-1 px-1">{m.timestamp}</span>
               </div>
 
               {isUser && (
@@ -160,14 +160,14 @@ export default function ChatPanel(props: any) {
       </div>
 
       {/* Composer */}
-      <div className="p-4 border-t border-border-main bg-white sticky bottom-0">
+      <div className="p-4 border-t border-white/[0.05] bg-[#111] sticky bottom-0">
         <div className="flex gap-2 mb-3 overflow-x-auto custom-scrollbar pb-1">
            <QuickAction text="RefreshCcw" label="Refund" color="text-mint-dark" />
            <QuickAction text="Package" label="Replacement" color="text-violet-main" />
            <QuickAction text="PackageX" label="Wrong item" color="text-warning" />
         </div>
-        <div className="relative flex items-end border border-border-main rounded-xl bg-white shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition p-1">
-          <button className="p-3 text-text-secondary hover:text-primary transition rounded-lg">
+        <div className="relative flex items-end border border-white/[0.05] rounded-xl bg-[#111] shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition p-1">
+          <button className="p-3 text-white/60 hover:text-primary transition rounded-lg">
             <Paperclip size={20} />
           </button>
           <textarea 
@@ -197,12 +197,12 @@ export default function ChatPanel(props: any) {
 }
 
 function ProgressRow({ text, done, active }: any) {
-  const textClass = done || active ? 'text-text-main' : 'text-text-muted';
+  const textClass = done || active ? 'text-white' : 'text-white/40';
   return (
     <div className="flex items-center gap-2">
       {done ? <CheckCircle2 size={16} className="text-mint-dark" /> 
        : active ? <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-       : <div className="w-4 h-4 border-2 border-border-main rounded-full"></div>}
+       : <div className="w-4 h-4 border-2 border-white/[0.05] rounded-full"></div>}
       <span className={"text-[13px] " + textClass}>{text}</span>
     </div>
   );
@@ -210,7 +210,7 @@ function ProgressRow({ text, done, active }: any) {
 
 function QuickAction({ label, color }: any) {
   return (
-    <button className="flex items-center gap-1.5 px-3 py-1.5 bg-page-bg border border-border-main rounded-full text-[13px] font-semibold text-text-secondary hover:bg-white hover:border-primary transition whitespace-nowrap">
+    <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#030303] border border-white/[0.05] rounded-full text-[13px] font-semibold text-white/60 hover:bg-[#111] hover:border-primary transition whitespace-nowrap">
       <span className={color}>&bull;</span> {label}
     </button>
   );
