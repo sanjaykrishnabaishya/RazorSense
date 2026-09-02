@@ -34,11 +34,9 @@ export default function SupportWorkspace(props: Props) {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-        className="w-full lg:w-[64%] bg-[#0a0a0a]/80 backdrop-blur-2xl rounded-[16px] shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/[0.05] overflow-y-auto custom-scrollbar flex flex-col p-8"
+        className="w-full lg:w-[64%] overflow-y-auto custom-scrollbar flex flex-col pt-8 pr-4"
       >
-        <ProgressStepper stage={props.stage} />
-        
-        <div className="mt-8 flex-1">
+        <div className="flex-1">
           {props.stage === 'find-purchase' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
               <PurchaseSearch {...props} />

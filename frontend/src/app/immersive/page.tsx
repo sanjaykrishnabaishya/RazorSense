@@ -17,7 +17,7 @@ export default function ImmersivePage() {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-[#030303] text-white font-sans selection:bg-white/30 overflow-hidden flex flex-col">
+    <div className="relative min-h-screen bg-gradient-to-b from-blue-950/40 via-[#030303] to-[#030303] text-white font-sans selection:bg-white/30 overflow-hidden flex flex-col">
       
       {/* Dynamic Glowing Mouse Follower */}
       <motion.div 
@@ -30,12 +30,12 @@ export default function ImmersivePage() {
       />
       
       {/* Navigation */}
-      <nav className="fixed top-0 w-full p-6 px-10 flex justify-between items-center z-50 backdrop-blur-xl border-b border-white/[0.04] bg-[#030303]/50">
+      <nav className="fixed top-0 w-full p-6 px-10 flex justify-between items-center z-50 bg-transparent">
         <div className="text-xl font-bold tracking-tighter flex items-center gap-2">
           <div className="w-8 h-8 bg-white text-black rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.5)]">
             <Sparkles size={16} />
           </div>
-          RazorSense<span className="text-white/40">.AI</span>
+          RazorSense
         </div>
       </nav>
 

@@ -31,12 +31,16 @@ export default function MerchantOrbit() {
         {/* Speech Bubble */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
-          animate={{ opacity: 1, scale: 1, rotate: -2 }}
-          transition={{ duration: 0.5, delay: 0.8, type: "spring" }}
-          className="absolute -top-24 -left-20 bg-[#111] border border-white/10 rounded-2xl rounded-br-sm px-5 py-4 shadow-[0_0_30px_rgba(0,0,0,0.8)] z-50 min-w-[200px]"
+          animate={{ opacity: 1, scale: 1, rotate: -2, y: ["-5px", "5px"] }}
+          transition={{ 
+            opacity: { duration: 0.5, delay: 0.8 },
+            scale: { duration: 0.5, delay: 0.8, type: "spring" },
+            y: { duration: 2.5, repeat: Infinity, repeatType: "reverse", ease: "easeInOut", delay: 1 }
+          }}
+          className="absolute top-0 -left-10 bg-[#111] border border-white/10 rounded-2xl rounded-br-sm px-5 py-4 shadow-[0_0_30px_rgba(0,0,0,0.8)] z-50 w-[240px]"
         >
-          <p className="text-[14px] font-semibold text-white">Hi! I’m Krish 👋</p>
-          <p className="text-[12px] text-white/60 leading-tight mt-1">I’m here to help you sort things out. Tell me what happened, and I’ll look into it for you.</p>
+          <p className="text-[14px] font-semibold text-white mb-1">Hi! I'm Krish 👋</p>
+          <p className="text-[12px] text-white/60 leading-snug">I'm here to help you sort things out. Tell me what happened, and I'll look into it for you.</p>
         </motion.div>
 
         {/* Orbiting Elements */}

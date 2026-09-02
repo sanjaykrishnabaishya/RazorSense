@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 export default function HeroSection() {
   return (
-    <section className="relative w-full h-[450px] bg-hero overflow-hidden">
+    <section className="relative w-full h-[450px] bg-transparent overflow-hidden">
       {/* Background Gradients */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.8 }}

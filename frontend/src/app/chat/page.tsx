@@ -17,7 +17,7 @@ export default function RazorSenseApp() {
   // Synchronized state handlers will go here
   
   return (
-    <div className="min-h-screen bg-[#030303] flex flex-col font-sans selection:bg-cyan-500/30">
+    <div className="min-h-screen bg-gradient-to-b from-blue-950/60 via-[#030303] to-[#030303] flex flex-col font-sans selection:bg-cyan-500/30">
       <HeroSection />
       
       {/* Overlapping Main Workspace */}

@@ -40,12 +40,14 @@ export default function PurchaseSearch(props: any) {
             onChange={(e) => props.setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           />
-          <button 
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={handleSearch}
             className="bg-white hover:bg-gray-200 text-black px-6 font-semibold flex items-center gap-2 transition-colors border-l border-white/10"
           >
             Find My Purchase <ArrowRight size={16} />
-          </button>
+          </motion.button>
         </div>
         <button className="text-blue-400 text-[13px] font-medium mt-3 flex items-center gap-1 hover:text-blue-300 transition-colors">
           Can't find the details? Try advanced search <ChevronDown size={14} />
@@ -85,10 +87,10 @@ export default function PurchaseSearch(props: any) {
             className="absolute top-10 right-4 w-full bg-[#111] border border-white/[0.08] rounded-xl p-4 shadow-[0_10px_30px_rgba(0,0,0,0.5)] opacity-40 scale-90"
           >
             <div className="flex gap-3 items-center">
-              <img src="/logos/ebay.svg" className="w-8 h-8 bg-white p-1 rounded-md" />
+              <img src="/logos/nike.svg" className="w-8 h-8 bg-white p-1 rounded-md" />
               <div>
-                <p className="text-white text-[12px]">Order #EB12345</p>
-                <p className="text-white/40 text-[10px]">$45 • 1 Aug 2024</p>
+                <p className="text-white text-[12px]">Order #NK99112</p>
+                <p className="text-white/40 text-[10px]">$120 • 28 Jul 2024</p>
               </div>
             </div>
           </motion.div>
@@ -98,10 +100,10 @@ export default function PurchaseSearch(props: any) {
             className="absolute top-5 right-2 w-full bg-[#111] border border-white/[0.08] rounded-xl p-4 shadow-[0_10px_30px_rgba(0,0,0,0.5)] opacity-70 scale-95"
           >
             <div className="flex gap-3 items-center">
-              <img src="/logos/amazon.svg" className="w-8 h-8 bg-white p-1 rounded-md" />
+              <img src="/logos/ebay.svg" className="w-8 h-8 bg-white p-1 rounded-md" />
               <div>
-                <p className="text-white text-[12px]">Order #AMZ884512</p>
-                <p className="text-white/40 text-[10px]">₹1,499 • 5 Aug 2024</p>
+                <p className="text-white text-[12px]">Order #EB12345</p>
+                <p className="text-white/40 text-[10px]">$45 • 1 Aug 2024</p>
               </div>
             </div>
           </motion.div>
@@ -111,11 +113,11 @@ export default function PurchaseSearch(props: any) {
             className="absolute top-0 right-0 w-full bg-[#111] border border-white/[0.1] rounded-xl p-4 shadow-[0_20px_40px_rgba(0,0,0,0.8)]"
           >
             <div className="flex gap-3 items-center">
-              <img src="/logos/zomato.svg" className="w-8 h-8 bg-[#E23744] p-1.5 rounded-md" />
+              <img src="/logos/amazon.svg" className="w-8 h-8 bg-white p-1 rounded-md" />
               <div>
-                <p className="text-white text-[13px] font-medium">Zomato</p>
-                <p className="text-white/60 text-[11px]">Order #ZOM1234567890</p>
-                <p className="text-white/40 text-[11px]">₹299 • 12 Aug 2024</p>
+                <p className="text-white text-[13px] font-medium">Amazon</p>
+                <p className="text-white/60 text-[11px]">Order #AMZ884512</p>
+                <p className="text-white/40 text-[11px]">₹1,499 • 5 Aug 2024</p>
               </div>
             </div>
           </motion.div>
@@ -154,7 +156,7 @@ export default function PurchaseSearch(props: any) {
             color="text-purple-400"
           />
           <IssueTile 
-            icon={AlertTriangle} title="Product issue" desc="Damaged / faulty" 
+            icon={AlertTriangle} title="Return" desc="Return this item" 
             active={props.selectedIssue === 'product'} 
             onClick={() => props.setSelectedIssue('product')} 
             color="text-orange-400"
