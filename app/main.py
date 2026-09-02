@@ -60,3 +60,23 @@ def get_payment_telemetry(customer_id: str):
 @app.get("/api/telemetry/vision")
 def get_vision_telemetry(image_url: str):
     return analyze_vision_evidence(image_url)
+from app.risk_engine import calculate_fraud_risk
+
+class ResolveRequest(BaseModel):
+    order_id: int
+    customer_id: str
+    image_url: str = None
+
+@app.post("/api/resolve")
+def resolve_dispute(req: ResolveRequest):
+    result = calculate_fraud_risk(req.order_id, req.customer_id, req.image_url)
+    
+    # Here we would normally save the result to the SQLite DB
+    # using db = SessionLocal() and db.add(Dispute(...))
+    
+    return {
+        "status": "resolved",
+        "risk_score": result["risk_score"],
+        "final_decision": result["resolution"],
+        "reasoning": result["flags"]
+    }
