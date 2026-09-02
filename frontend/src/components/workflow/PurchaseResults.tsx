@@ -13,7 +13,7 @@ export default function PurchaseResults({ results, selectedPurchase, setSelected
       'Amazon': 'amazon',
       'Nike': 'nike'
     };
-    return "/logos/" + (domainMap[merchant] || merchant.toLowerCase()) + ".png";
+    return "/logos/" + (domainMap[merchant] || merchant.toLowerCase()) + ".svg";
   };
 
   return (
@@ -49,7 +49,7 @@ export default function PurchaseResults({ results, selectedPurchase, setSelected
                 <p className="text-[13px] text-text-secondary">{p.merchant} &bull; Order {p.orderId}</p>
               </div>
               <div className="text-right">
-                <p className="font-semibold text-[15px]">{p.currency === 'INR' ? 'â‚¹' : '$'}{p.amount}</p>
+                <p className="font-semibold text-[15px]">{p.currency === 'INR' ? 'Ã¢â€šÂ¹' : '$'}{p.amount}</p>
                 <p className="text-[12px] text-text-muted">{p.date}</p>
               </div>
               

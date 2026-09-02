@@ -4,7 +4,7 @@ import { ShieldCheck, Check, ArrowRight } from 'lucide-react';
 export default function PurchaseVerification({ selectedPurchase, setStage }: any) {
   if (!selectedPurchase) return null;
 
-  const amountStr = (selectedPurchase.currency === 'INR' ? 'â‚¹' : '$') + selectedPurchase.amount;
+  const amountStr = (selectedPurchase.currency === 'INR' ? 'Ã¢â€šÂ¹' : '$') + selectedPurchase.amount;
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -42,7 +42,7 @@ export default function PurchaseVerification({ selectedPurchase, setStage }: any
 function Detail({ label, value, mask, verified }: any) {
   let displayValue = value;
   if (mask && value.startsWith('pay_')) {
-    displayValue = 'pay_â€¢â€¢â€¢â€¢' + value.slice(-4);
+    displayValue = 'pay_Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢' + value.slice(-4);
   }
 
   return (

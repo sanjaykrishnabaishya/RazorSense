@@ -22,9 +22,9 @@ export default function IdentificationPanel() {
 
       {/* Right Cards Stack */}
       <div className="w-full md:w-[280px] h-[180px] relative hidden md:block">
-        <MockCard top="0px" left="40px" zIndex={10} merchant="Zomato" logo="/logos/zomato.png" order="#ZOM1234567890" price="â‚¹299" date="12 Aug 2024" />
-        <MockCard top="45px" left="20px" zIndex={20} merchant="Amazon" logo="/logos/amazon.png" order="#AMZ884512" price="â‚¹1,499" date="5 Aug 2024" />
-        <MockCard top="90px" left="0px" zIndex={30} merchant="eBay" logo="/logos/ebay.png" order="#EB12345" price="$45" date="1 Aug 2024" />
+        <MockCard top="0px" left="40px" zIndex={10} merchant="Zomato" logo="/logos/zomato.svg" order="#ZOM1234567890" price="Ã¢â€šÂ¹299" date="12 Aug 2024" />
+        <MockCard top="45px" left="20px" zIndex={20} merchant="Amazon" logo="/logos/amazon.svg" order="#AMZ884512" price="Ã¢â€šÂ¹1,499" date="5 Aug 2024" />
+        <MockCard top="90px" left="0px" zIndex={30} merchant="eBay" logo="/logos/ebay.svg" order="#EB12345" price="$45" date="1 Aug 2024" />
       </div>
 
     </div>
