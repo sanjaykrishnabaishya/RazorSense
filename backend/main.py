@@ -1,60 +1,110 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+from database import engine, get_db
+import models
+from auth import get_current_user
 from pydantic import BaseModel
-import time
-import re
 
-app = FastAPI(title="RazorSense API")
+# Create DB Tables
+models.Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="RazorSense Secure API")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-class ChatRequest(BaseModel):
-    message: str
-    stage: str
+# -----------------
+# SCHEMAS
+# -----------------
+class LoginRequest(BaseModel):
+    phone_number: str
 
-@app.post("/api/chat")
-async def chat_endpoint(req: ChatRequest):
-    time.sleep(1) # Simulate network/processing
-    
-    msg = req.message.lower()
-    
-    if req.stage == 'find-purchase':
-        if any(w in msg for w in ['hi', 'hello', 'hey']):
-            return {"reply": "Hi there! I'm Razor, your AI support assistant. Please share an order ID, merchant name, or email so I can find your purchase."}
-        
-        # Simulate finding an order
-        return {
-            "reply": "I've located a few transactions that might match. I'm bringing them up now.",
-            "action": "trigger_search",
-            "search_query": req.message
-        }
-        
-    if req.stage == 'verify-details':
-        if 'yes' in msg or 'correct' in msg or 'that is the one' in msg:
-            return {
-                "reply": "Great! Let's verify the details cryptographically with the merchant to ensure everything is in order.",
-                "action": "trigger_verify"
-            }
-        
-    if req.stage == 'analyse-issue':
-        if 'broken' in msg or 'damaged' in msg or 'tear' in msg:
-            return {
-                "reply": "I understand the item arrived damaged. Please upload a photo or video so my Vision AI can run a diagnostic on the wear & tear.",
-                "action": "request_upload"
-            }
-        if 'refund' in msg or 'return' in msg:
-            return {
-                "reply": "I can help you process a refund. Which of the resolution options works best for you?",
-                "action": "show_resolution"
-            }
-            
-    return {"reply": "I understand. I am processing your request through the RazorSense neural engine to find the best resolution."}
+class TicketCreate(BaseModel):
+    order_number: str
+    request_details: str
 
-@app.get("/api/health")
-async def health():
-    return {"status": "ok"}
+# -----------------
+# ROUTES
+# -----------------
+
+@app.post("/login")
+def login(req: LoginRequest, db: Session = Depends(get_db)):
+    """Mock OTP Login. In prod, this verifies an OTP and returns a JWT."""
+    user = db.query(models.User).filter(models.User.phone_number == req.phone_number).first()
+    if not user:
+        # Auto-create user for demo purposes
+        user = models.User(phone_number=req.phone_number, full_name="Test User")
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    
+    # Return the phone number as a mock "JWT token"
+    return {"access_token": user.phone_number, "token_type": "bearer"}
+
+
+@app.get("/api/orders/{order_number}")
+def get_order_details(order_number: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """
+    Securely fetches order details. 
+    ENFORCES AUTHORIZATION: Only the owner can see their order.
+    """
+    order = db.query(models.Order).filter(models.Order.order_number == order_number).first()
+    
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+        
+    if order.user_id != current_user.id:
+        # Security Issue #5 and #6 solved: Do not leak other users' orders
+        raise HTTPException(
+            status_code=403, 
+            detail="Sorry, I don't have information for this order id. Please contact our customer support +91 XXXXX XXXXX"
+        )
+        
+    return {
+        "order_number": order.order_number,
+        "product_name": order.product_name,
+        "price": order.price,
+        "merchant": order.merchant.name,
+        "transaction_mode": order.transaction_mode
+    }
+
+
+@app.post("/api/tickets")
+def create_ticket(ticket: TicketCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """Creates a new support ticket securely."""
+    import uuid
+    
+    # 1. Verify order belongs to user
+    order = db.query(models.Order).filter(models.Order.order_number == ticket.order_number).first()
+    if not order or order.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Unauthorized to create ticket for this order")
+        
+    # 2. Create internal ticket
+    new_ticket = models.SupportTicket(
+        ticket_id=f"RZ-{str(uuid.uuid4())[:6].upper()}",
+        user_id=current_user.id,
+        order_number=order.order_number,
+        merchant_name=order.merchant.name,
+        request_details=ticket.request_details,
+        action_taken="Ticket Logged. Pending AI Review.",
+        status="In Review"
+    )
+    
+    db.add(new_ticket)
+    db.commit()
+    db.refresh(new_ticket)
+    
+    return {"message": "Ticket created successfully", "ticket_id": new_ticket.ticket_id}
+
+
+@app.get("/api/tickets")
+def get_user_tickets(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """Get all tickets for the logged-in user."""
+    tickets = db.query(models.SupportTicket).filter(models.SupportTicket.user_id == current_user.id).all()
+    return tickets

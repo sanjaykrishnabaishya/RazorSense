@@ -1,24 +1,58 @@
-from pydantic import BaseModel
-from typing import Optional
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
 from datetime import datetime
+from database import Base
 
-class SupportTicket(BaseModel):
-    """
-    Schema for internal employee dashboard review.
-    Maps exactly to the database schema required for issue tracking.
-    """
-    unique_request_id: str         # Unique request ID / Ticket ID (e.g. RZ-99413)
-    user_name: str                 # User Name
-    merchant_name: str             # Merchant Name (e.g. Amazon, Flipkart)
-    order_id: str                  # Order ID
-    transaction_id: str            # Transaction ID
-    transaction_mode: str          # UPI / cash / debit or credit card
-    price_of_product: float        # Price of the product
-    product_name: str              # What is the product / product name
-    request_details: str           # What is the request (e.g., Refund due to damaged item)
-    action_taken: str              # Action taken for the case/ticket (e.g., Investigation Started)
-    ticket_raise_date: datetime    # ticket raise month_day_year
-    ticket_resolve_date: Optional[datetime] # ticket_resolve_month_day_year (None if pending)
-    status: str                    # Current status (Pending, Resolved, In Review)
+class User(Base):
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    phone_number = Column(String, unique=True, index=True)
+    email = Column(String, unique=True, index=True, nullable=True)
+    full_name = Column(String)
+    
+    orders = relationship("Order", back_populates="owner")
+    tickets = relationship("SupportTicket", back_populates="owner")
 
-# This schema will be used to store data in the PostgreSQL database using SQLAlchemy.
+class Merchant(Base):
+    __tablename__ = "merchants"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True)
+    
+    orders = relationship("Order", back_populates="merchant")
+
+class Order(Base):
+    __tablename__ = "orders"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    order_number = Column(String, unique=True, index=True) # e.g., #AMZ123
+    user_id = Column(Integer, ForeignKey("users.id"))
+    merchant_id = Column(Integer, ForeignKey("merchants.id"))
+    
+    product_name = Column(String)
+    price = Column(Float)
+    transaction_id = Column(String)
+    transaction_mode = Column(String) # UPI, Card, COD
+    order_date = Column(DateTime, default=datetime.utcnow)
+    
+    owner = relationship("User", back_populates="orders")
+    merchant = relationship("Merchant", back_populates="orders")
+
+class SupportTicket(Base):
+    __tablename__ = "support_tickets"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    ticket_id = Column(String, unique=True, index=True) # RZ-99413
+    user_id = Column(Integer, ForeignKey("users.id"))
+    order_number = Column(String) # Denormalized for easy access
+    merchant_name = Column(String)
+    
+    request_details = Column(String)
+    action_taken = Column(String)
+    status = Column(String, default="Pending") # Pending, In Review, Resolved
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    resolved_at = Column(DateTime, nullable=True)
+    
+    owner = relationship("User", back_populates="tickets")
