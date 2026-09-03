@@ -108,3 +108,37 @@ def get_user_tickets(db: Session = Depends(get_db), current_user: models.User = 
     """Get all tickets for the logged-in user."""
     tickets = db.query(models.SupportTicket).filter(models.SupportTicket.user_id == current_user.id).all()
     return tickets
+
+# -----------------
+# LANGGRAPH ENDPOINT
+# -----------------
+from agent_graph import app as langgraph_app
+from langchain_core.messages import HumanMessage
+from typing import Dict, Any
+
+class ChatRequest(BaseModel):
+    message: str
+    checklist: Dict[str, Any] = {}
+
+@app.post("/api/chat")
+def chat_with_agent(req: ChatRequest, current_user: models.User = Depends(get_current_user)):
+    """Routes a message through the LangGraph AI Brain."""
+    state = {
+        "messages": [HumanMessage(content=req.message)],
+        "user_id": current_user.id,
+        "intent": "",
+        "next_agent": "",
+        "checklist": req.checklist
+    }
+    
+    # Invoke the compiled graph
+    result = langgraph_app.invoke(state)
+    
+    # The last message is the response from the sub-agent
+    ai_reply = result["messages"][-1].content
+    
+    return {
+        "reply": ai_reply,
+        "checklist": result["checklist"],
+        "agent": result.get("next_agent", "Unknown")
+    }

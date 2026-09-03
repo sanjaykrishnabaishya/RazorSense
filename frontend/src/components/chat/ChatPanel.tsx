@@ -18,7 +18,22 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const sendText = (text: string) => {
+  const [token, setToken] = useState<string | null>(null);
+  const [checklist, setChecklist] = useState({});
+
+  useEffect(() => {
+    // Auto-login as Sanjay on mount to get token (Security & Identity Context)
+    fetch('http://localhost:8000/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone_number: '9999999999' })
+    })
+    .then(res => res.json())
+    .then(data => setToken(data.access_token))
+    .catch(err => console.error("Login failed", err));
+  }, []);
+
+  const sendText = async (text: string) => {
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
       role: 'user',
@@ -30,40 +45,51 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
     setInput('');
     setChatStep(prev => prev + 1);
 
-    setTimeout(() => {
-      const lower = text.toLowerCase();
+    const lower = text.toLowerCase();
+    
+    // UI Override for historical tickets
+    if (/ticket|history|track|status/.test(lower) && !/refund|order/.test(lower)) {
+      setTimeout(() => addBotMessage('widget_history', 'Here is the status of your recent support tickets:'), 500);
+      return;
+    }
+
+    // UI Override for lost orders
+    const forgotRegex = /don'?t|kno|knw|rem|forgot|find|search|advanced/i;
+    if (forgotRegex.test(lower)) {
+      setTimeout(() => addBotMessage('widget_search', "No worries! Let's locate your transaction. You can use the search tool below or try the Advanced Search:"), 500);
+      return;
+    }
+
+    if (!token) {
+      addBotMessage('text', 'Please log in to continue.');
+      return;
+    }
+
+    // Send to LangGraph Python Backend
+    try {
+      const res = await fetch('http://localhost:8000/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          message: text,
+          checklist: checklist
+        })
+      });
       
-      // History Request (typos handled)
-      if (/ticket|history|track|status/.test(lower)) {
-        addBotMessage('widget_history', 'Here is the status of your recent support tickets:');
-        return;
+      const data = await res.json();
+      
+      if (res.ok) {
+        addBotMessage('text', data.reply);
+        setChecklist(data.checklist || {});
+      } else {
+        addBotMessage('text', 'Sorry, I encountered an error connecting to my brain.');
       }
-
-      // Advanced Search / Don't remember Request (typo tolerant)
-      const forgotRegex = /don'?t|kno|knw|rem|forgot|find|search|advanced/i;
-      if (forgotRegex.test(lower)) {
-        addBotMessage('widget_search', "No worries! Let's locate your transaction. You can use the search tool below or try the Advanced Search:");
-        return;
-      }
-
-      // Step 3: Resolution / Ticket Creation
-      const uploadRegex = /upload|attached|here\s+is|pic|photo|video/i;
-      if (chatStep >= 2 || uploadRegex.test(lower)) {
-        addBotMessage('widget_ticket', 'Thank you. I have successfully logged your request in our system and created a unique Ticket ID for internal review.');
-        setChatStep(0); // reset
-        return;
-      }
-
-      // Step 2: Found order, ask for details & pictures
-      if (chatStep >= 1) {
-        addBotMessage('text', 'I found your order! Could you please describe the issue in detail? If you have any pictures or videos (e.g. damaged item, wrong product), please upload them using the attachment icon below.');
-        return;
-      }
-
-      // Step 1: Default Issue received, ask for Order ID
-      addBotMessage('text', `I'm analyzing your request regarding "${text}". Could you provide the Order ID and the Merchant Name? (If you don't remember, just say "I don't know")`);
-
-    }, 1000);
+    } catch (err) {
+      addBotMessage('text', 'Network error reaching the AI server.');
+    }
   };
 
   const addBotMessage = (kind: string, text: string) => {
@@ -81,13 +107,12 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
     sendText(input);
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const imageUrl = URL.createObjectURL(file);
     
-    // Add user message with image
     setMessages((prev: any) => [...prev, {
       id: Date.now().toString(),
       role: 'user',
@@ -96,14 +121,34 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
       imageUrl: imageUrl,
       timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
     }]);
-    
-    setChatStep(prev => prev + 1);
 
-    // AI confirms receipt and creates ticket
-    setTimeout(() => {
-      addBotMessage('widget_ticket', 'Thank you for the attachment. I have successfully logged your request in our system and created a unique Ticket ID for internal review.');
-      setChatStep(0);
-    }, 1500);
+    if (!token) return;
+
+    // Simulate sending image to backend, then creating a ticket securely
+    try {
+      // Create ticket for the dummy order #AMZ123 associated with this user
+      const res = await fetch('http://localhost:8000/api/tickets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          order_number: "AMZ123",
+          request_details: "User uploaded evidence."
+        })
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        addBotMessage('widget_ticket', `Thank you for the attachment. I have successfully logged your request. Ticket ID: ${data.ticket_id}`);
+      } else {
+        addBotMessage('text', `Error: ${data.detail}`);
+      }
+    } catch (err) {
+      addBotMessage('text', 'Network error reaching the AI server.');
+    }
   };
 
   return (
