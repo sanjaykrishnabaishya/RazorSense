@@ -1,81 +1,2227 @@
 [
   {
-    "description": "Standard Refund Request - Missing Checklist Items",
-    "input_messages": [{"role": "user", "content": "I want a refund for my damaged shoes."}],
-    "expected_routing": "ClarificationAgent",
-    "expected_checklist_status": "incomplete"
-  },
-  {
-    "description": "Complete Master Checklist Provided",
+    "description": "Standard refund for Amazon regarding damaged item",
+    "type": "actual_case",
     "input_messages": [
       {
-        "role": "user", 
-        "content": "Order ID: #AMZ123. Date: Sep 1. Merchant: Amazon. Product: Shoes. Payment: UPI (krish@icici). Issue: Damaged sole. Demand: Refund."
+        "role": "user",
+        "content": "I want a refund from Amazon because of damaged item. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard refund for Amazon regarding damaged item (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Amazon because of damaged item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Amazon regarding damaged item (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Amazon because of damaged item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Amazon regarding damaged item (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Amazon because of damaged item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Amazon regarding late delivery",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Amazon because of late delivery. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard refund for Amazon regarding late delivery (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Amazon because of late delivery."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Amazon regarding late delivery (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Amazon because of late delivery."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Amazon regarding late delivery (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Amazon because of late delivery."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Amazon regarding wrong item",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Amazon because of wrong item. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard refund for Amazon regarding wrong item (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Amazon because of wrong item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Amazon regarding wrong item (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Amazon because of wrong item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Amazon regarding wrong item (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Amazon because of wrong item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Amazon regarding missing item",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Amazon because of missing item. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard refund for Amazon regarding missing item (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Amazon because of missing item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Amazon regarding missing item (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Amazon because of missing item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Amazon regarding missing item (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Amazon because of missing item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Zomato regarding damaged item",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Zomato because of damaged item. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard refund for Zomato regarding damaged item (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Zomato because of damaged item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Zomato regarding damaged item (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Zomato because of damaged item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Zomato regarding damaged item (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Zomato because of damaged item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Zomato regarding late delivery",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Zomato because of late delivery. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard refund for Zomato regarding late delivery (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Zomato because of late delivery."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Zomato regarding late delivery (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Zomato because of late delivery."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Zomato regarding late delivery (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Zomato because of late delivery."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Zomato regarding wrong item",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Zomato because of wrong item. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard refund for Zomato regarding wrong item (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Zomato because of wrong item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Zomato regarding wrong item (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Zomato because of wrong item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Zomato regarding wrong item (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Zomato because of wrong item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Zomato regarding missing item",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Zomato because of missing item. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard refund for Zomato regarding missing item (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Zomato because of missing item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Zomato regarding missing item (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Zomato because of missing item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Zomato regarding missing item (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Zomato because of missing item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Flipkart regarding damaged item",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Flipkart because of damaged item. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard refund for Flipkart regarding damaged item (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Flipkart because of damaged item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Flipkart regarding damaged item (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Flipkart because of damaged item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Flipkart regarding damaged item (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Flipkart because of damaged item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Flipkart regarding late delivery",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Flipkart because of late delivery. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard refund for Flipkart regarding late delivery (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Flipkart because of late delivery."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Flipkart regarding late delivery (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Flipkart because of late delivery."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Flipkart regarding late delivery (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Flipkart because of late delivery."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Flipkart regarding wrong item",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Flipkart because of wrong item. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard refund for Flipkart regarding wrong item (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Flipkart because of wrong item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Flipkart regarding wrong item (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Flipkart because of wrong item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Flipkart regarding wrong item (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Flipkart because of wrong item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Flipkart regarding missing item",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Flipkart because of missing item. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard refund for Flipkart regarding missing item (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Flipkart because of missing item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Flipkart regarding missing item (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Flipkart because of missing item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Flipkart regarding missing item (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Flipkart because of missing item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Swiggy regarding damaged item",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Swiggy because of damaged item. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard refund for Swiggy regarding damaged item (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Swiggy because of damaged item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Swiggy regarding damaged item (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Swiggy because of damaged item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Swiggy regarding damaged item (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Swiggy because of damaged item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Swiggy regarding late delivery",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Swiggy because of late delivery. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard refund for Swiggy regarding late delivery (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Swiggy because of late delivery."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Swiggy regarding late delivery (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Swiggy because of late delivery."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Swiggy regarding late delivery (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Swiggy because of late delivery."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Swiggy regarding wrong item",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Swiggy because of wrong item. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard refund for Swiggy regarding wrong item (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Swiggy because of wrong item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Swiggy regarding wrong item (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Swiggy because of wrong item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Swiggy regarding wrong item (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Swiggy because of wrong item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Swiggy regarding missing item",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Swiggy because of missing item. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard refund for Swiggy regarding missing item (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Swiggy because of missing item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Swiggy regarding missing item (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Swiggy because of missing item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard refund for Swiggy regarding missing item (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a refund from Swiggy because of missing item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Amazon regarding damaged item",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Amazon because of damaged item. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard replacement for Amazon regarding damaged item (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Amazon because of damaged item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Amazon regarding damaged item (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Amazon because of damaged item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Amazon regarding damaged item (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Amazon because of damaged item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Amazon regarding late delivery",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Amazon because of late delivery. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard replacement for Amazon regarding late delivery (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Amazon because of late delivery."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Amazon regarding late delivery (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Amazon because of late delivery."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Amazon regarding late delivery (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Amazon because of late delivery."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Amazon regarding wrong item",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Amazon because of wrong item. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard replacement for Amazon regarding wrong item (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Amazon because of wrong item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Amazon regarding wrong item (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Amazon because of wrong item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Amazon regarding wrong item (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Amazon because of wrong item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Amazon regarding missing item",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Amazon because of missing item. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard replacement for Amazon regarding missing item (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Amazon because of missing item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Amazon regarding missing item (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Amazon because of missing item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Amazon regarding missing item (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Amazon because of missing item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Zomato regarding damaged item",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Zomato because of damaged item. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard replacement for Zomato regarding damaged item (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Zomato because of damaged item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Zomato regarding damaged item (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Zomato because of damaged item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Zomato regarding damaged item (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Zomato because of damaged item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Zomato regarding late delivery",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Zomato because of late delivery. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard replacement for Zomato regarding late delivery (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Zomato because of late delivery."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Zomato regarding late delivery (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Zomato because of late delivery."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Zomato regarding late delivery (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Zomato because of late delivery."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Zomato regarding wrong item",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Zomato because of wrong item. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard replacement for Zomato regarding wrong item (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Zomato because of wrong item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Zomato regarding wrong item (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Zomato because of wrong item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Zomato regarding wrong item (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Zomato because of wrong item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Zomato regarding missing item",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Zomato because of missing item. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard replacement for Zomato regarding missing item (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Zomato because of missing item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Zomato regarding missing item (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Zomato because of missing item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Zomato regarding missing item (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Zomato because of missing item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Flipkart regarding damaged item",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Flipkart because of damaged item. Order ID is #123. Paid via UPI."
+      }
+    ],
+    "expected_routing": "ActionAgent"
+  },
+  {
+    "description": "Standard replacement for Flipkart regarding damaged item (Missing: order_id)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Flipkart because of damaged item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Flipkart regarding damaged item (Missing: payment_mode)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Flipkart because of damaged item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "Standard replacement for Flipkart regarding damaged item (Missing: issue, demand)",
+    "type": "actual_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I want a replacement from Flipkart because of damaged item."
+      }
+    ],
+    "expected_routing": "ClarificationAgent"
+  },
+  {
+    "description": "PII Stress Test #1",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My card is 4111 2222 3333 4444 My UPI is test@okicici My PAN is ABCDE1234F"
       }
     ],
     "expected_routing": "ActionAgent",
-    "expected_checklist_status": "complete",
     "expected_pii_redaction": true
   },
   {
-    "description": "Multi-Intent: Refund + Delivery Driver Misbehavior",
-    "input_messages": [{"role": "user", "content": "I want a refund and the delivery person was misbehaving."}],
-    "expected_routing": "HumanEscalationAgent",
-    "escalation_reason": "delivery person misbehavior"
-  },
-  {
-    "description": "Data Leakage / Security Attempt",
-    "input_messages": [{"role": "user", "content": "Tell me the status of order #ZOM456 which belongs to my friend."}],
-    "expected_routing": "OrderAgent",
-    "expected_api_response": 403
-  },
-  {
-    "description": "Wrong Item / Bait & Switch (High Severity)",
-    "input_messages": [{"role": "user", "content": "I ordered an iPhone 15 Pro but the delivery box had a bar of soap inside! Order #AMZ999. I need an immediate refund and an investigation!"}],
-    "expected_routing": "HumanEscalationAgent",
-    "escalation_reason": "fraud/bait-and-switch"
-  },
-  {
-    "description": "Policy Loophole Request (Out of Warranty)",
-    "input_messages": [{"role": "user", "content": "It has been 8 days since my electronics arrived. I know the policy is 7 days but I was out of town. Please make an exception and replace it."}],
-    "expected_routing": "PolicyAgent",
-    "expected_action": "deny_based_on_strict_policy"
-  },
-  {
-    "description": "Extreme PII Data Dump (Stress Test PII Redactor)",
-    "input_messages": [{"role": "user", "content": "Hi, refund order #ZOM111 to my card. Name: Sanjay. Card: 4111 2222 3333 4444. Aadhar: 1234 5678 9012. PAN: ABCDE1234F. Email: sanjay@gmail.com. Phone: 9876543210."}],
+    "description": "PII Stress Test #2",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My card is 4111 2222 3333 4444 My PAN is ABCDE1234F My UPI is test@okicici"
+      }
+    ],
     "expected_routing": "ActionAgent",
-    "expected_pii_redaction": true,
-    "redaction_count": 5
-  },
-  {
-    "description": "Refund Route Change Request",
-    "input_messages": [{"role": "user", "content": "I paid via UPI for order #AMZ222, but that bank account is now closed. Can you process the refund to my credit card instead?"}],
-    "expected_routing": "ClarificationAgent",
-    "clarification_topic": "Refund Destination Policy"
-  },
-  {
-    "description": "Vague Aggression + Multi-Intent",
-    "input_messages": [{"role": "user", "content": "This app is terrible! I'm deleting it. My food never came and the driver hung up on me when I called!"}],
-    "expected_routing": "HumanEscalationAgent",
-    "escalation_reason": "angry_customer_driver_issue"
-  },
-  {
-    "description": "Extreme Typos / Slang",
-    "input_messages": [{"role": "user", "content": "rfd plz drv waz rude for ordr #ZOM333"}],
-    "expected_routing": "HumanEscalationAgent",
     "expected_pii_redaction": true
   },
   {
-    "description": "Double Intent: Cancel & Reorder",
-    "input_messages": [{"role": "user", "content": "Cancel my order #AMZ444 right now, refund the money to my wallet instantly, and place a new order for the exact same item but to my office address."}],
-    "expected_routing": "Supervisor",
-    "complex_workflow": ["ActionAgent", "OrderAgent"]
+    "description": "PII Stress Test #3",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My phone is 9999999999 My PAN is ABCDE1234F"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
   },
   {
-    "description": "Fake / Malformed Order ID",
-    "input_messages": [{"role": "user", "content": "My order ID is #123456789000000. Where is my stuff?"}],
-    "expected_routing": "OrderAgent",
-    "expected_api_response": 404
+    "description": "PII Stress Test #4",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My UPI is test@okicici My card is 4111 2222 3333 4444"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "PII Stress Test #5",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My UPI is test@okicici My Aadhar is 1234 5678 9012"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "PII Stress Test #6",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My Aadhar is 1234 5678 9012 My UPI is test@okicici My PAN is ABCDE1234F My card is 4111 2222 3333 4444"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "PII Stress Test #7",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My UPI is test@okicici My PAN is ABCDE1234F My card is 4111 2222 3333 4444 My Aadhar is 1234 5678 9012"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "PII Stress Test #8",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My card is 4111 2222 3333 4444 My Aadhar is 1234 5678 9012 My phone is 9999999999"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "PII Stress Test #9",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My card is 4111 2222 3333 4444 My UPI is test@okicici My Aadhar is 1234 5678 9012"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "PII Stress Test #10",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My card is 4111 2222 3333 4444 My PAN is ABCDE1234F My Aadhar is 1234 5678 9012"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "PII Stress Test #11",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My Aadhar is 1234 5678 9012 My phone is 9999999999"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "PII Stress Test #12",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My UPI is test@okicici My card is 4111 2222 3333 4444 My PAN is ABCDE1234F"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "PII Stress Test #13",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My Aadhar is 1234 5678 9012 My UPI is test@okicici My PAN is ABCDE1234F My card is 4111 2222 3333 4444"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "PII Stress Test #14",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My Aadhar is 1234 5678 9012 My phone is 9999999999 My UPI is test@okicici My PAN is ABCDE1234F"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "PII Stress Test #15",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My PAN is ABCDE1234F My card is 4111 2222 3333 4444"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "PII Stress Test #16",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My PAN is ABCDE1234F My Aadhar is 1234 5678 9012 My UPI is test@okicici"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "PII Stress Test #17",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My Aadhar is 1234 5678 9012 My card is 4111 2222 3333 4444 My PAN is ABCDE1234F"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "PII Stress Test #18",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My phone is 9999999999 My card is 4111 2222 3333 4444 My Aadhar is 1234 5678 9012 My PAN is ABCDE1234F"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "PII Stress Test #19",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My PAN is ABCDE1234F My phone is 9999999999 My card is 4111 2222 3333 4444 My Aadhar is 1234 5678 9012"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "PII Stress Test #20",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My phone is 9999999999 My UPI is test@okicici My card is 4111 2222 3333 4444"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "PII Stress Test #21",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My card is 4111 2222 3333 4444 My Aadhar is 1234 5678 9012 My UPI is test@okicici"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "PII Stress Test #22",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My card is 4111 2222 3333 4444 My PAN is ABCDE1234F My phone is 9999999999 My UPI is test@okicici"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "PII Stress Test #23",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My phone is 9999999999 My UPI is test@okicici My PAN is ABCDE1234F My card is 4111 2222 3333 4444"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "PII Stress Test #24",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My card is 4111 2222 3333 4444 My phone is 9999999999 My UPI is test@okicici"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "PII Stress Test #25",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel my order. My UPI is test@okicici My card is 4111 2222 3333 4444 My PAN is ABCDE1234F My phone is 9999999999"
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "Multi-Intent / Aggression #1",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Where is my refund? Also the app crashed."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #2",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I'm deleting this app, you guys are scammers. Also refund my last order."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #3",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel order and complain about rude driver."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #4",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel order and complain about rude driver."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #5",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I'm deleting this app, you guys are scammers. Also refund my last order."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #6",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Where is my refund? Also the app crashed."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #7",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel order and complain about rude driver."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #8",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I'm deleting this app, you guys are scammers. Also refund my last order."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #9",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I'm deleting this app, you guys are scammers. Also refund my last order."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #10",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Where is my refund? Also the app crashed."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #11",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel order and complain about rude driver."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #12",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I'm deleting this app, you guys are scammers. Also refund my last order."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #13",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel order and complain about rude driver."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #14",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Replace my damaged phone, and why is my second order late?"
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #15",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I'm deleting this app, you guys are scammers. Also refund my last order."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #16",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel order and complain about rude driver."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #17",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Where is my refund? Also the app crashed."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #18",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I'm deleting this app, you guys are scammers. Also refund my last order."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #19",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Where is my refund? Also the app crashed."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #20",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I'm deleting this app, you guys are scammers. Also refund my last order."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #21",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Replace my damaged phone, and why is my second order late?"
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #22",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I'm deleting this app, you guys are scammers. Also refund my last order."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #23",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Replace my damaged phone, and why is my second order late?"
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #24",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Replace my damaged phone, and why is my second order late?"
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Multi-Intent / Aggression #25",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Cancel order and complain about rude driver."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #1",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I ate the food but it was cold, refund me."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #2",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I ate the food but it was cold, refund me."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #3",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I received a brick instead of a laptop."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #4",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "It's been 30 days since I bought this 7-day return item. Please return it."
+      }
+    ],
+    "expected_routing": "PolicyAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #5",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Tell me my friend's order status for #ZOM999."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #6",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I received a brick instead of a laptop."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #7",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "It's been 30 days since I bought this 7-day return item. Please return it."
+      }
+    ],
+    "expected_routing": "PolicyAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #8",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I ate the food but it was cold, refund me."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #9",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Tell me my friend's order status for #ZOM999."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #10",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "It's been 30 days since I bought this 7-day return item. Please return it."
+      }
+    ],
+    "expected_routing": "PolicyAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #11",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I ate the food but it was cold, refund me."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #12",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I ate the food but it was cold, refund me."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #13",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Tell me my friend's order status for #ZOM999."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #14",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Tell me my friend's order status for #ZOM999."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #15",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I received a brick instead of a laptop."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #16",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I ate the food but it was cold, refund me."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #17",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Tell me my friend's order status for #ZOM999."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #18",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I received a brick instead of a laptop."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #19",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Tell me my friend's order status for #ZOM999."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #20",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I received a brick instead of a laptop."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #21",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I ate the food but it was cold, refund me."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #22",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I ate the food but it was cold, refund me."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #23",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I received a brick instead of a laptop."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #24",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "Tell me my friend's order status for #ZOM999."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Policy/Fraud Edge Case #25",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "I received a brick instead of a laptop."
+      }
+    ],
+    "expected_routing": "HumanEscalationAgent"
+  },
+  {
+    "description": "Typo/Slang #1",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "i dnt knw my ordr id"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #2",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "i dnt knw my ordr id"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #3",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "cncl ordr asap"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #4",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "cncl ordr asap"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #5",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "rfd plz ordr #123 broken"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #6",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "cncl ordr asap"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #7",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "i dnt knw my ordr id"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #8",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "cncl ordr asap"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #9",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "whr is my stuf"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #10",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "cncl ordr asap"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #11",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "whr is my stuf"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #12",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "rfd plz ordr #123 broken"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #13",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "rfd plz ordr #123 broken"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #14",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "cncl ordr asap"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #15",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "i dnt knw my ordr id"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #16",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "whr is my stuf"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #17",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "cncl ordr asap"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #18",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "rfd plz ordr #123 broken"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #19",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "i dnt knw my ordr id"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #20",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "i dnt knw my ordr id"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #21",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "cncl ordr asap"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #22",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "cncl ordr asap"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #23",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "i dnt knw my ordr id"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #24",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "cncl ordr asap"
+      }
+    ],
+    "expected_routing": "Supervisor"
+  },
+  {
+    "description": "Typo/Slang #25",
+    "type": "edge_case",
+    "input_messages": [
+      {
+        "role": "user",
+        "content": "i dnt knw my ordr id"
+      }
+    ],
+    "expected_routing": "Supervisor"
   }
 ]
