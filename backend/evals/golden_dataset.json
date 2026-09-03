@@ -28,5 +28,54 @@
     "input_messages": [{"role": "user", "content": "Tell me the status of order #ZOM456 which belongs to my friend."}],
     "expected_routing": "OrderAgent",
     "expected_api_response": 403
+  },
+  {
+    "description": "Wrong Item / Bait & Switch (High Severity)",
+    "input_messages": [{"role": "user", "content": "I ordered an iPhone 15 Pro but the delivery box had a bar of soap inside! Order #AMZ999. I need an immediate refund and an investigation!"}],
+    "expected_routing": "HumanEscalationAgent",
+    "escalation_reason": "fraud/bait-and-switch"
+  },
+  {
+    "description": "Policy Loophole Request (Out of Warranty)",
+    "input_messages": [{"role": "user", "content": "It has been 8 days since my electronics arrived. I know the policy is 7 days but I was out of town. Please make an exception and replace it."}],
+    "expected_routing": "PolicyAgent",
+    "expected_action": "deny_based_on_strict_policy"
+  },
+  {
+    "description": "Extreme PII Data Dump (Stress Test PII Redactor)",
+    "input_messages": [{"role": "user", "content": "Hi, refund order #ZOM111 to my card. Name: Sanjay. Card: 4111 2222 3333 4444. Aadhar: 1234 5678 9012. PAN: ABCDE1234F. Email: sanjay@gmail.com. Phone: 9876543210."}],
+    "expected_routing": "ActionAgent",
+    "expected_pii_redaction": true,
+    "redaction_count": 5
+  },
+  {
+    "description": "Refund Route Change Request",
+    "input_messages": [{"role": "user", "content": "I paid via UPI for order #AMZ222, but that bank account is now closed. Can you process the refund to my credit card instead?"}],
+    "expected_routing": "ClarificationAgent",
+    "clarification_topic": "Refund Destination Policy"
+  },
+  {
+    "description": "Vague Aggression + Multi-Intent",
+    "input_messages": [{"role": "user", "content": "This app is terrible! I'm deleting it. My food never came and the driver hung up on me when I called!"}],
+    "expected_routing": "HumanEscalationAgent",
+    "escalation_reason": "angry_customer_driver_issue"
+  },
+  {
+    "description": "Extreme Typos / Slang",
+    "input_messages": [{"role": "user", "content": "rfd plz drv waz rude for ordr #ZOM333"}],
+    "expected_routing": "HumanEscalationAgent",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "Double Intent: Cancel & Reorder",
+    "input_messages": [{"role": "user", "content": "Cancel my order #AMZ444 right now, refund the money to my wallet instantly, and place a new order for the exact same item but to my office address."}],
+    "expected_routing": "Supervisor",
+    "complex_workflow": ["ActionAgent", "OrderAgent"]
+  },
+  {
+    "description": "Fake / Malformed Order ID",
+    "input_messages": [{"role": "user", "content": "My order ID is #123456789000000. Where is my stuff?"}],
+    "expected_routing": "OrderAgent",
+    "expected_api_response": 404
   }
 ]
