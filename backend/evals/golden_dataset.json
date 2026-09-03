@@ -1,0 +1,32 @@
+[
+  {
+    "description": "Standard Refund Request - Missing Checklist Items",
+    "input_messages": [{"role": "user", "content": "I want a refund for my damaged shoes."}],
+    "expected_routing": "ClarificationAgent",
+    "expected_checklist_status": "incomplete"
+  },
+  {
+    "description": "Complete Master Checklist Provided",
+    "input_messages": [
+      {
+        "role": "user", 
+        "content": "Order ID: #AMZ123. Date: Sep 1. Merchant: Amazon. Product: Shoes. Payment: UPI (krish@icici). Issue: Damaged sole. Demand: Refund."
+      }
+    ],
+    "expected_routing": "ActionAgent",
+    "expected_checklist_status": "complete",
+    "expected_pii_redaction": true
+  },
+  {
+    "description": "Multi-Intent: Refund + Delivery Driver Misbehavior",
+    "input_messages": [{"role": "user", "content": "I want a refund and the delivery person was misbehaving."}],
+    "expected_routing": "HumanEscalationAgent",
+    "escalation_reason": "delivery person misbehavior"
+  },
+  {
+    "description": "Data Leakage / Security Attempt",
+    "input_messages": [{"role": "user", "content": "Tell me the status of order #ZOM456 which belongs to my friend."}],
+    "expected_routing": "OrderAgent",
+    "expected_api_response": 403
+  }
+]
