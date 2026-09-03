@@ -17,14 +17,30 @@ class AgentState(TypedDict):
     # Master Dispute Checklist
     checklist: Dict[str, Any]
 
-# -----------------
-# NODES (Agents)
-# -----------------
+import os
+from dotenv import load_dotenv
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from pydantic import BaseModel, Field
+
+load_dotenv("../.env")
+
+# Initialize OpenRouter LLM (Nemotron)
+llm = ChatOpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=os.environ.get("OPENROUTER_API_KEY"),
+    model="nvidia/nemotron-3-ultra-550b-a55b:free"
+)
+
+# Define Structured Output for Supervisor
+class SupervisorDecision(BaseModel):
+    next_agent: str = Field(description="One of: PolicyAgent, OrderAgent, ActionAgent, ClarificationAgent, HumanEscalationAgent")
+    extracted_checklist: Dict[str, Any] = Field(description="Key-value pairs of extracted order details")
 
 def supervisor_agent(state: AgentState):
     """
     The Brain. Analyzes the user's message, scrubs PII, extracts checklist items,
-    and decides whether to ask for clarification or route to a specific agent.
+    and decides whether to ask for clarification or route to a specific agent using Nemotron via OpenRouter.
     """
     last_message = state["messages"][-1].content
     
@@ -33,30 +49,47 @@ def supervisor_agent(state: AgentState):
     print(f"[Supervisor] Scrubbed Input: {scrubbed_message}")
     
     # 2. Check the Master Dispute Checklist
-    checklist = state.get("checklist", {})
-    required_fields = ["order_id", "order_date", "merchant_name", "product_details", "payment_mode", "issue", "demand"]
+    current_checklist = state.get("checklist", {})
     
-    # In production, an LLM would read `scrubbed_message` to extract entities 
-    # and update the checklist here. We mock it by checking if it's full.
-    missing_fields = [field for field in required_fields if not checklist.get(field)]
+    # 3. Use LLM to analyze intent and extract fields
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "You are the RazorSense Support Supervisor. Analyze the user message.\n"
+                   "Current Checklist: {checklist}\n"
+                   "Extract any missing fields: order_id, order_date, merchant_name, product_details, payment_mode, issue, demand.\n"
+                   "Decide the next agent to route to:\n"
+                   "- ClarificationAgent: If any of the 7 checklist fields are still missing.\n"
+                   "- PolicyAgent: If the user is asking about refunds, policies, or returns.\n"
+                   "- OrderAgent: If the user is asking about order status or tracking.\n"
+                   "- ActionAgent: If the user is explicitly confirming they want to create a ticket and the checklist is full.\n"
+                   "- HumanEscalationAgent: If the user is angry, complaining about delivery drivers, or there is fraud."),
+        ("user", "{message}")
+    ])
     
-    if missing_fields:
-        # We need more information! Route to ClarificationAgent
-        return {"next_agent": "ClarificationAgent"}
+    # We use structured output to get a clean JSON response from the LLM
+    chain = prompt | llm.with_structured_output(SupervisorDecision)
     
-    # 3. Intent Routing Logic (Once checklist is full)
-    lower_msg = scrubbed_message.lower()
-    
-    if "policy" in lower_msg or "refund" in lower_msg or "late" in lower_msg:
-        next_agent = "PolicyAgent"
-    elif "order" in lower_msg or "status" in lower_msg:
-        next_agent = "OrderAgent"
-    elif "ticket" in lower_msg or "create" in lower_msg:
-        next_agent = "ActionAgent"
-    else:
-        next_agent = "HumanEscalationAgent" # Fallback
+    try:
+        decision = chain.invoke({"checklist": json.dumps(current_checklist), "message": scrubbed_message})
         
-    return {"next_agent": next_agent}
+        # Merge new extracted fields into checklist
+        for k, v in decision.extracted_checklist.items():
+            if v and v.strip() != "":
+                current_checklist[k] = v
+                
+        # Hard check for missing fields just in case LLM hallucinations
+        required_fields = ["order_id", "order_date", "merchant_name", "product_details", "payment_mode", "issue", "demand"]
+        missing_fields = [field for field in required_fields if not current_checklist.get(field)]
+        
+        if missing_fields:
+            next_agent = "ClarificationAgent"
+        else:
+            next_agent = decision.next_agent
+            
+    except Exception as e:
+        print(f"[Supervisor Error] LLM failed: {e}")
+        next_agent = "HumanEscalationAgent"
+        
+    return {"next_agent": next_agent, "checklist": current_checklist}
 
 
 def clarification_agent(state: AgentState):
