@@ -7,6 +7,7 @@ export default function AdvancedSearchModal({ isOpen, onClose, onSearch }: any) 
   const [step, setStep] = useState(1);
   const [merchant, setMerchant] = useState('');
   const [orderId, setOrderId] = useState('');
+  const [orderDate, setOrderDate] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [upiPlatform, setUpiPlatform] = useState('');
   const [upiId, setUpiId] = useState('');
@@ -79,6 +80,12 @@ export default function AdvancedSearchModal({ isOpen, onClose, onSearch }: any) 
                 </div>
 
                 <div>
+                  <label className="block text-[13px] text-white/60 mb-1.5">Order Date (Optional)</label>
+                  <input type="date" value={orderDate} onChange={e => setOrderDate(e.target.value)}
+                    className="w-full bg-[#111] border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500" />
+                </div>
+
+                <div>
                   <label className="block text-[13px] text-white/60 mb-1.5">Payment Method</label>
                   <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)}
                     className="w-full bg-[#111] border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 appearance-none">
@@ -136,8 +143,7 @@ export default function AdvancedSearchModal({ isOpen, onClose, onSearch }: any) 
 
             {step === 2 && (
               <div className="space-y-4">
-                <p className="text-[14px] text-white/70 mb-4">We found multiple transactions matching these details in the last 3 days. Please select the one with the issue:</p>
-                
+                <p className="text-[14px] text-white/70 mb-4">We found multiple transactions matching these details in your last 10 purchases. Please select the one with the issue:</p>
                 <div className="space-y-2">
                   {[
                     { id: '#AMZ884512', amount: '₹1,499', date: 'Today, 2:30 PM', item: 'Wireless Earbuds' },
