@@ -1,5 +1,8 @@
-venv/
+﻿venv/
 .env
-__pycache__/*.sqlite
+__pycache__/
+*.sqlite
 *.db
+chroma_db/
 backend/chroma_db/
+*/__pycache__/*
