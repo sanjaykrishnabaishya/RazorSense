@@ -25,7 +25,7 @@ from pydantic import BaseModel, Field
 
 load_dotenv("../.env")
 
-# Initialize OpenRouter LLM (Nemotron)
+# Initialize OpenRouter LLM (Fast Nemotron Lightning)
 llm = ChatOpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=os.environ.get("OPENROUTER_API_KEY"),
@@ -98,13 +98,29 @@ def clarification_agent(state: AgentState):
     required_fields = ["order_id", "order_date", "merchant_name", "product_details", "payment_mode", "issue", "demand"]
     missing_fields = [field for field in required_fields if not checklist.get(field)]
     
-    # Ask for the first missing field (In production, an LLM formats this nicely)
-    field_to_ask = missing_fields[0].replace("_", " ").title()
+    # Use the fast LLM for conversational generation
+    from fast_ack import fast_llm
     
-    if field_to_ask == "Payment Mode":
-        response = "Could you please tell me your Payment Mode? (Note: If you paid via COD, you will need to provide bank account or UPI details for the refund)."
-    else:
-        response = f"To help you resolve this, could you please provide the {field_to_ask}?"
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "You are Krish, a friendly customer support AI for RazorSense. "
+                   "The user has an issue, but we are missing some details to help them.\n"
+                   "Missing fields: {missing_fields}\n\n"
+                   "Task: Write a very short, polite 1-2 sentence response. Acknowledge what they just said, "
+                   "then ask them to provide ONE of the missing fields (e.g. Order ID or what the issue is). "
+                   "Do not ask for all of them at once. Keep it natural like a human agent."),
+        ("user", "{last_msg}")
+    ])
+    
+    chain = prompt | fast_llm
+    try:
+        res = chain.invoke({
+            "missing_fields": ", ".join(missing_fields),
+            "last_msg": state["messages"][-1].content
+        })
+        response = res.content
+    except Exception as e:
+        field_to_ask = missing_fields[0].replace("_", " ").title()
+        response = f"I'd love to help you with that! Could you please provide your {field_to_ask}?"
         
     return {"messages": [AIMessage(content=response, name="ClarificationAgent")]}
 

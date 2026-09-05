@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { SendHorizontal, Paperclip, Loader2, CheckCircle2, RefreshCcw, Package, PackageX, AlertTriangle, CreditCard, Search, Clock, HelpCircle, FileText, ChevronRight } from 'lucide-react';
 import { ChatMessage } from '../../types/support';
 import PurchaseSearch from '../workflow/PurchaseSearch';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export default function ChatPanel({ messages, setMessages }: { messages: ChatMessage[], setMessages: any }) {
   const [input, setInput] = useState('');
@@ -20,10 +22,27 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
 
   const [token, setToken] = useState<string | null>(null);
   const [checklist, setChecklist] = useState({});
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedFile(reader.result as string);
+        setFilePreview(URL.createObjectURL(file));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   useEffect(() => {
     // Auto-login as Sanjay on mount to get token (Security & Identity Context)
-    fetch('http://localhost:8000/login', {
+    fetch('http://127.0.0.1:8000/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone_number: '9999999999' })
@@ -33,7 +52,8 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
     .catch(err => console.error("Login failed", err));
   }, []);
 
-  const sendText = async (text: string) => {
+  const sendText = async (text: string, mediaOverride?: string) => {
+    // If it's an auto-poll, we don't display user bubble
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
       role: 'user',
@@ -41,54 +61,113 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
       text: text,
       timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
     };
-    setMessages((prev: any) => [...prev, userMsg]);
+
+    if (text !== "[POLL]" && text !== "I have uploaded an image.") {
+      setMessages((prev: any) => [...prev, userMsg]);
+      setInput('');
+      setChatStep(prev => prev + 1);
+    }
+
+    let currentToken = token;
+    if (!currentToken) {
+      try {
+        const loginRes = await fetch('http://127.0.0.1:8000/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone_number: '9999999999' })
+        });
+        const loginData = await loginRes.json();
+        currentToken = loginData.access_token;
+        setToken(currentToken);
+      } catch (err) {
+        addBotMessage('text', 'Server is booting up. Please try again in 5 seconds.');
+        return;
+      }
+    }
+
+    if (!currentToken) {
+      addBotMessage('text', 'Could not authenticate. Please try again.');
+      return;
+    }
+
     setInput('');
+    setSelectedFile(null);
+    setFilePreview(null);
     setChatStep(prev => prev + 1);
-
-    const lower = text.toLowerCase();
     
-    // UI Override for historical tickets
-    if (/ticket|history|track|status/.test(lower) && !/refund|order/.test(lower)) {
-      setTimeout(() => addBotMessage('widget_history', 'Here is the status of your recent support tickets:'), 500);
-      return;
-    }
+    let history = messages.map((m: any) => ({
+      role: m.role,
+      text: m.text,
+      media: m.base64 || undefined
+    }));
 
-    // UI Override for lost orders
-    const forgotRegex = /don'?t|kno|knw|rem|forgot|find|search|advanced/i;
-    if (forgotRegex.test(lower)) {
-      setTimeout(() => addBotMessage('widget_search', "No worries! Let's locate your transaction. You can use the search tool below or try the Advanced Search:"), 500);
-      return;
-    }
-
-    if (!token) {
-      addBotMessage('text', 'Please log in to continue.');
-      return;
-    }
-
+    setIsLoading(true);
+    
     // Send to LangGraph Python Backend
+    let resOk = false;
+    let data: any = null;
     try {
-      const res = await fetch('http://localhost:8000/api/chat', {
+      const res = await fetch('http://127.0.0.1:8000/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${currentToken}`
         },
         body: JSON.stringify({
           message: text,
-          checklist: checklist
+          checklist: checklist,
+          media: mediaOverride || selectedFile,
+          history: history
         })
       });
       
-      const data = await res.json();
+      data = await res.json();
+      resOk = res.ok;
       
-      if (res.ok) {
+      if (resOk) {
         addBotMessage('text', data.reply);
-        setChecklist(data.checklist || {});
+        
+        if (data.show_search) {
+            setMessages((prev: any) => [...prev, {
+              id: (Date.now() + 3).toString(),
+              role: 'assistant',
+              kind: 'widget_search',
+              text: "Here is the advanced search panel:",
+              timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            }]);
+        }
+        
+        if (data.ticket_status && data.ticket_status !== "none") {
+              setMessages((prev: any) => [...prev, {
+                id: (Date.now() + 2).toString(),
+                role: 'assistant',
+                kind: 'widget_ticket',
+                text: "I have created a support ticket for this issue.",
+                ticket_id: data.ticket_details?.ticket_id || data.ticket_id || "N/A",
+                merchant: data.ticket_details?.merchant || data.merchant || "N/A",
+                status: data.ticket_details?.status || data.ticket_status,
+                ticket_details: data.ticket_details,
+                timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+              }]);
+          }
+          
+        if (data.orders_to_select && data.orders_to_select.length > 0) {
+            setMessages((prev: any) => [...prev, {
+              id: (Date.now() + 4).toString(),
+              role: 'assistant',
+              kind: 'widget_order_select',
+              orders: data.orders_to_select,
+              timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            }]);
+        }
       } else {
         addBotMessage('text', 'Sorry, I encountered an error connecting to my brain.');
       }
     } catch (err) {
-      addBotMessage('text', 'Network error reaching the AI server.');
+      console.error("Fetch error in sendText:", err);
+      addBotMessage('text', `Network error reaching the AI server: ${err}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -103,56 +182,26 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
   };
 
   const handleSend = () => {
-    if (!input.trim()) return;
-    sendText(input);
-  };
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const imageUrl = URL.createObjectURL(file);
-    
-    setMessages((prev: any) => [...prev, {
-      id: Date.now().toString(),
-      role: 'user',
-      kind: 'image',
-      text: 'Uploaded an attachment',
-      imageUrl: imageUrl,
-      timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-    }]);
-
-    if (!token) return;
-
-    // Simulate sending image to backend, then creating a ticket securely
-    try {
-      // Create ticket for the dummy order #AMZ123 associated with this user
-      const res = await fetch('http://localhost:8000/api/tickets', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          order_number: "AMZ123",
-          request_details: "User uploaded evidence."
-        })
-      });
-      
-      const data = await res.json();
-      
-      if (res.ok) {
-        addBotMessage('widget_ticket', `Thank you for the attachment. I have successfully logged your request. Ticket ID: ${data.ticket_id}`);
-      } else {
-        addBotMessage('text', `Error: ${data.detail}`);
-      }
-    } catch (err) {
-      addBotMessage('text', 'Network error reaching the AI server.');
+    if (!input.trim() && !selectedFile) return;
+    if (selectedFile && filePreview) {
+      setMessages((prev: any) => [...prev, {
+        id: Date.now().toString(),
+        role: 'user',
+        kind: 'image',
+        text: 'Uploaded an attachment',
+        imageUrl: filePreview,
+        base64: selectedFile,
+        timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+      }]);
     }
+    sendText(input || "I have uploaded an image.", selectedFile || undefined);
+    setSelectedFile(null);
+    setFilePreview(null);
+    setInput('');
   };
 
   return (
-    <div className="flex flex-col h-full bg-transparent relative w-full h-[calc(100vh-120px)]">
+    <div className="flex flex-col h-full bg-transparent relative w-full">
       
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 custom-scrollbar flex flex-col relative z-10">
@@ -204,14 +253,38 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
                   
                   <div className={`flex flex-col max-w-[85%] ${isUser ? 'items-end' : 'items-start'}`}>
                     {m.kind === 'text' && (
-                      <div className={`p-4 text-[15px] leading-[1.5] shadow-lg ${isUser ? 'bg-white text-black rounded-2xl rounded-tr-sm font-medium' : 'bg-[#111] text-white rounded-2xl rounded-tl-sm border border-white/[0.05]'}`}>
-                        {m.text}
+                      <div className={`p-4 text-[15px] leading-[1.5] shadow-lg markdown-container ${isUser ? 'bg-white text-black rounded-2xl rounded-tr-sm font-medium' : 'bg-[#111] text-white rounded-2xl rounded-tl-sm border border-white/[0.05]'}`}>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.text}</ReactMarkdown>
                       </div>
                     )}
 
                     {m.kind === 'image' && (
                       <div className={`p-2 shadow-lg ${isUser ? 'bg-white rounded-2xl rounded-tr-sm' : 'bg-[#111] rounded-2xl rounded-tl-sm border border-white/[0.05]'}`}>
                         <img src={m.imageUrl} alt="attachment" className="max-w-[250px] rounded-xl object-contain" />
+                      </div>
+                    )}
+
+                    {m.kind === 'widget_order_select' && (
+                      <div className="flex flex-col gap-3 w-full">
+                        <div className="p-4 text-[15px] leading-[1.5] shadow-lg bg-[#111] text-white rounded-2xl rounded-tl-sm border border-white/[0.05] self-start max-w-fit">
+                          I found these recent orders. Please select the one you need help with:
+                        </div>
+                        <div className="flex flex-col gap-3 mt-2 w-full max-w-md">
+                          {m.orders.map((o: any) => (
+                            <div key={o.order_id} onClick={() => sendText(`I select order ${o.order_id} (${o.item})`)} className="bg-[#111] border border-white/10 p-4 rounded-xl cursor-pointer hover:bg-white/5 transition flex justify-between items-center group">
+                               <div>
+                                 <h4 className="text-white font-medium text-sm group-hover:text-blue-400 transition">{o.item}</h4>
+                                 <p className="text-white/50 text-[12px] mt-1">Order #{o.order_id} • {o.merchant}</p>
+                                 <p className="text-white/40 text-[11px] mt-0.5">
+                                   {new Date(o.order_date).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'})} • {o.status}
+                                 </p>
+                               </div>
+                               <div className="h-8 w-8 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20 group-hover:scale-110 transition">
+                                 <CheckCircle2 className="text-blue-400 w-4 h-4" />
+                               </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
 
@@ -226,6 +299,8 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
                             results={results} setResults={setResults}
                             selectedIssue={selectedIssue} setSelectedIssue={setSelectedIssue}
                             setStage={() => {}}
+                            token={token}
+                            sendText={sendText}
                           />
                         </div>
                       </div>
@@ -264,12 +339,12 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
                            <FileText className="absolute -right-4 -bottom-4 text-white/5 w-32 h-32" />
                            <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2"><CheckCircle2 className="text-emerald-400" /> Ticket Created</h3>
                            <div className="space-y-2 text-[13px]">
-                             <div className="flex justify-between"><span className="text-white/50">Ticket ID</span><span className="text-white font-mono">RZ-99413</span></div>
-                             <div className="flex justify-between"><span className="text-white/50">Status</span><span className="text-blue-400 font-semibold">Investigation Active</span></div>
-                             <div className="flex justify-between"><span className="text-white/50">Merchant</span><span className="text-white">Amazon</span></div>
-                             <div className="flex justify-between"><span className="text-white/50">Date</span><span className="text-white">02 Sep 2026</span></div>
+                             <div className="flex justify-between"><span className="text-white/50">Ticket ID</span><span className="text-white font-mono">{m.ticket_id || "RZ-99413"}</span></div>
+                             <div className="flex justify-between"><span className="text-white/50">Status</span><span className="text-blue-400 font-semibold">{m.status || "Investigation Active"}</span></div>
+                             <div className="flex justify-between"><span className="text-white/50">Merchant</span><span className="text-white">{m.merchant || "Unknown"}</span></div>
+                             <div className="flex justify-between"><span className="text-white/50">Date</span><span className="text-white">{new Date().toLocaleDateString('en-GB', {day: '2-digit', month: 'short', year: 'numeric'})}</span></div>
                            </div>
-                           <button className="w-full mt-5 bg-white/10 hover:bg-white/20 text-white font-medium py-2.5 rounded-xl transition text-[13px]">View Full Details</button>
+                           <button onClick={() => setSelectedTicket(m.ticket_details)} className="w-full mt-5 bg-white/10 hover:bg-white/20 text-white font-medium py-2.5 rounded-xl transition text-[13px]">View Full Details</button>
                         </div>
                       </div>
                     )}
@@ -279,41 +354,111 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
                 </motion.div>
               );
             })}
+            {isLoading && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex justify-start"
+              >
+                <div className="bg-[#2d2d2d] rounded-2xl rounded-tl-sm p-4 text-gray-300">
+                  <Loader2 className="h-5 w-5 animate-spin text-brand-orange" />
+                </div>
+              </motion.div>
+            )}
             <div ref={messagesEndRef} />
           </div>
         )}
       </div>
 
       {/* Composer */}
-      <div className="p-4 pb-24 bg-transparent sticky bottom-0 z-20">
-        <div className="relative flex items-end border border-white/[0.1] rounded-2xl bg-[#0a0a0a]/80 backdrop-blur-xl shadow-[0_0_30px_rgba(0,0,0,0.8)] focus-within:border-white/30 transition-colors p-1.5 mx-auto max-w-3xl">
-          <label className="p-3 text-white/40 hover:text-white transition rounded-xl cursor-pointer">
-            <Paperclip size={20} />
-            <input type="file" accept="image/*,video/*" className="hidden" onChange={handleFileUpload} />
-          </label>
-          <textarea 
-            placeholder="Message Krish..."
-            className="flex-1 max-h-32 min-h-[44px] py-3 text-[15px] bg-transparent focus:outline-none resize-none custom-scrollbar text-white placeholder-white/30"
-            rows={1}
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-          />
-          <button 
-            onClick={handleSend}
-            disabled={!input.trim()}
-            className="p-3 m-1 bg-white hover:bg-gray-200 text-black rounded-xl disabled:opacity-30 transition-all shadow-sm"
-          >
-            <SendHorizontal size={18} />
-          </button>
+      <div className="p-4 pb-4 bg-transparent sticky bottom-0 z-20">
+        <div className="relative flex flex-col border border-white/[0.1] rounded-2xl bg-[#0a0a0a]/80 backdrop-blur-xl shadow-[0_0_30px_rgba(0,0,0,0.8)] focus-within:border-white/30 transition-colors p-1.5 mx-auto max-w-3xl">
+          {filePreview && (
+            <div className="relative self-start m-2">
+              <img src={filePreview} alt="Preview" className="h-20 rounded-xl object-contain border border-white/10" />
+              <button 
+                onClick={() => { setFilePreview(null); setSelectedFile(null); }}
+                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+          <div className="flex items-end w-full">
+            <label className="p-3 text-white/40 hover:text-white transition rounded-xl cursor-pointer shrink-0">
+              <Paperclip size={20} />
+              <input type="file" accept="image/*,video/*" className="hidden" onChange={handleFileChange} />
+            </label>
+            <textarea 
+              placeholder="Message Krish..."
+              className="flex-1 max-h-32 min-h-[44px] py-3 text-[15px] bg-transparent focus:outline-none resize-none custom-scrollbar text-white placeholder-white/30"
+              rows={1}
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+            />
+            <button 
+              onClick={handleSend}
+              disabled={!input.trim() && !selectedFile}
+              className="p-3 m-1 bg-white hover:bg-gray-200 text-black rounded-xl disabled:opacity-30 transition-all shadow-sm shrink-0"
+            >
+              <SendHorizontal size={18} />
+            </button>
+          </div>
         </div>
         <p className="text-center text-white/30 text-[11px] mt-4">RazorSense AI can make mistakes. Please verify important information.</p>
       </div>
+
+      {/* Ticket Modal */}
+      {selectedTicket && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-[#111] border border-white/[0.05] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden relative">
+            <button onClick={() => setSelectedTicket(null)} className="absolute top-4 right-4 text-white/50 hover:text-white"><X className="w-5 h-5" /></button>
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><CheckCircle2 className="text-emerald-400 w-6 h-6" /> Ticket Details</h3>
+              <div className="space-y-4 text-sm">
+                <div className="grid grid-cols-3 gap-2 border-b border-white/10 pb-3">
+                  <span className="text-white/50">Ticket ID</span>
+                  <span className="col-span-2 text-white font-mono">{selectedTicket.ticket_id}</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 border-b border-white/10 pb-3">
+                  <span className="text-white/50">Order ID</span>
+                  <span className="col-span-2 text-white font-mono">{selectedTicket.order_id || 'N/A'}</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 border-b border-white/10 pb-3">
+                  <span className="text-white/50">Product</span>
+                  <span className="col-span-2 text-white">{selectedTicket.product || 'N/A'}</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 border-b border-white/10 pb-3">
+                  <span className="text-white/50">Merchant</span>
+                  <span className="col-span-2 text-white">{selectedTicket.merchant}</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 border-b border-white/10 pb-3">
+                  <span className="text-white/50">Issue</span>
+                  <span className="col-span-2 text-white">{selectedTicket.issue}</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 border-b border-white/10 pb-3">
+                  <span className="text-white/50">Action Taken</span>
+                  <span className="col-span-2 text-white">{selectedTicket.action_taken}</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 border-b border-white/10 pb-3">
+                  <span className="text-white/50">Status</span>
+                  <span className="col-span-2 text-blue-400 font-semibold">{selectedTicket.status}</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <span className="text-white/50">Date</span>
+                  <span className="col-span-2 text-white">{selectedTicket.date}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

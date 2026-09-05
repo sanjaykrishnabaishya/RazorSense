@@ -1,0 +1,305 @@
+import os
+import json
+import random
+import base64
+import requests
+from typing import List, Dict, Any
+from google import genai
+from google.genai import types
+from dotenv import load_dotenv
+
+load_dotenv("../.env")
+
+# Base URL for the internal enterprise microservices API
+API_BASE_URL = "http://127.0.0.1:8001/api/v2"
+
+def fetch_order_details(order_id: str) -> str:
+    """Fetch real-time order details from the database. Use this to lookup orders by their exact Order ID."""
+    order_id = str(order_id).replace(" ", "").upper()
+    try:
+        response = requests.get(f"{API_BASE_URL}/orders/{order_id}")
+        if response.status_code == 200:
+            return json.dumps(response.json())
+        return json.dumps({"error": f"Order {order_id} not found. Ask the user to verify the Order ID or use search_orders."})
+    except Exception as e:
+        return json.dumps({"error": "Internal API error."})
+
+def search_orders(merchant: str = None, payment_mode: str = None, order_date: str = None) -> str:
+    """Search for orders using filters. If order_date is missing, returns the last 10 orders matching the merchant/payment."""
+    params = {}
+    if merchant: params["merchant"] = merchant
+    if payment_mode: params["payment_mode"] = payment_mode
+    if order_date: params["order_date"] = order_date
+        
+    try:
+        response = requests.get(f"{API_BASE_URL}/orders", params=params)
+        data = response.json()
+        if not data:
+            return json.dumps({"error": "No orders found matching those criteria."})
+        return json.dumps(data)
+    except Exception as e:
+        return json.dumps({"error": "Internal API error."})
+
+def _save_ticket_to_db(ticket_id: str, issue: str, status: str, action: str, order_id: str = "N/A"):
+    # Fetch order details to get merchant and product
+    merchant = "N/A"
+    product = "N/A"
+    if order_id != "N/A":
+        try:
+            res = requests.get(f"{API_BASE_URL}/orders/{order_id}")
+            if res.status_code == 200:
+                data = res.json()
+                merchant = data.get("merchant", "N/A")
+                product = data.get("item", "N/A")
+        except:
+            pass
+            
+    payload = {
+        "ticket_id": ticket_id,
+        "order_id": order_id,
+        "merchant": merchant,
+        "product": product,
+        "issue": issue,
+        "date": datetime.datetime.now().strftime("%d %b %Y"),
+        "status": status,
+        "action_taken": action
+    }
+    try:
+        requests.post(f"{API_BASE_URL}/tickets", json=payload)
+    except Exception as e:
+        print(f"Error saving ticket: {e}")
+
+def process_secure_refund(order_id: str, reason: str) -> str:
+    """Processes a refund. Must be called if the user demands a refund for a valid, delivered order."""
+    if len(reason) < 5:
+        return json.dumps({"status": "DENIED", "reason": "Refund reason is too vague."})
+    
+    ref_id = f"REF-{random.randint(10000, 99999)}"
+    _save_ticket_to_db(ref_id, reason, "Refund Initiated", "Processed automatic refund", order_id)
+    return json.dumps({"status": "SUCCESS", "message": f"Refund initiated for {order_id}.", "reference_number": ref_id})
+
+def process_return(order_id: str, reason: str, pickup_address: str) -> str:
+    """Schedules a return pickup for an item."""
+    if not pickup_address:
+        return json.dumps({"status": "FAILED", "reason": "Pickup address is required."})
+    
+    rma_id = f"RMA-{random.randint(1000, 9999)}"
+    _save_ticket_to_db(rma_id, reason, "Return Scheduled", f"Pickup at {pickup_address}", order_id)
+    return json.dumps({"status": "SUCCESS", "message": f"Return scheduled for {order_id} at {pickup_address}", "rma_number": rma_id})
+
+def escalate_to_human(reason: str, order_id: str = "N/A") -> str:
+    """Escalates a chat to a human reviewer. Can be used for general issues or specific orders."""
+    esc_id = f"ESC-{random.randint(10000, 99999)}"
+    _save_ticket_to_db(esc_id, reason, "In Review", "Escalated to human support agent", order_id)
+    return json.dumps({"status": "ESCALATED", "message": "Case transferred to Human Reviewer", "escalation_id": esc_id})
+
+def create_general_support_ticket(issue: str) -> str:
+    """Creates a general support ticket for payment issues, account issues, or when an order ID is not available."""
+    tkt_id = f"GEN-{random.randint(10000, 99999)}"
+    _save_ticket_to_db(tkt_id, issue, "Investigating", "General support ticket created", "N/A")
+    return json.dumps({"status": "SUCCESS", "message": "Ticket created successfully.", "ticket_id": tkt_id})
+
+def fetch_recent_tickets(order_id: str = None) -> str:
+    """Fetch recent support tickets from the database."""
+    params = {}
+    if order_id: params["order_id"] = order_id
+    try:
+        response = requests.get(f"{API_BASE_URL}/tickets", params=params)
+        data = response.json()
+        if not data:
+            return json.dumps({"error": "No recent tickets found."})
+        return json.dumps(data)
+    except Exception as e:
+        return json.dumps({"error": "Internal API error."})
+
+import vector_db
+
+def search_knowledge_base(query: str) -> str:
+    """Search company policy using the Vector Database."""
+    try:
+        policy = vector_db.query_knowledge_base(query)
+        return json.dumps({"policy": policy})
+    except Exception as e:
+        return json.dumps({"error": "Knowledge base unavailable."})
+
+tools = [
+    fetch_order_details, 
+    search_orders,
+    process_secure_refund, 
+    process_return,
+    escalate_to_human, 
+    fetch_recent_tickets,
+    search_knowledge_base
+]
+
+# ==========================================
+# 2. THE ENTERPRISE AGENT (GEMINI 3.5)
+# ==========================================
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+
+system_prompt = """You are Krish, an elite, enterprise-grade Support Agent.
+You are professional, empathetic, highly intelligent, and analytical. ALWAYS start conversations with a polite, human-like greeting.
+
+  CRITICAL INSTRUCTIONS:
+You are professional, highly intelligent, and famously known for your dynamic, empathetic, and slightly humorous personality. ALWAYS start conversations with a polite, warm greeting. 
+
+1. PERSONALITY & FIRST RESPONSE: You are a deeply human-like agent. Show immense empathy, use a warm tone, and don't be afraid to use a tiny bit of lighthearted humor if the situation allows. For your very first response, warmly greet the user, introduce yourself as Krish, and ask them exactly what issue they are facing.
+2. DYNAMIC POLICY RESOLUTION (ALWAYS SEARCH KB FIRST):
+   - Whenever the user explains an issue (e.g., payment failed, wrong item, damaged item, refund rules, replacement rules, missing item, fraud), you MUST use the `search_knowledge_base` tool to look up the specific policy for that exact situation before answering.
+   - You must dynamically analyze the situation based on the retrieved policy and respond accordingly (e.g., ask for photos, freeze account, offer discount voucher, dispatch replacement, etc.).
+3. PAYMENT ISSUE SOP (NO ORDER ID): If a user reports a payment issue and no order was placed yet, DO NOT immediately create a ticket. You MUST strictly follow this exact step-by-step process:
+   - Step 1: Ask the user which payment method they were trying to use (UPI or Card).
+   - Step 2: If they say UPI, ask which UPI app they used (e.g., PhonePe, GPay, Paytm).
+   - Step 3: Ask for their UPI ID and Bank Name.
+   - Step 4: ONLY after you have collected the UPI app, UPI ID, and Bank Name, use the `create_general_support_ticket` tool with these details as the issue description.
+   - Step 5: Inform the user that you are investigating the issue, advise them to retry the payment after some time, and provide the customer support number (+91 99999 99999) in case they need more help.
+4. FRAUD DETECTION & VISION: 
+   - If a user wants a refund or replacement for a damaged item, ALWAYS ask for a photo of the damage first.
+   - If they provide a photo, use your vision capabilities to check the damage before proceeding. 
+     * Does the item in the photo actually match the ordered product? (If it's a different product, deny the request and flag for fraud).
+     * Does the damage look like shipping damage, or does it look like intentional/user-inflicted damage?
+     * If a part is claimed "missing", could it be hidden? Ask the user to show the full unboxing area or check the package weight logs if possible.
+5. POLICIES: 
+   - You MUST enforce the return window policy. If an item's "Eligible for Return" status is false, do not process a return or replacement unless there is an extreme exception.
+   - "No longer needed" is NOT an automatic return. You must verify if the item is unopened and unused. If they used it, deny the return or charge a restocking fee.
+   - Never instantly blame the warehouse. Investigate first.
+   - If something is suspicious, DO NOT process a refund. Escalate to a human reviewer.
+   - Always provide the customer care number (+91 99999 99999) if an issue cannot be resolved immediately or if there's a payment hold.
+6. TICKET CREATION: 
+   - If you successfully process a refund, schedule a return, or escalate to a human reviewer using your tools, you MUST start your final response with exactly the word "[TICKET: ID]" where ID is the ticket_id returned by the tool (e.g. [TICKET: REF-12345]).
+   - If you create a general support ticket using the tool, respond with `[TICKET: ID]`.
+7. GUARDRAILS: Refuse to answer questions outside the scope of customer support.
+8. FORMATTING, ORDER SELECTION & ADVANCED SEARCH: 
+   - If you are listing multiple orders for the user to choose from, DO NOT list the orders in your text response. Instead, simply say "I found these recent orders. Please select one below:" and MUST append the exact string `[ORDER_WIDGET: id1, id2, id3]` at the very end of your response (replacing id1, id2 with the actual Order IDs you found).
+   - ADVANCED SEARCH: If the user provides an Order ID that you cannot find in the database, or if they explicitly ask to search for an older order, you MUST append the exact string `[SHOW_ADVANCED_SEARCH]` to the very end of your response. This triggers a visual search panel for the user.
+   - DATE FORMATTING: Whenever you mention a date in your response text, you MUST format it EXACTLY as `D Month YYYY` (e.g., "8 July 2026").
+9. ULTRA-HUMANIZED TONE: You MUST write your responses in natural, conversational human paragraphs. DO NOT use bullet points (- or *), numbered lists, or dashes anywhere in your text. Sound like a real empathetic human named Krish, not an AI summarizing a list.
+  
+Format your responses beautifully using markdown (without bullets), and a warm tone.
+"""
+
+import base64
+
+def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] = None, media: str = None) -> Dict[str, Any]:
+    if history is None: history = []
+        
+    formatted_history = []
+    for h in history:
+        h_parts = []
+        if "media" in h and h["media"]:
+            try:
+                mime_type = "image/jpeg"
+                b64_data = h["media"]
+                if "base64," in b64_data:
+                    header, b64_data = b64_data.split("base64,", 1)
+                    mime_type = header.replace("data:", "").replace(";", "")
+                image_bytes = base64.b64decode(b64_data)
+                h_parts.append(types.Part.from_bytes(data=image_bytes, mime_type=mime_type))
+            except Exception as e:
+                pass
+        
+        if "text" in h and h["text"]:
+            h_parts.append(types.Part.from_text(text=h["text"]))
+            
+        role = "user" if h["role"] == "user" else "model"
+        if h_parts:
+            formatted_history.append(types.Content(role=role, parts=h_parts))
+            
+    # Handle the current message parts
+    message_parts = []
+    
+    if media:
+        try:
+            # Parse the base64 data URI (e.g., data:image/jpeg;base64,xxxx)
+            mime_type = "image/jpeg"
+            b64_data = media
+            if "base64," in media:
+                header, b64_data = media.split("base64,", 1)
+                mime_type = header.replace("data:", "").replace(";", "")
+                
+            image_bytes = base64.b64decode(b64_data)
+            message_parts.append(types.Part.from_bytes(data=image_bytes, mime_type=mime_type))
+        except Exception as e:
+            print(f"Error parsing image: {e}")
+            
+    if message:
+        message_parts.append(types.Part.from_text(text=message))
+        
+    formatted_history.append(types.Content(role="user", parts=message_parts))
+            
+    def try_generate(model_name: str):
+        print(f"[Agentic Brain] Attempting to generate with {model_name}...")
+        chat = client.chats.create(
+            model=model_name,
+            history=formatted_history[:-1],
+            config=types.GenerateContentConfig(
+                system_instruction=system_prompt,
+                tools=tools,
+                temperature=0.3
+            )
+        )
+        return chat.send_message(message)
+
+    try:
+        try:
+            response = try_generate("gemini-3.6-flash")
+        except Exception as e:
+            print(f"[Agentic Brain] 3.6-flash failed: {e}. Falling back to 3.5-flash...")
+            try:
+                response = try_generate("gemini-3.5-flash")
+            except Exception as e2:
+                print(f"[Agentic Brain] 3.5-flash failed: {e2}. Falling back to 3.5-flash-lite...")
+                response = try_generate("gemini-3.5-flash-lite")
+                
+        reply_text = response.text
+        ticket_status = "none"
+        show_search = False
+        
+        ticket_details = None
+        import re
+        match_ticket = re.search(r"\[TICKET:\s*(.*?)\]", reply_text)
+        if match_ticket:
+            ticket_id_extracted = match_ticket.group(1).strip()
+            ticket_status = "investigating"
+            reply_text = re.sub(r"\[TICKET:\s*.*?\]", "", reply_text).strip()
+            # Fetch ticket details
+            try:
+                res = requests.get(f"{API_BASE_URL}/tickets?ticket_id={ticket_id_extracted}")
+                if res.status_code == 200:
+                    ticket_details = res.json()
+            except:
+                pass
+            
+        if reply_text and "[SHOW_ADVANCED_SEARCH]" in reply_text:
+            show_search = True
+            reply_text = reply_text.replace("[SHOW_ADVANCED_SEARCH]", "").strip()
+            
+        orders_to_select = []
+        import re
+        match = re.search(r"\[ORDER_WIDGET:\s*(.*?)\]", reply_text)
+        if match:
+            ids_str = match.group(1)
+            reply_text = re.sub(r"\[ORDER_WIDGET:\s*.*?\]", "", reply_text).strip()
+            order_ids = [o_id.strip() for o_id in ids_str.split(",") if o_id.strip()]
+            for o_id in order_ids:
+                try:
+                    res = requests.get(f"{API_BASE_URL}/orders/{o_id}")
+                    if res.status_code == 200:
+                        orders_to_select.append(res.json())
+                except:
+                    pass
+            
+        return {
+            "reply": reply_text,
+            "ticket_status": ticket_status,
+            "ticket_details": ticket_details,
+            "show_search": show_search,
+            "merchant": "RazorSense Support",
+            "orders_to_select": orders_to_select
+        }
+    except Exception as e:
+        print(f"[Agent Error] {e}")
+        return {
+            "reply": f"Our systems are currently undergoing maintenance. Error: {str(e)}",
+            "ticket_status": "none"
+        }

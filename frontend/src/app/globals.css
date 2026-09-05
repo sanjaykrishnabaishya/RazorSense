@@ -46,3 +46,32 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-muted);
 }
+
+
+.markdown-container table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.9em;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+.markdown-container thead tr {
+  background-color: var(--color-border-main);
+  text-align: left;
+}
+.markdown-container th, .markdown-container td {
+  padding: 12px 15px;
+}
+.markdown-container tbody tr {
+  border-bottom: 1px solid var(--color-border-soft);
+}
+.markdown-container tbody tr:last-of-type {
+  border-bottom: 2px solid var(--color-primary-dark);
+}
+.markdown-container a { color: var(--color-primary); }
+.markdown-container ul { list-style-type: disc; margin-left: 1.5rem; margin-top: 0.5rem; }
+.markdown-container ol { list-style-type: decimal; margin-left: 1.5rem; margin-top: 0.5rem; }
+.markdown-container p { margin-bottom: 0.75rem; }
+.markdown-container strong { color: white; }

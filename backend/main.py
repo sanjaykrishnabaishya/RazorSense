@@ -48,6 +48,32 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
     return {"access_token": user.phone_number, "token_type": "bearer"}
 
 
+@app.get("/api/orders/search")
+async def search_orders(q: str, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    query = q.lower()
+    
+    orders = db.query(models.Order).join(models.Merchant).filter(
+        models.Order.user_id == current_user.id
+    ).filter(
+        (models.Order.order_number.ilike(f"%{query}%")) |
+        (models.Order.product_name.ilike(f"%{query}%")) |
+        (models.Merchant.name.ilike(f"%{query}%"))
+    ).all()
+    
+    results = []
+    for order in orders:
+        results.append({
+            "id": str(order.id),
+            "merchant": order.merchant.name,
+            "date": order.created_at.strftime("%d %b %Y"),
+            "amount": float(order.price),
+            "currency": "INR",
+            "item": order.product_name,
+            "status": "delivered",
+            "orderId": order.order_number
+        })
+        
+    return results
 @app.get("/api/orders/{order_number}")
 def get_order_details(order_number: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
@@ -110,35 +136,36 @@ def get_user_tickets(db: Session = Depends(get_db), current_user: models.User = 
     return tickets
 
 # -----------------
-# LANGGRAPH ENDPOINT
+# DUAL-BRAIN ENDPOINT
 # -----------------
-from agent_graph import app as langgraph_app
-from langchain_core.messages import HumanMessage
+from fastapi import BackgroundTasks
+from agentic_brain import run_agentic_brain
 from typing import Dict, Any
+
+import vector_db
 
 class ChatRequest(BaseModel):
     message: str
     checklist: Dict[str, Any] = {}
+    media: str | None = None
+    history: list = []
 
 @app.post("/api/chat")
-def chat_with_agent(req: ChatRequest, current_user: models.User = Depends(get_current_user)):
-    """Routes a message through the LangGraph AI Brain."""
-    state = {
-        "messages": [HumanMessage(content=req.message)],
-        "user_id": current_user.id,
-        "intent": "",
-        "next_agent": "",
-        "checklist": req.checklist
-    }
-    
-    # Invoke the compiled graph
-    result = langgraph_app.invoke(state)
-    
-    # The last message is the response from the sub-agent
-    ai_reply = result["messages"][-1].content
-    
-    return {
-        "reply": ai_reply,
-        "checklist": result["checklist"],
-        "agent": result.get("next_agent", "Unknown")
-    }
+async def chat(req: ChatRequest, current_user: models.User = Depends(get_current_user)):
+    """
+    Main Chat API powered by Agentic-Brain Architecture.
+    """
+    try:
+        # Generate new AI response
+        response = run_agentic_brain(
+            user_id=str(current_user.id),
+            message=req.message,
+            history=req.history,
+            media=req.media
+        )
+        return response
+        
+    except Exception as e:
+        print(f"[API Error] {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+

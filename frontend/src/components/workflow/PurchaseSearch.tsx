@@ -6,21 +6,22 @@ import AdvancedSearchModal from './AdvancedSearchModal';
 export default function PurchaseSearch(props: any) {
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
 
-  const handleSearch = () => {
-    props.setQuery('find recent orders');
-    // Simulate finding the order
-    props.setResults([{
-      id: '2', merchant: 'Amazon', date: '5 Aug 2024', amount: 1499, currency: 'INR', item: 'Wireless Earbuds', status: 'delivered', orderId: '#AMZ884512'
-    }]);
-    props.setStage('verify-details');
+  const handleSearch = async () => {
+    if (props.sendText) {
+       props.sendText(`Please find my orders matching: ${props.query || 'recent orders'}`);
+    }
   };
 
-  const handleAdvancedSearchSubmit = (data: any) => {
-    props.setQuery(`Searching for ${data.merchant} order ${data.orderId}`);
-    props.setResults([{
-      id: '3', merchant: data.merchant, date: 'Today', amount: 1499, currency: 'INR', item: 'Advanced Search Item', status: 'delivered', orderId: data.orderId
-    }]);
-    props.setStage('verify-details');
+  const handleAdvancedSearchSubmit = async (data: any) => {
+    let msg = "Find my order. ";
+    if (data.merchant) msg += `Merchant: ${data.merchant}. `;
+    if (data.orderId) msg += `Order ID: ${data.orderId}. `;
+    if (data.date) msg += `Date: ${data.date}. `;
+    
+    if (props.sendText) {
+       props.sendText(msg);
+    }
+    setIsAdvancedOpen(false);
   };
 
   return (
