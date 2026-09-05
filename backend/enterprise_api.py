@@ -5,6 +5,57 @@ from typing import Optional
 
 app = FastAPI()
 
+def init_db():
+    db_path = os.path.join(os.path.dirname(__file__), 'rz_db.sqlite')
+    conn = sqlite3.connect(db_path)
+    # Create orders table
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS orders (
+            order_id TEXT PRIMARY KEY,
+            merchant TEXT,
+            product TEXT,
+            amount REAL,
+            order_date TEXT,
+            status TEXT,
+            payment_mode TEXT
+        )
+    """)
+    # Create tickets table
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS tickets (
+            ticket_id TEXT PRIMARY KEY,
+            order_id TEXT,
+            merchant TEXT,
+            issue TEXT,
+            date TEXT,
+            status TEXT,
+            action_taken TEXT,
+            product TEXT
+        )
+    """)
+    
+    # Auto-seed Demo Data for Portfolio Visitors!
+    cursor = conn.execute("SELECT COUNT(*) FROM orders")
+    if cursor.fetchone()[0] == 0:
+        print("Auto-seeding Demo Database for visitors...")
+        demo_orders = [
+            ("ORD-5671", "Amazon", "Echo Dot (5th Gen)", 49.99, "2026-07-05", "Delivered", "Credit Card"),
+            ("ORD-8923", "Amazon", "Kindle Paperwhite", 139.99, "2026-08-10", "Delivered", "Credit Card"),
+            ("ORD-1045", "Amazon", "Sony WF-1000XM4 Earbuds", 278.00, "2026-08-25", "Delivered", "UPI - GPay"),
+            ("ORD-9932", "Flipkart", "Samsung Galaxy S24", 799.00, "2026-09-02", "Shipped", "Credit Card"),
+            ("ORD-7711", "Swiggy", "Margherita Pizza", 14.50, "2026-09-04", "Delivered", "UPI - PhonePe")
+        ]
+        conn.executemany(
+            "INSERT INTO orders (order_id, merchant, product, amount, order_date, status, payment_mode) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            demo_orders
+        )
+        conn.commit()
+    conn.close()
+
+@app.on_event("startup")
+def on_startup():
+    init_db()
+
 def get_db():
     db_path = os.path.join(os.path.dirname(__file__), 'rz_db.sqlite')
     conn = sqlite3.connect(db_path)
