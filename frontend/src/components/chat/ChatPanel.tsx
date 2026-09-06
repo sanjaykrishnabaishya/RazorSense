@@ -286,7 +286,7 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
               <IssuePrompt icon={CreditCard} label="Payment issue" onClick={() => sendText("I have a payment issue")} color="text-red-400" />
               <IssuePrompt icon={Search} label="Find a purchase" onClick={() => sendText("Can you help me find a purchase?")} color="text-cyan-400" />
               <IssuePrompt icon={Clock} label="Ticket History" onClick={() => sendText("Show my ticket history")} color="text-pink-400" />
-              <IssuePrompt icon={HelpCircle} label="Other Issue" onClick={() => sendText("I have an other issue (delay, tech issue, etc.)")} color="text-zinc-300" />
+              <IssuePrompt icon={HelpCircle} label="Other Issue" onClick={() => sendText("I have an issue that I need help with.")} color="text-zinc-300" />
             </div>
           </motion.div>
         ) : (
