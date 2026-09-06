@@ -258,18 +258,32 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
     ticket_details = None
     orders_to_select = []
 
+    MODELS = ["gemini-3.6-flash", "gemini-2.5-flash", "gemini-3.5-flash-lite"]
     max_retries = 3
     response = None
-    for attempt in range(max_retries):
-        try:
-            response = try_generate("gemini-1.5-flash")
+    last_error = None
+
+    for model in MODELS:
+        for attempt in range(max_retries):
+            try:
+                response = try_generate(model)
+                print(f"[Agentic Brain] Success with {model}")
+                break
+            except Exception as e:
+                last_error = e
+                err_str = str(e)
+                print(f"[Agentic Brain] {model} failed (attempt {attempt+1}): {err_str[:120]}")
+                # If quota/not found — skip to next model immediately, don't retry
+                if "429" in err_str or "404" in err_str or "RESOURCE_EXHAUSTED" in err_str or "NOT_FOUND" in err_str:
+                    break
+                # For 503/overload — wait and retry same model
+                if attempt < max_retries - 1:
+                    time.sleep(2)
+        if response:
             break
-        except Exception as e:
-            print(f"[Agentic Brain] 3.5-flash failed (Attempt {attempt+1}/{max_retries}): {e}")
-            if attempt < max_retries - 1:
-                time.sleep(2)
-            else:
-                reply_text = f"Our advanced reasoning systems are under very high demand right now. Please try again in a few moments."
+
+    if not response:
+        reply_text = "I'm experiencing a brief moment of high traffic across all systems. Please try again in a moment!"
                 
     if response:
         reply_text = response.text
