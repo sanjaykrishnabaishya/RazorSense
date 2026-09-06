@@ -101,7 +101,7 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
       timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
     };
 
-    if (text !== "[POLL]" && text !== "I have uploaded an image.") {
+    if (text !== "[POLL]" && text !== "I have uploaded an image." && text !== "I have sent a voice message. Please listen to it.") {
       setMessages((prev: any) => [...prev, userMsg]);
       setInput('');
       setChatStep(prev => prev + 1);
@@ -303,7 +303,13 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
 
                     {m.kind === 'image' && (
                       <div className={`p-2 shadow-lg ${isUser ? 'bg-white rounded-2xl rounded-tr-sm' : 'bg-[#111] rounded-2xl rounded-tl-sm border border-white/[0.05]'}`}>
-                        <img src={m.imageUrl} alt="attachment" className="max-w-[250px] rounded-xl object-contain" />
+                        {m.imageUrl === null ? (
+                          <div className={`px-4 py-3 flex items-center gap-2 font-medium ${isUser ? 'text-black' : 'text-white'}`}>
+                            🎤 Voice Message
+                          </div>
+                        ) : (
+                          <img src={m.imageUrl} alt="attachment" className="max-w-[250px] rounded-xl object-contain" />
+                        )}
                       </div>
                     )}
 
