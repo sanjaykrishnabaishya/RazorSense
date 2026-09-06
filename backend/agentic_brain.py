@@ -250,7 +250,7 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
         return chat.send_message(message_parts)
 
     try:
-        response = try_generate("gemini-3.5-flash-lite")
+        response = try_generate("gemini-3.5-flash")
         reply_text = response.text
         ticket_status = "none"
         show_search = False
