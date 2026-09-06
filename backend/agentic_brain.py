@@ -250,7 +250,16 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
         return chat.send_message(message_parts)
 
     try:
-        response = try_generate("gemini-3.5-flash")
+        try:
+            response = try_generate("gemini-3.5-flash")
+        except Exception as e:
+            print(f"[Agentic Brain] 3.5-flash failed: {e}. Falling back to 3.5-flash-lite...")
+            try:
+                response = try_generate("gemini-3.5-flash-lite")
+            except Exception as e2:
+                print(f"[Agentic Brain] 3.5-flash-lite failed: {e2}. Falling back to gemini-1.5-flash...")
+                response = try_generate("gemini-1.5-flash")
+        
         reply_text = response.text
         ticket_status = "none"
         show_search = False
