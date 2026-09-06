@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SendHorizontal, Paperclip, Loader2, CheckCircle2, RefreshCcw, Package, PackageX, AlertTriangle, CreditCard, Search, Clock, HelpCircle, FileText, ChevronRight } from 'lucide-react';
+import { SendHorizontal, Paperclip, Loader2, CheckCircle2, RefreshCcw, Package, PackageX, AlertTriangle, CreditCard, Search, Clock, HelpCircle, FileText, ChevronRight, Mic, Square } from 'lucide-react';
 import { ChatMessage } from '../../types/support';
 import PurchaseSearch from '../workflow/PurchaseSearch';
 import ReactMarkdown from 'react-markdown';
@@ -27,6 +27,45 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
   const [isLoading, setIsLoading] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Voice Recording State
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<BlobPart[]>([]);
+
+  const toggleRecording = async () => {
+    if (isRecording) {
+      mediaRecorderRef.current?.stop();
+      setIsRecording(false);
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) audioChunksRef.current.push(event.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = () => {
+          setSelectedFile(reader.result as string);
+          setFilePreview("AUDIO");
+        };
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      console.error("Mic access denied", err);
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -188,13 +227,17 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
         id: Date.now().toString(),
         role: 'user',
         kind: 'image',
-        text: 'Uploaded an attachment',
-        imageUrl: filePreview,
+        text: filePreview === "AUDIO" ? 'Sent a voice message 🎤' : 'Uploaded an attachment',
+        imageUrl: filePreview === "AUDIO" ? null : filePreview,
         base64: selectedFile,
         timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
       }]);
     }
-    sendText(input || "I have uploaded an image.", selectedFile || undefined);
+    
+    let defaultText = "I have uploaded an image.";
+    if (filePreview === "AUDIO") defaultText = "I have sent a voice message. Please listen to it.";
+    
+    sendText(input || defaultText, selectedFile || undefined);
     setSelectedFile(null);
     setFilePreview(null);
     setInput('');
@@ -375,12 +418,18 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
         <div className="relative flex flex-col border border-white/[0.1] rounded-2xl bg-[#0a0a0a]/80 backdrop-blur-xl shadow-[0_0_30px_rgba(0,0,0,0.8)] focus-within:border-white/30 transition-colors p-1.5 mx-auto max-w-3xl">
           {filePreview && (
             <div className="relative self-start m-2">
-              <img src={filePreview} alt="Preview" className="h-20 rounded-xl object-contain border border-white/10" />
+              {filePreview === "AUDIO" ? (
+                 <div className="h-12 px-4 rounded-xl border border-white/10 flex items-center bg-blue-500/20 text-blue-400">
+                   🎤 Voice Note Recorded
+                 </div>
+              ) : (
+                 <img src={filePreview} alt="Preview" className="h-20 rounded-xl object-contain border border-white/10" />
+              )}
               <button 
                 onClick={() => { setFilePreview(null); setSelectedFile(null); }}
                 className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
               >
-                ✕
+                <PackageX size={12} />
               </button>
             </div>
           )}
@@ -389,8 +438,17 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
               <Paperclip size={20} />
               <input type="file" accept="image/*,video/*" className="hidden" onChange={handleFileChange} />
             </label>
+            
+            <button 
+              onClick={toggleRecording}
+              className={`p-3 transition rounded-xl shrink-0 ${isRecording ? 'text-red-500 animate-pulse' : 'text-white/40 hover:text-white'}`}
+            >
+              {isRecording ? <Square size={20} /> : <Mic size={20} />}
+            </button>
+            
             <textarea 
-              placeholder="Message Krish..."
+              placeholder={isRecording ? "Recording... (Click square to stop)" : "Message Krish..."}
+              disabled={isRecording}
               className="flex-1 max-h-32 min-h-[44px] py-3 text-[15px] bg-transparent focus:outline-none resize-none custom-scrollbar text-white placeholder-white/30"
               rows={1}
               value={input}
