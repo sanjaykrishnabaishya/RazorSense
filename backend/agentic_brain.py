@@ -250,7 +250,14 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
         return chat.send_message(message_parts)
 
     import time
+    import re
     
+    reply_text = "I'm having a little trouble reaching my systems right now. Please try again in a moment!"
+    ticket_status = "none"
+    show_search = False
+    ticket_details = None
+    orders_to_select = []
+
     max_retries = 3
     response = None
     for attempt in range(max_retries):
@@ -260,23 +267,18 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
         except Exception as e:
             print(f"[Agentic Brain] 3.5-flash failed (Attempt {attempt+1}/{max_retries}): {e}")
             if attempt < max_retries - 1:
-                time.sleep(2) # Wait 2 seconds before retrying
+                time.sleep(2)
             else:
-                reply_text = f"Our advanced reasoning systems are currently experiencing unusually high demand. Please try again in a few moments. (Error: {e})"
+                reply_text = f"Our advanced reasoning systems are under very high demand right now. Please try again in a few moments."
                 
     if response:
         reply_text = response.text
-        ticket_status = "none"
-        show_search = False
-        
-        ticket_details = None
-        import re
+
         match_ticket = re.search(r"\[TICKET:\s*(.*?)\]", reply_text)
         if match_ticket:
             ticket_id_extracted = match_ticket.group(1).strip()
             ticket_status = "investigating"
             reply_text = re.sub(r"\[TICKET:\s*.*?\]", "", reply_text).strip()
-            # Fetch ticket details
             try:
                 res = requests.get(f"{API_BASE_URL}/tickets?ticket_id={ticket_id_extracted}")
                 if res.status_code == 200:
@@ -284,12 +286,10 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
             except:
                 pass
             
-        if reply_text and "[SHOW_ADVANCED_SEARCH]" in reply_text:
+        if "[SHOW_ADVANCED_SEARCH]" in reply_text:
             show_search = True
             reply_text = reply_text.replace("[SHOW_ADVANCED_SEARCH]", "").strip()
             
-        orders_to_select = []
-        import re
         match = re.search(r"\[ORDER_WIDGET:\s*(.*?)\]", reply_text)
         if match:
             ids_str = match.group(1)
@@ -303,11 +303,11 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
                 except:
                     pass
             
-        return {
-            "reply": reply_text,
-            "ticket_status": ticket_status,
-            "ticket_details": ticket_details,
-            "show_search": show_search,
-            "merchant": "RazorSense Support",
-            "orders_to_select": orders_to_select
-        }
+    return {
+        "reply": reply_text,
+        "ticket_status": ticket_status,
+        "ticket_details": ticket_details,
+        "show_search": show_search,
+        "merchant": "RazorSense Support",
+        "orders_to_select": orders_to_select
+    }
