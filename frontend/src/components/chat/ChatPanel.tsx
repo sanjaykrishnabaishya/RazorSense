@@ -173,7 +173,7 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
       data = await res.json();
       resOk = res.ok;
       
-      if (resOk) {
+      if (resOk && data && data.reply) {
         addBotMessage('text', data.reply);
         
         if (data.show_search) {
@@ -209,8 +209,10 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
               timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
             }]);
         }
+      } else if (resOk && data && !data.reply) {
+        addBotMessage('text', 'I received a response but it was empty. Please try again.');
       } else {
-        addBotMessage('text', 'Sorry, I encountered an error connecting to my brain.');
+        addBotMessage('text', data?.reply || 'Sorry, I encountered an error connecting to my brain.');
       }
     } catch (err) {
       console.error("Fetch error in sendText:", err);
@@ -316,7 +318,7 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
                         {m.imageUrl === null ? (
                           <div className={`px-4 py-3 flex flex-col gap-2 font-medium ${isUser ? 'text-black' : 'text-white'}`}>
                             <div className="flex items-center gap-2">🎤 Voice Message</div>
-                            {m.base64 && <audio src={m.base64} controls className="h-8 max-w-[200px]" />}
+                            {m.base64 && <audio src={m.base64} controls className="w-full mt-1" />}
                           </div>
                         ) : (
                           <img src={m.imageUrl} alt="attachment" className="max-w-[250px] rounded-xl object-contain" />
