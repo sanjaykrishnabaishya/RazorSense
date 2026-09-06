@@ -28,9 +28,12 @@ export interface Purchase {
 export interface ChatMessage {
   id: string;
   role: 'assistant' | 'user' | 'system';
-  kind: 'text' | 'progress' | 'purchase-card' | 'resolution-card';
+  kind: 'text' | 'progress' | 'purchase-card' | 'resolution-card' | 'image' | 'widget_order_select' | 'widget_refund' | 'widget_exchange';
   text?: string;
-  timestamp: string;
+  imageUrl?: string;
+  base64?: string;
+  orders?: any[];
+  timestamp?: string;
 }
 
 export interface SearchProgressItem {
