@@ -6,6 +6,8 @@ import PurchaseSearch from '../workflow/PurchaseSearch';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import { audioBufferToWav } from '../../utils/wav';
+
 export default function ChatPanel({ messages, setMessages }: { messages: ChatMessage[], setMessages: any }) {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -49,15 +51,23 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
         if (event.data.size > 0) audioChunksRef.current.push(event.data);
       };
 
-      mediaRecorder.onstop = () => {
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach(track => track.stop());
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        
+        // Convert to WAV format seamlessly!
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const arrayBuffer = await audioBlob.arrayBuffer();
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        const wavBuffer = audioBufferToWav(audioBuffer);
+        const wavBlob = new Blob([wavBuffer], { type: 'audio/wav' });
+
         const reader = new FileReader();
-        reader.readAsDataURL(audioBlob);
+        reader.readAsDataURL(wavBlob);
         reader.onloadend = () => {
           setSelectedFile(reader.result as string);
           setFilePreview("AUDIO");
         };
-        stream.getTracks().forEach(track => track.stop());
       };
 
       mediaRecorder.start();
@@ -304,8 +314,9 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
                     {m.kind === 'image' && (
                       <div className={`p-2 shadow-lg ${isUser ? 'bg-white rounded-2xl rounded-tr-sm' : 'bg-[#111] rounded-2xl rounded-tl-sm border border-white/[0.05]'}`}>
                         {m.imageUrl === null ? (
-                          <div className={`px-4 py-3 flex items-center gap-2 font-medium ${isUser ? 'text-black' : 'text-white'}`}>
-                            🎤 Voice Message
+                          <div className={`px-4 py-3 flex flex-col gap-2 font-medium ${isUser ? 'text-black' : 'text-white'}`}>
+                            <div className="flex items-center gap-2">🎤 Voice Message</div>
+                            {m.base64 && <audio src={m.base64} controls className="h-8 max-w-[200px]" />}
                           </div>
                         ) : (
                           <img src={m.imageUrl} alt="attachment" className="max-w-[250px] rounded-xl object-contain" />

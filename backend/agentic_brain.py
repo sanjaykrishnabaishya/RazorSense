@@ -195,9 +195,6 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
                     header, b64_data = b64_data.split("base64,", 1)
                     mime_type = header.replace("data:", "").split(";")[0]
                 
-                if mime_type == "audio/webm":
-                    mime_type = "audio/mp3"
-                
                 image_bytes = base64.b64decode(b64_data)
                 h_parts.append(types.Part.from_bytes(data=image_bytes, mime_type=mime_type))
             except Exception as e:
@@ -221,9 +218,6 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
             if "base64," in media:
                 header, b64_data = media.split("base64,", 1)
                 mime_type = header.replace("data:", "").split(";")[0]
-            
-            if mime_type == "audio/webm":
-                mime_type = "audio/mp3" # Force it to a supported audio MIME type so Gemini's audio pipeline kicks in
                 
             image_bytes = base64.b64decode(b64_data)
             
