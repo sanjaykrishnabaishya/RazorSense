@@ -194,6 +194,10 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
                 if "base64," in b64_data:
                     header, b64_data = b64_data.split("base64,", 1)
                     mime_type = header.replace("data:", "").replace(";", "")
+                
+                if mime_type == "audio/webm":
+                    mime_type = "video/webm"
+                
                 image_bytes = base64.b64decode(b64_data)
                 h_parts.append(types.Part.from_bytes(data=image_bytes, mime_type=mime_type))
             except Exception as e:
@@ -217,11 +221,14 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
             if "base64," in media:
                 header, b64_data = media.split("base64,", 1)
                 mime_type = header.replace("data:", "").replace(";", "")
+            
+            if mime_type == "audio/webm":
+                mime_type = "video/webm" # Gemini supports WebM natively under video, which reads the audio track!
                 
             image_bytes = base64.b64decode(b64_data)
             message_parts.append(types.Part.from_bytes(data=image_bytes, mime_type=mime_type))
         except Exception as e:
-            print(f"Error parsing image: {e}")
+            print(f"Error parsing media: {e}")
             
     if message:
         message_parts.append(types.Part.from_text(text=message))
