@@ -311,9 +311,3 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
             "merchant": "RazorSense Support",
             "orders_to_select": orders_to_select
         }
-    except Exception as e:
-        print(f"[Agent Error] {e}")
-        return {
-            "reply": f"Our systems are currently undergoing maintenance. Error: {str(e)}",
-            "ticket_status": "none"
-        }
