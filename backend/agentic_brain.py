@@ -225,6 +225,7 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
                 f.write(f"MIME: {mime_type}, Length: {len(image_bytes)}\n")
             
             message_parts.append(types.Part.from_bytes(data=image_bytes, mime_type=mime_type))
+            message_parts.append(types.Part.from_text(text="[SYSTEM INSTRUCTION: The user has attached an audio file. You CAN and MUST listen to it. Respond to the spoken request inside the audio file. DO NOT claim you cannot play or hear it.]"))
         except Exception as e:
             with open("debug_media.txt", "w") as f:
                 f.write(f"ERROR: {e}\n")
@@ -246,7 +247,7 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
                 temperature=0.3
             )
         )
-        return chat.send_message(message)
+        return chat.send_message(message_parts)
 
     try:
         try:
