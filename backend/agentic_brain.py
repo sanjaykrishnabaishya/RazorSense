@@ -240,16 +240,27 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
         
     formatted_history.append(types.Content(role="user", parts=message_parts))
             
+    def get_config(model_name: str) -> types.GenerateContentConfig:
+        """Return model config — thinking enabled for 3.8/3.7, off for lite fallback."""
+        if "3.8" in model_name or "3.7" in model_name:
+            return types.GenerateContentConfig(
+                system_instruction=system_prompt,
+                tools=tools,
+                temperature=1,  # required for thinking mode
+                thinking_config=types.ThinkingConfig(thinking_budget=8192)
+            )
+        return types.GenerateContentConfig(
+            system_instruction=system_prompt,
+            tools=tools,
+            temperature=0.3
+        )
+
     def try_generate(model_name: str):
-        print(f"[Agentic Brain] Attempting to generate with {model_name}...")
+        print(f"[Agentic Brain] Attempting {model_name}...")
         chat = client.chats.create(
             model=model_name,
             history=formatted_history[:-1],
-            config=types.GenerateContentConfig(
-                system_instruction=system_prompt,
-                tools=tools,
-                temperature=0.3
-            )
+            config=get_config(model_name)
         )
         return chat.send_message(message_parts)
 
@@ -262,7 +273,10 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
     ticket_details = None
     orders_to_select = []
 
-    MODELS = ["gemini-3.6-flash", "gemini-2.5-flash", "gemini-3.5-flash-lite"]
+    # gemini-3.8-flash = most intelligent flash, free, thinking enabled
+    # gemini-3.7-flash = slightly older, same pool, thinking enabled
+    # gemini-3.5-flash-lite = highest quota safety net
+    MODELS = ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.5-flash-lite"]
     max_retries = 3
     response = None
     last_error = None
@@ -277,10 +291,8 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
                 last_error = e
                 err_str = str(e)
                 print(f"[Agentic Brain] {model} failed (attempt {attempt+1}): {err_str[:120]}")
-                # If quota/not found — skip to next model immediately, don't retry
                 if "429" in err_str or "404" in err_str or "RESOURCE_EXHAUSTED" in err_str or "NOT_FOUND" in err_str:
                     break
-                # For 503/overload — wait and retry same model
                 if attempt < max_retries - 1:
                     time.sleep(2)
         if response:
@@ -364,8 +376,22 @@ def run_agentic_brain_stream(user_id: str, message: str, history: List[Dict[str,
 
     formatted_history.append(types.Content(role="user", parts=message_parts))
 
-    MODELS = ["gemini-3.6-flash", "gemini-2.5-flash", "gemini-3.5-flash-lite"]
+    MODELS = ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.5-flash-lite"]
     SKIP_CODES = ("429", "404", "503", "RESOURCE_EXHAUSTED", "NOT_FOUND", "UNAVAILABLE")
+
+    def get_stream_config(model_name: str) -> types.GenerateContentConfig:
+        if "3.8" in model_name or "3.7" in model_name:
+            return types.GenerateContentConfig(
+                system_instruction=system_prompt,
+                tools=tools,
+                temperature=1,
+                thinking_config=types.ThinkingConfig(thinking_budget=8192)
+            )
+        return types.GenerateContentConfig(
+            system_instruction=system_prompt,
+            tools=tools,
+            temperature=0.3
+        )
 
     for model in MODELS:
         success = False
@@ -373,15 +399,10 @@ def run_agentic_brain_stream(user_id: str, message: str, history: List[Dict[str,
             chat = client.chats.create(
                 model=model,
                 history=formatted_history[:-1],
-                config=types.GenerateContentConfig(
-                    system_instruction=system_prompt,
-                    tools=tools,
-                    temperature=0.3
-                )
+                config=get_stream_config(model)
             )
             stream = chat.send_message_stream(message_parts)
-            print(f"[Stream] Using {model}")
-            # Iterate chunks — errors here are caught below
+            print(f"[Stream] Using {model} (thinking={'yes' if '3.8' in model or '3.7' in model else 'no'})")
             for chunk in stream:
                 if chunk.text:
                     yield chunk.text
@@ -390,14 +411,11 @@ def run_agentic_brain_stream(user_id: str, message: str, history: List[Dict[str,
             err_str = str(e)
             print(f"[Stream] {model} error: {err_str[:150]}")
             if any(code in err_str for code in SKIP_CODES):
-                # Quota/overload — try next model
                 continue
-            # Unknown error — surface it
             yield "I ran into an unexpected issue. Please try again!"
             return
 
         if success:
             return
 
-    # All models failed
     yield "I'm experiencing high traffic across all systems right now. Please try again in a moment!"
