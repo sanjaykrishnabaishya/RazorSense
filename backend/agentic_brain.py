@@ -365,8 +365,10 @@ def run_agentic_brain_stream(user_id: str, message: str, history: List[Dict[str,
     formatted_history.append(types.Content(role="user", parts=message_parts))
 
     MODELS = ["gemini-3.6-flash", "gemini-2.5-flash", "gemini-3.5-flash-lite"]
-    stream = None
+    SKIP_CODES = ("429", "404", "503", "RESOURCE_EXHAUSTED", "NOT_FOUND", "UNAVAILABLE")
+
     for model in MODELS:
+        success = False
         try:
             chat = client.chats.create(
                 model=model,
@@ -379,17 +381,23 @@ def run_agentic_brain_stream(user_id: str, message: str, history: List[Dict[str,
             )
             stream = chat.send_message_stream(message_parts)
             print(f"[Stream] Using {model}")
-            break
+            # Iterate chunks — errors here are caught below
+            for chunk in stream:
+                if chunk.text:
+                    yield chunk.text
+            success = True
         except Exception as e:
             err_str = str(e)
-            print(f"[Stream] {model} failed: {err_str[:100]}")
-            if "429" in err_str or "404" in err_str or "RESOURCE_EXHAUSTED" in err_str or "NOT_FOUND" in err_str:
+            print(f"[Stream] {model} error: {err_str[:150]}")
+            if any(code in err_str for code in SKIP_CODES):
+                # Quota/overload — try next model
                 continue
-            break
+            # Unknown error — surface it
+            yield "I ran into an unexpected issue. Please try again!"
+            return
 
-    if stream:
-        for chunk in stream:
-            if chunk.text:
-                yield chunk.text
-    else:
-        yield "I'm experiencing high traffic right now. Please try again in a moment!"
+        if success:
+            return
+
+    # All models failed
+    yield "I'm experiencing high traffic across all systems right now. Please try again in a moment!"
