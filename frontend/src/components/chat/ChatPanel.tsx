@@ -194,6 +194,67 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
       let fullText = '';
       let buffer = '';
 
+      const processWidgets = async (raw: string) => {
+        let display = raw;
+
+        // ── TICKET widget ──
+        const ticketMatch = display.match(/\[TICKET:\s*(.*?)\]/);
+        if (ticketMatch) {
+          const ticketId = ticketMatch[1].trim();
+          display = display.replace(/\[TICKET:\s*.*?\]/, '').trim();
+          let ticketDetails = null;
+          try {
+            const tr = await fetch(`${API}/api/tickets`, { headers: { Authorization: `Bearer ${currentToken}` } });
+            if (tr.ok) {
+              const tickets = await tr.json();
+              ticketDetails = tickets.find((t: any) => t.ticket_id === ticketId) || null;
+            }
+          } catch {}
+          setMessages((prev: any) => [...prev, {
+            id: (Date.now() + 2).toString(), role: 'assistant', kind: 'widget_ticket',
+            text: 'I have created a support ticket for this issue.',
+            ticket_id: ticketId, merchant: ticketDetails?.merchant || 'RazorSense Support',
+            status: ticketDetails?.status || 'In Review', ticket_details: ticketDetails,
+            timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+          }]);
+        }
+
+        // ── ADVANCED SEARCH widget ──
+        if (display.includes('[SHOW_ADVANCED_SEARCH]')) {
+          display = display.replace('[SHOW_ADVANCED_SEARCH]', '').trim();
+          setMessages((prev: any) => [...prev, {
+            id: (Date.now() + 3).toString(), role: 'assistant', kind: 'widget_search',
+            text: 'Here is the advanced search panel:',
+            timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+          }]);
+        }
+
+        // ── ORDER WIDGET ──
+        const orderMatch = display.match(/\[ORDER_WIDGET:\s*(.*?)\]/);
+        if (orderMatch) {
+          const ids = orderMatch[1].split(',').map((s: string) => s.trim()).filter(Boolean);
+          display = display.replace(/\[ORDER_WIDGET:\s*.*?\]/, '').trim();
+          const orders: any[] = [];
+          for (const oid of ids) {
+            try {
+              const or = await fetch(`${API}/api/orders/${oid}`, { headers: { Authorization: `Bearer ${currentToken}` } });
+              if (or.ok) orders.push(await or.json());
+            } catch {}
+          }
+          if (orders.length > 0) {
+            setMessages((prev: any) => [...prev, {
+              id: (Date.now() + 4).toString(), role: 'assistant', kind: 'widget_order_select',
+              orders, timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            }]);
+          }
+        }
+
+        // Update message bubble with clean text (markers stripped)
+        setMessages((prev: any) => prev.map((m: any) =>
+          m.id === streamMsgId ? { ...m, text: display } : m
+        ));
+      };
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -206,6 +267,7 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
           const chunk = line.slice(6);
           if (chunk === '[DONE]') {
             setIsLoading(false);
+            await processWidgets(fullText);
             return;
           }
           if (chunk.startsWith('[ERROR]')) {
@@ -216,6 +278,7 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
             return;
           }
           fullText += chunk;
+          // Stream text live but don't parse widgets mid-stream (wait for [DONE])
           setMessages((prev: any) => prev.map((m: any) =>
             m.id === streamMsgId ? { ...m, text: fullText } : m
           ));
