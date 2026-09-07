@@ -138,11 +138,27 @@ def get_user_tickets(db: Session = Depends(get_db), current_user: models.User = 
 # -----------------
 # DUAL-BRAIN ENDPOINT
 # -----------------
-from fastapi import BackgroundTasks
-from agentic_brain import run_agentic_brain
+from fastapi import BackgroundTasks, Request
+from fastapi.responses import StreamingResponse
+from agentic_brain import run_agentic_brain, run_agentic_brain_stream
 from typing import Dict, Any
-
+import time
 import vector_db
+
+# ---- Rate Limiter (protects free Gemini quota) ----
+_rate_limit_store: Dict[str, float] = {}
+RATE_LIMIT_SECONDS = 10  # 1 request per user per 10 seconds
+
+def check_rate_limit(user_id: str):
+    now = time.time()
+    last = _rate_limit_store.get(user_id, 0)
+    if now - last < RATE_LIMIT_SECONDS:
+        wait = round(RATE_LIMIT_SECONDS - (now - last))
+        raise HTTPException(
+            status_code=429,
+            detail=f"Please wait {wait} seconds before sending another message."
+        )
+    _rate_limit_store[user_id] = now
 
 class ChatRequest(BaseModel):
     message: str
@@ -152,11 +168,9 @@ class ChatRequest(BaseModel):
 
 @app.post("/api/chat")
 async def chat(req: ChatRequest, current_user: models.User = Depends(get_current_user)):
-    """
-    Main Chat API powered by Agentic-Brain Architecture.
-    """
+    """Main Chat API — non-streaming fallback."""
+    check_rate_limit(str(current_user.id))
     try:
-        # Generate new AI response
         response = run_agentic_brain(
             user_id=str(current_user.id),
             message=req.message,
@@ -164,8 +178,37 @@ async def chat(req: ChatRequest, current_user: models.User = Depends(get_current
             media=req.media
         )
         return response
-        
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"[API Error] {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/chat/stream")
+async def chat_stream(req: ChatRequest, current_user: models.User = Depends(get_current_user)):
+    """Streaming Chat API — streams tokens as they arrive from Gemini (low latency)."""
+    check_rate_limit(str(current_user.id))
+
+    def generate():
+        try:
+            for chunk in run_agentic_brain_stream(
+                user_id=str(current_user.id),
+                message=req.message,
+                history=req.history,
+                media=req.media
+            ):
+                # SSE format: data: <chunk>\n\n
+                yield f"data: {chunk}\n\n"
+        except Exception as e:
+            yield f"data: [ERROR] {str(e)}\n\n"
+        finally:
+            yield "data: [DONE]\n\n"
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no"
+        }
+    )

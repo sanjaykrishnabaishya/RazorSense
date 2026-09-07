@@ -8,10 +8,13 @@ from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 
+import datetime
+from typing import List, Dict, Any, Generator
+
 load_dotenv("../.env")
 
 # Base URL for the internal enterprise microservices API
-API_BASE_URL = "http://127.0.0.1:8001/api/v2"
+API_BASE_URL = os.environ.get("ENTERPRISE_API_URL", "http://127.0.0.1:8001/api/v2")
 
 def fetch_order_details(order_id: str) -> str:
     """Fetch real-time order details from the database. Use this to lookup orders by their exact Order ID."""
@@ -326,3 +329,67 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
         "merchant": "RazorSense Support",
         "orders_to_select": orders_to_select
     }
+
+
+def run_agentic_brain_stream(user_id: str, message: str, history: List[Dict[str, Any]] = None, media: str = None) -> Generator[str, None, None]:
+    """Streaming version — yields text chunks as they arrive from Gemini."""
+    if history is None:
+        history = []
+
+    formatted_history = []
+    for h in history:
+        h_parts = []
+        if "text" in h and h["text"]:
+            h_parts.append(types.Part.from_text(text=h["text"]))
+        role = "user" if h["role"] == "user" else "model"
+        if h_parts:
+            formatted_history.append(types.Content(role=role, parts=h_parts))
+
+    message_parts = []
+    if media:
+        try:
+            mime_type = "image/jpeg"
+            b64_data = media
+            if "base64," in media:
+                header, b64_data = media.split("base64,", 1)
+                mime_type = header.replace("data:", "").split(";")[0]
+            image_bytes = base64.b64decode(b64_data)
+            message_parts.append(types.Part.from_bytes(data=image_bytes, mime_type=mime_type))
+            message_parts.append(types.Part.from_text(text="[SYSTEM INSTRUCTION: The user has attached an audio file. You CAN and MUST listen to it. Respond to the spoken request inside the audio file. DO NOT claim you cannot play or hear it.]"))
+        except Exception as e:
+            print(f"Stream media error: {e}")
+
+    if message:
+        message_parts.append(types.Part.from_text(text=message))
+
+    formatted_history.append(types.Content(role="user", parts=message_parts))
+
+    MODELS = ["gemini-3.6-flash", "gemini-2.5-flash", "gemini-3.5-flash-lite"]
+    stream = None
+    for model in MODELS:
+        try:
+            chat = client.chats.create(
+                model=model,
+                history=formatted_history[:-1],
+                config=types.GenerateContentConfig(
+                    system_instruction=system_prompt,
+                    tools=tools,
+                    temperature=0.3
+                )
+            )
+            stream = chat.send_message_stream(message_parts)
+            print(f"[Stream] Using {model}")
+            break
+        except Exception as e:
+            err_str = str(e)
+            print(f"[Stream] {model} failed: {err_str[:100]}")
+            if "429" in err_str or "404" in err_str or "RESOURCE_EXHAUSTED" in err_str or "NOT_FOUND" in err_str:
+                continue
+            break
+
+    if stream:
+        for chunk in stream:
+            if chunk.text:
+                yield chunk.text
+    else:
+        yield "I'm experiencing high traffic right now. Please try again in a moment!"
