@@ -90,8 +90,9 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
   };
 
   useEffect(() => {
-    // Auto-login as Sanjay on mount to get token (Security & Identity Context)
-    fetch('http://127.0.0.1:8000/login', {
+    // Auto-login on mount
+    const API = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+    fetch(`${API}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone_number: '9999999999' })
@@ -102,7 +103,8 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
   }, []);
 
   const sendText = async (text: string, mediaOverride?: string) => {
-    // If it's an auto-poll, we don't display user bubble
+    const API = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
       role: 'user',
@@ -120,7 +122,7 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
     let currentToken = token;
     if (!currentToken) {
       try {
-        const loginRes = await fetch('http://127.0.0.1:8000/login', {
+        const loginRes = await fetch(`${API}/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ phone_number: '9999999999' })
@@ -151,12 +153,19 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
     }));
 
     setIsLoading(true);
-    
-    // Send to LangGraph Python Backend
-    let resOk = false;
-    let data: any = null;
+
+    // ── Streaming via SSE ──
+    const streamMsgId = (Date.now() + 1).toString();
+    setMessages((prev: any) => [...prev, {
+      id: streamMsgId,
+      role: 'assistant',
+      kind: 'text',
+      text: '',
+      timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+    }]);
+
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/chat', {
+      const res = await fetch(`${API}/api/chat/stream`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -169,54 +178,54 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
           history: history
         })
       });
-      
-      data = await res.json();
-      resOk = res.ok;
-      
-      if (resOk && data && data.reply) {
-        addBotMessage('text', data.reply);
-        
-        if (data.show_search) {
-            setMessages((prev: any) => [...prev, {
-              id: (Date.now() + 3).toString(),
-              role: 'assistant',
-              kind: 'widget_search',
-              text: "Here is the advanced search panel:",
-              timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-            }]);
-        }
-        
-        if (data.ticket_status && data.ticket_status !== "none") {
-              setMessages((prev: any) => [...prev, {
-                id: (Date.now() + 2).toString(),
-                role: 'assistant',
-                kind: 'widget_ticket',
-                text: "I have created a support ticket for this issue.",
-                ticket_id: data.ticket_details?.ticket_id || data.ticket_id || "N/A",
-                merchant: data.ticket_details?.merchant || data.merchant || "N/A",
-                status: data.ticket_details?.status || data.ticket_status,
-                ticket_details: data.ticket_details,
-                timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-              }]);
+
+      if (!res.ok || !res.body) {
+        // Fallback to non-streaming if SSE fails
+        const data = await res.json().catch(() => null);
+        setMessages((prev: any) => prev.map((m: any) =>
+          m.id === streamMsgId ? { ...m, text: data?.reply || data?.detail || 'Something went wrong. Please try again.' } : m
+        ));
+        setIsLoading(false);
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let fullText = '';
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const chunk = line.slice(6);
+          if (chunk === '[DONE]') {
+            setIsLoading(false);
+            return;
           }
-          
-        if (data.orders_to_select && data.orders_to_select.length > 0) {
-            setMessages((prev: any) => [...prev, {
-              id: (Date.now() + 4).toString(),
-              role: 'assistant',
-              kind: 'widget_order_select',
-              orders: data.orders_to_select,
-              timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-            }]);
+          if (chunk.startsWith('[ERROR]')) {
+            setMessages((prev: any) => prev.map((m: any) =>
+              m.id === streamMsgId ? { ...m, text: chunk.replace('[ERROR] ', '') } : m
+            ));
+            setIsLoading(false);
+            return;
+          }
+          fullText += chunk;
+          setMessages((prev: any) => prev.map((m: any) =>
+            m.id === streamMsgId ? { ...m, text: fullText } : m
+          ));
         }
-      } else if (resOk && data && !data.reply) {
-        addBotMessage('text', 'I received a response but it was empty. Please try again.');
-      } else {
-        addBotMessage('text', data?.reply || 'Sorry, I encountered an error connecting to my brain.');
       }
     } catch (err) {
-      console.error("Fetch error in sendText:", err);
-      addBotMessage('text', `Network error reaching the AI server: ${err}`);
+      console.error("Stream error:", err);
+      setMessages((prev: any) => prev.map((m: any) =>
+        m.id === streamMsgId ? { ...m, text: `Network error: ${err}` } : m
+      ));
     } finally {
       setIsLoading(false);
     }
