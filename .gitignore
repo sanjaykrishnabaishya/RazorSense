@@ -1,8 +1,33 @@
-﻿venv/
-.env
+# -- Python --
+venv/
 __pycache__/
+*/__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# -- Environment / Secrets (NEVER commit these) --
+.env
+.env.*
+!.env.example
+frontend/.env.local
+frontend/.env*.local
+
+# -- Databases --
 *.sqlite
+*.sqlite3
 *.db
+rz_db.sqlite
+
+# -- Vector DB --
 chroma_db/
 backend/chroma_db/
-*/__pycache__/*
+
+# -- Debug / temp files --
+backend/debug_media.txt
+*.log
+
+# -- Node / Next.js --
+frontend/node_modules/
+frontend/.next/
+frontend/out/
