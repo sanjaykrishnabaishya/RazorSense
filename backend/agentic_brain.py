@@ -263,7 +263,7 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
             system_instruction=system_prompt,
             tools=tools,
             temperature=1,  # required for thinking mode
-            thinking_config=types.ThinkingConfig(thinking_budget=8192)
+            thinking_config=types.ThinkingConfig(thinking_budget=1024)
         )
 
     def try_generate(model_name: str):
@@ -412,7 +412,7 @@ def run_agentic_brain_stream(user_id: str, message: str, history: List[Dict[str,
                 system_instruction=system_prompt,
                 tools=tools,
                 temperature=1,
-                thinking_config=types.ThinkingConfig(thinking_budget=8192)
+                thinking_config=types.ThinkingConfig(thinking_budget=1024)
             )
         return types.GenerateContentConfig(
             system_instruction=system_prompt,
