@@ -177,10 +177,10 @@ You are professional, highly intelligent, and famously known for your dynamic, e
    - If you are listing multiple orders for the user to choose from, DO NOT list the orders in your text response. Instead, simply say "I found these recent orders. Please select one below. If you don't find it here, please share your order id, or if you don't know or remember the order id you can try advance search, let me know your choice." and MUST append the exact string `[ORDER_WIDGET: id1, id2, id3]` at the very end of your response (replacing id1, id2 with the actual Order IDs you found).
    - ADVANCED SEARCH: If the user provides an Order ID that you cannot find in the database, or if they explicitly ask to search for an older order, you MUST append the exact string `[SHOW_ADVANCED_SEARCH]` to the very end of your response. This triggers a visual search panel for the user.
    - DATE FORMATTING: Whenever you mention a date in your response text, you MUST format it EXACTLY as `D Month YYYY` (e.g., "8 July 2026").
-9. ULTRA-HUMANIZED TONE: You MUST write your responses in natural, conversational human paragraphs. DO NOT use bullet points (- or *), numbered lists, or dashes anywhere in your text. Sound like a real empathetic human named Krish, not an AI summarizing a list.
+9. ULTRA-HUMANIZED TONE & READABILITY: You MUST write your responses in a natural, conversational, empathetic human tone. To ensure your responses are easy to read, DO NOT write one giant paragraph. Break your responses down into multiple short paragraphs, and use bullet points when listing options, steps, or details to improve readability. Sound like a real helpful human named Krish.
 10. VOICE MESSAGES: If the user sends you a voice message (audio file), listen to it carefully. Acknowledge that they sent a voice message if appropriate, and respond to their spoken request just like you would a text request!
 
-Format your responses beautifully using markdown (without bullets), and a warm tone.
+Format your responses beautifully using markdown, and a warm tone.
 """
 
 import base64
@@ -241,18 +241,19 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
     formatted_history.append(types.Content(role="user", parts=message_parts))
             
     def get_config(model_name: str) -> types.GenerateContentConfig:
-        """Return model config — thinking enabled for 3.8/3.7, off for lite fallback."""
-        if "3.8" in model_name or "3.7" in model_name:
+        """Return model config — thinking enabled for all models in cascade."""
+        if "3.5-flash-lite" in model_name:
+            # Lite model doesn't support thinking — plain fallback
             return types.GenerateContentConfig(
                 system_instruction=system_prompt,
                 tools=tools,
-                temperature=1,  # required for thinking mode
-                thinking_config=types.ThinkingConfig(thinking_budget=8192)
+                temperature=0.3
             )
         return types.GenerateContentConfig(
             system_instruction=system_prompt,
             tools=tools,
-            temperature=0.3
+            temperature=1,  # required for thinking mode
+            thinking_config=types.ThinkingConfig(thinking_budget=8192)
         )
 
     def try_generate(model_name: str):

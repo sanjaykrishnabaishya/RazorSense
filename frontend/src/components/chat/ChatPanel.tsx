@@ -380,9 +380,17 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
                   
                   <div className={`flex flex-col max-w-[85%] ${isUser ? 'items-end' : 'items-start'}`}>
                     {m.kind === 'text' && (
-                      <div className={`p-4 text-[15px] leading-[1.5] shadow-lg markdown-container ${isUser ? 'bg-white text-black rounded-2xl rounded-tr-sm font-medium' : 'bg-[#111] text-white rounded-2xl rounded-tl-sm border border-white/[0.05]'}`}>
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.text}</ReactMarkdown>
-                      </div>
+                      m.text ? (
+                        <div className={`p-4 text-[15px] leading-[1.5] shadow-lg markdown-container ${isUser ? 'bg-white text-black rounded-2xl rounded-tr-sm font-medium' : 'bg-[#111] text-white rounded-2xl rounded-tl-sm border border-white/[0.05]'}`}>
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.text}</ReactMarkdown>
+                        </div>
+                      ) : !isUser ? (
+                        <div className="flex gap-1.5 px-2 py-3 items-center h-[44px]">
+                          <motion.div className="w-2 h-2 rounded-full bg-white/50" animate={{ y: [0, -5, 0] }} transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut", delay: 0 }} />
+                          <motion.div className="w-2 h-2 rounded-full bg-white/50" animate={{ y: [0, -5, 0] }} transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut", delay: 0.15 }} />
+                          <motion.div className="w-2 h-2 rounded-full bg-white/50" animate={{ y: [0, -5, 0] }} transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut", delay: 0.3 }} />
+                        </div>
+                      ) : null
                     )}
 
                     {m.kind === 'image' && (
@@ -488,17 +496,6 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
                 </motion.div>
               );
             })}
-            {isLoading && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex justify-start"
-              >
-                <div className="bg-[#2d2d2d] rounded-2xl rounded-tl-sm p-4 text-gray-300">
-                  <Loader2 className="h-5 w-5 animate-spin text-brand-orange" />
-                </div>
-              </motion.div>
-            )}
             <div ref={messagesEndRef} />
           </div>
         )}
