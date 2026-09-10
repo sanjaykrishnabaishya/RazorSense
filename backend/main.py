@@ -9,6 +9,10 @@ from pydantic import BaseModel
 # Create DB Tables
 models.Base.metadata.create_all(bind=engine)
 
+# Seed database with the exact orders the AI knows about (so the widget can find them!)
+from seed import seed_db
+seed_db()
+
 app = FastAPI(title="RazorSense Secure API")
 
 from enterprise_api import app as enterprise_app

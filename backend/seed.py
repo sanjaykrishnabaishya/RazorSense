@@ -26,29 +26,18 @@ def seed_db():
     db.commit()
 
     # Create Orders
-    order1 = models.Order(
-        order_number="#AMZ123",
-        user_id=user1.id,
-        merchant_id=amazon.id,
-        product_name="Wireless Earbuds",
-        price=1499.0,
-        transaction_id="TXN9921",
-        transaction_mode="UPI"
-    )
+    orders = [
+        models.Order(order_number="ORD-5671", user_id=user1.id, merchant_id=amazon.id, product_name="Echo Dot (5th Gen)", price=49.99, transaction_id="TXN1", transaction_mode="Credit Card"),
+        models.Order(order_number="ORD-8923", user_id=user1.id, merchant_id=amazon.id, product_name="Kindle Paperwhite", price=139.99, transaction_id="TXN2", transaction_mode="Credit Card"),
+        models.Order(order_number="ORD-1045", user_id=user1.id, merchant_id=amazon.id, product_name="Sony WF-1000XM4 Earbuds", price=278.00, transaction_id="TXN3", transaction_mode="UPI - GPay"),
+        models.Order(order_number="ORD-9932", user_id=user1.id, merchant_id=amazon.id, product_name="Samsung Galaxy S24", price=799.00, transaction_id="TXN4", transaction_mode="Credit Card"),
+        models.Order(order_number="ORD-7711", user_id=user1.id, merchant_id=zomato.id, product_name="Margherita Pizza", price=14.50, transaction_id="TXN5", transaction_mode="UPI - PhonePe")
+    ]
     
-    # This order belongs to user 2 (John). If user 1 (Sanjay) asks about it, they should get 403 Forbidden!
-    order2 = models.Order(
-        order_number="#ZOM456",
-        user_id=user2.id,
-        merchant_id=zomato.id,
-        product_name="Pizza Margherita",
-        price=450.0,
-        transaction_id="TXN1122",
-        transaction_mode="Card"
-    )
+    for o in orders:
+        db.add(o)
 
-    db.add(order1)
-    db.add(order2)
+
     db.commit()
     
     print("Database seeded successfully!")
