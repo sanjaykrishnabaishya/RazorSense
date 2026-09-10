@@ -177,10 +177,14 @@ You are professional, highly intelligent, and famously known for your dynamic, e
    - If you are listing multiple orders for the user to choose from, DO NOT list the orders in your text response. Instead, simply say "I found these recent orders. Please select one below. If you don't find it here, please share your order id, or if you don't know or remember the order id you can try advance search, let me know your choice." and MUST append the exact string `[ORDER_WIDGET: id1, id2, id3]` at the very end of your response (replacing id1, id2 with the actual Order IDs you found).
    - ADVANCED SEARCH: If the user provides an Order ID that you cannot find in the database, or if they explicitly ask to search for an older order, you MUST append the exact string `[SHOW_ADVANCED_SEARCH]` to the very end of your response. This triggers a visual search panel for the user.
    - DATE FORMATTING: Whenever you mention a date in your response text, you MUST format it EXACTLY as `D Month YYYY` (e.g., "8 July 2026").
-9. ULTRA-HUMANIZED TONE & READABILITY: You MUST write your responses in a natural, conversational, empathetic human tone. To ensure your responses are easy to read, DO NOT write one giant paragraph. Break your responses down into multiple short paragraphs, and use bullet points when listing options, steps, or details to improve readability. Sound like a real helpful human named Krish.
+9. FORMATTING & READABILITY (CRITICAL): 
+   * NEVER write long, big paragraphs. Your text MUST be broken down into multiple very short, readable paragraphs (1-2 sentences max per paragraph).
+   * Use bullet points whenever listing options, steps, or details to make it easy to read.
+   * You MUST use an asterisk (*) for bullet points. NEVER use a hyphen or dash (-) anywhere in your response. Hyphens and dashes are strictly forbidden.
+   * Maintain an ultra-humanized, conversational, and empathetic tone. Sound like a real, helpful human named Krish.
 10. VOICE MESSAGES: If the user sends you a voice message (audio file), listen to it carefully. Acknowledge that they sent a voice message if appropriate, and respond to their spoken request just like you would a text request!
 
-Format your responses beautifully using markdown, and a warm tone.
+Format your responses beautifully using markdown (using * for bullets, never -), and a warm tone.
 """
 
 import base64
@@ -277,7 +281,7 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
     # gemini-3.8-flash = most intelligent flash, free, thinking enabled
     # gemini-3.7-flash = slightly older, same pool, thinking enabled
     # gemini-3.5-flash-lite = highest quota safety net
-    MODELS = ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.5-flash-lite"]
+    MODELS = ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-2.5-flash"]
     max_retries = 3
     response = None
     last_error = None
@@ -377,7 +381,7 @@ def run_agentic_brain_stream(user_id: str, message: str, history: List[Dict[str,
 
     formatted_history.append(types.Content(role="user", parts=message_parts))
 
-    MODELS = ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.5-flash-lite"]
+    MODELS = ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-2.5-flash"]
     SKIP_CODES = ("429", "404", "503", "RESOURCE_EXHAUSTED", "NOT_FOUND", "UNAVAILABLE")
 
     def get_stream_config(model_name: str) -> types.GenerateContentConfig:
