@@ -13,8 +13,9 @@ from typing import List, Dict, Any, Generator
 
 load_dotenv("../.env")
 
-# Base URL for the internal enterprise microservices API
-API_BASE_URL = os.environ.get("ENTERPRISE_API_URL", "http://127.0.0.1:8001/api/v2")
+# Use Railway PORT if available, fallback to 8000 for local dev
+INTERNAL_PORT = os.environ.get("PORT", "8000")
+API_BASE_URL = os.environ.get("ENTERPRISE_API_URL", f"http://127.0.0.1:{INTERNAL_PORT}/enterprise/api/v2")
 
 def fetch_order_details(order_id: str) -> str:
     """Fetch real-time order details from the database. Use this to lookup orders by their exact Order ID."""

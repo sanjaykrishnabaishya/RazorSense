@@ -11,6 +11,9 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="RazorSense Secure API")
 
+from enterprise_api import app as enterprise_app
+app.mount("/enterprise", enterprise_app)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
