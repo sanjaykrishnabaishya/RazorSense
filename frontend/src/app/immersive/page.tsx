@@ -58,9 +58,6 @@ export default function ImmersivePage() {
             <span className="italic font-light opacity-80">Instantly.</span>
           </h1>
           
-          <p className="text-lg md:text-2xl text-white/50 max-w-2xl mx-auto font-light tracking-wide leading-relaxed mb-16">
-            The world's first autonomous AI support engine for fintech. Zero wait times. Absolute precision.
-          </p>
 
           <motion.button 
             whileHover={{ scale: 1.05 }}
