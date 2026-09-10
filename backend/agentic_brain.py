@@ -281,7 +281,15 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
     # gemini-3.8-flash = most intelligent flash, free, thinking enabled
     # gemini-3.7-flash = slightly older, same pool, thinking enabled
     # gemini-3.5-flash-lite = highest quota safety net
-    MODELS = ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-2.5-flash"]
+    MODELS = [
+        "gemini-3.8-flash",       # 20 RPD
+        "gemini-3.7-flash",       # 20 RPD
+        "gemini-3.6-flash",       # 20 RPD
+        "gemini-3.5-flash",       # 20 RPD
+        "gemini-2.5-flash",       # 20 RPD
+        "gemini-3.5-flash-lite",  # 500 RPD
+        "gemini-3.1-flash-lite"   # 500 RPD
+    ]
     max_retries = 3
     response = None
     last_error = None
@@ -381,7 +389,15 @@ def run_agentic_brain_stream(user_id: str, message: str, history: List[Dict[str,
 
     formatted_history.append(types.Content(role="user", parts=message_parts))
 
-    MODELS = ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-2.5-flash"]
+    MODELS = [
+        "gemini-3.8-flash",       # 20 RPD
+        "gemini-3.7-flash",       # 20 RPD
+        "gemini-3.6-flash",       # 20 RPD
+        "gemini-3.5-flash",       # 20 RPD
+        "gemini-2.5-flash",       # 20 RPD
+        "gemini-3.5-flash-lite",  # 500 RPD
+        "gemini-3.1-flash-lite"   # 500 RPD
+    ]
     SKIP_CODES = ("429", "404", "503", "RESOURCE_EXHAUSTED", "NOT_FOUND", "UNAVAILABLE")
 
     def get_stream_config(model_name: str) -> types.GenerateContentConfig:
