@@ -264,7 +264,8 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
 
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue;
-          const chunk = line.slice(6);
+          // Unescape the newlines that were escaped in the backend
+          const chunk = line.slice(6).replace(/\\n/g, '\n');
           if (chunk === '[DONE]') {
             setIsLoading(false);
             await processWidgets(fullText);

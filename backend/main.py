@@ -201,7 +201,9 @@ async def chat_stream(req: ChatRequest, current_user: models.User = Depends(get_
                 media=req.media
             ):
                 # SSE format: data: <chunk>\n\n
-                yield f"data: {chunk}\n\n"
+                # CRITICAL FIX: Escape newlines so SSE frontend doesn't drop lines that don't start with 'data:'
+                clean_chunk = chunk.replace('\n', '\\n')
+                yield f"data: {clean_chunk}\n\n"
         except Exception as e:
             yield f"data: [ERROR] {str(e)}\n\n"
         finally:
