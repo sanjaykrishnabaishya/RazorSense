@@ -2,6 +2,43 @@ from database import SessionLocal, engine
 import models
 
 def seed_db():
+    # ---------------------------------------------------------
+    # Seed the Enterprise DB (rz_db.sqlite) ALWAYS
+    # ---------------------------------------------------------
+    import sqlite3
+    import os
+    db_path = os.path.join(os.path.dirname(__file__), 'rz_db.sqlite')
+    conn = sqlite3.connect(db_path)
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS orders (
+            order_id TEXT PRIMARY KEY,
+            merchant TEXT,
+            product TEXT,
+            amount REAL,
+            order_date TEXT,
+            status TEXT,
+            payment_mode TEXT
+        )
+    ''')
+    
+    enterprise_orders = [
+        ("ORD-5671", "Amazon", "Echo Dot (5th Gen)", 49.99, "2026-07-05", "Delivered", "Credit Card"),
+        ("ORD-8923", "Amazon", "Kindle Paperwhite", 139.99, "2026-08-10", "Delivered", "Credit Card"),
+        ("ORD-1045", "Amazon", "Sony WF-1000XM4 Earbuds", 278.00, "2026-08-25", "Delivered", "UPI - GPay"),
+        ("ORD-9932", "Amazon", "Samsung Galaxy S24", 799.00, "2026-09-02", "Shipped", "Credit Card"),
+        ("ORD-7711", "Zomato", "Margherita Pizza", 14.50, "2026-09-04", "Delivered", "UPI - PhonePe")
+    ]
+    
+    for order in enterprise_orders:
+        conn.execute('''
+            INSERT OR IGNORE INTO orders (order_id, merchant, product, amount, order_date, status, payment_mode)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', order)
+        
+    conn.commit()
+    conn.close()
+    print("Enterprise database seeded successfully!")
+
     db = SessionLocal()
     
     # Check if already seeded
@@ -37,10 +74,8 @@ def seed_db():
     for o in orders:
         db.add(o)
 
-
     db.commit()
-    
-    print("Database seeded successfully!")
+    print("Main database seeded successfully!")
 
 if __name__ == "__main__":
     models.Base.metadata.create_all(bind=engine)
