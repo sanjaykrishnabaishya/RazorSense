@@ -305,14 +305,14 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
             
     def get_config(model_name: str) -> types.GenerateContentConfig:
         """Return model config."""
-        if "lite" in model_name or "1.5" in model_name:
+        if "lite" in model_name or "3.5" in model_name or "3.6" in model_name or "3.1" in model_name:
             # Lite / legacy models don't support thinking
             return types.GenerateContentConfig(
                 system_instruction=system_prompt,
                 tools=tools,
                 temperature=0.3
             )
-        # Enable Thinking Mode for 2.5 and 2.0-thinking models to ensure maximum RCA and logical reasoning
+        # Enable Thinking Mode for 3.8 and 3.7
         return types.GenerateContentConfig(
             system_instruction=system_prompt,
             tools=tools,
@@ -342,10 +342,12 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
     # gemini-3.7-flash = slightly older, same pool, thinking enabled
     # gemini-3.5-flash-lite = highest quota safety net
     MODELS = [
-        "gemini-2.5-flash",
-        "gemini-2.5-pro",
-        "gemini-2.0-flash",
-        "gemini-1.5-flash"
+        "gemini-3.8-flash",       # 20 RPD
+        "gemini-3.7-flash",       # 20 RPD
+        "gemini-3.6-flash",       # 20 RPD
+        "gemini-3.5-flash",       # 20 RPD
+        "gemini-3.5-flash-lite",  # 500 RPD
+        "gemini-3.1-flash-lite"   # 500 RPD
     ]
     max_retries = 3
     response = None
@@ -453,21 +455,23 @@ def run_agentic_brain_stream(user_id: str, message: str, history: List[Dict[str,
     formatted_history.append(types.Content(role="user", parts=message_parts))
 
     MODELS = [
-        "gemini-2.5-flash",
-        "gemini-2.5-pro",
-        "gemini-2.0-flash",
-        "gemini-1.5-flash"
+        "gemini-3.8-flash",       # 20 RPD
+        "gemini-3.7-flash",       # 20 RPD
+        "gemini-3.6-flash",       # 20 RPD
+        "gemini-3.5-flash",       # 20 RPD
+        "gemini-3.5-flash-lite",  # 500 RPD
+        "gemini-3.1-flash-lite"   # 500 RPD
     ]
     SKIP_CODES = ("429", "404", "503", "RESOURCE_EXHAUSTED", "NOT_FOUND", "UNAVAILABLE")
 
     def get_stream_config(model_name: str) -> types.GenerateContentConfig:
-        if "lite" in model_name or "1.5" in model_name:
+        if "lite" in model_name or "3.5" in model_name or "3.6" in model_name or "3.1" in model_name:
             return types.GenerateContentConfig(
                 system_instruction=system_prompt,
                 tools=tools,
                 temperature=0.3
             )
-        # Enable Thinking Mode for 2.5 and 2.0-thinking models for maximum RCA
+        # Enable Thinking Mode for 3.8 and 3.7
         return types.GenerateContentConfig(
             system_instruction=system_prompt,
             tools=tools,
