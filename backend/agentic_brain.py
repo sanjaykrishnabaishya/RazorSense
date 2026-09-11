@@ -17,32 +17,53 @@ load_dotenv("../.env")
 INTERNAL_PORT = os.environ.get("PORT", "8000")
 API_BASE_URL = os.environ.get("ENTERPRISE_API_URL", f"http://127.0.0.1:{INTERNAL_PORT}/enterprise/api/v2")
 
+import sqlite3
+
+def get_enterprise_db():
+    conn = sqlite3.connect("enterprise.db")
+    conn.row_factory = sqlite3.Row
+    return conn
+
 def fetch_order_details(order_id: str) -> str:
     """Fetch real-time order details from the database. Use this to lookup orders by their exact Order ID."""
     order_id = str(order_id).replace(" ", "").upper()
     try:
-        response = requests.get(f"{API_BASE_URL}/orders/{order_id}")
-        if response.status_code == 200:
-            return json.dumps(response.json())
+        conn = get_enterprise_db()
+        order = conn.execute("SELECT * FROM orders WHERE order_id = ?", (order_id,)).fetchone()
+        conn.close()
+        if order:
+            return json.dumps(dict(order))
         return json.dumps({"error": f"Order {order_id} not found. Ask the user to verify the Order ID or use search_orders."})
     except Exception as e:
-        return json.dumps({"error": "Internal API error."})
+        return json.dumps({"error": f"Database error: {e}"})
 
 def search_orders(merchant: str = None, payment_mode: str = None, order_date: str = None) -> str:
     """Search for orders using filters. If order_date is missing, returns the last 10 orders matching the merchant/payment."""
-    params = {}
-    if merchant: params["merchant"] = merchant
-    if payment_mode: params["payment_mode"] = payment_mode
-    if order_date: params["order_date"] = order_date
-        
     try:
-        response = requests.get(f"{API_BASE_URL}/orders", params=params)
-        data = response.json()
+        conn = get_enterprise_db()
+        query = "SELECT * FROM orders WHERE 1=1"
+        params = []
+        if merchant:
+            query += " AND LOWER(merchant) LIKE ?"
+            params.append(f"%{merchant.lower()}%")
+        if payment_mode:
+            query += " AND LOWER(payment_mode) LIKE ?"
+            params.append(f"%{payment_mode.lower()}%")
+        if order_date:
+            query += " AND order_date = ?"
+            params.append(order_date)
+            
+        query += " ORDER BY order_date DESC LIMIT 10"
+        
+        rows = conn.execute(query, params).fetchall()
+        conn.close()
+        
+        data = [dict(row) for row in rows]
         if not data:
             return json.dumps({"error": "No orders found matching those criteria."})
         return json.dumps(data)
     except Exception as e:
-        return json.dumps({"error": "Internal API error."})
+        return json.dumps({"error": f"Database error: {e}"})
 
 def _save_ticket_to_db(ticket_id: str, issue: str, status: str, action: str, order_id: str = "N/A"):
     # Fetch order details to get merchant and product
@@ -50,26 +71,23 @@ def _save_ticket_to_db(ticket_id: str, issue: str, status: str, action: str, ord
     product = "N/A"
     if order_id != "N/A":
         try:
-            res = requests.get(f"{API_BASE_URL}/orders/{order_id}")
-            if res.status_code == 200:
-                data = res.json()
-                merchant = data.get("merchant", "N/A")
-                product = data.get("item", "N/A")
+            conn = get_enterprise_db()
+            order = conn.execute("SELECT * FROM orders WHERE order_id = ?", (order_id,)).fetchone()
+            conn.close()
+            if order:
+                merchant = order["merchant"]
+                product = order["product"]
         except:
             pass
             
-    payload = {
-        "ticket_id": ticket_id,
-        "order_id": order_id,
-        "merchant": merchant,
-        "product": product,
-        "issue": issue,
-        "date": datetime.datetime.now().strftime("%d %b %Y"),
-        "status": status,
-        "action_taken": action
-    }
     try:
-        requests.post(f"{API_BASE_URL}/tickets", json=payload)
+        conn = get_enterprise_db()
+        conn.execute(
+            "INSERT INTO tickets (ticket_id, order_id, merchant, product, issue, date, status, action_taken) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (ticket_id, order_id, merchant, product, issue, datetime.datetime.now().strftime("%d %b %Y"), status, action)
+        )
+        conn.commit()
+        conn.close()
     except Exception as e:
         print(f"Error saving ticket: {e}")
 
@@ -105,16 +123,24 @@ def create_general_support_ticket(issue: str) -> str:
 
 def fetch_recent_tickets(order_id: str = None) -> str:
     """Fetch recent support tickets from the database."""
-    params = {}
-    if order_id: params["order_id"] = order_id
     try:
-        response = requests.get(f"{API_BASE_URL}/tickets", params=params)
-        data = response.json()
+        conn = get_enterprise_db()
+        query = "SELECT * FROM tickets WHERE 1=1"
+        params = []
+        if order_id:
+            query += " AND order_id = ?"
+            params.append(order_id)
+        query += " ORDER BY id DESC LIMIT 5"
+        
+        rows = conn.execute(query, params).fetchall()
+        conn.close()
+        
+        data = [dict(row) for row in rows]
         if not data:
             return json.dumps({"error": "No recent tickets found."})
         return json.dumps(data)
     except Exception as e:
-        return json.dumps({"error": "Internal API error."})
+        return json.dumps({"error": f"Database error: {e}"})
 
 import vector_db
 
@@ -347,10 +373,13 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
             ticket_status = "investigating"
             reply_text = re.sub(r"\[TICKET:\s*.*?\]", "", reply_text).strip()
             try:
-                res = requests.get(f"{API_BASE_URL}/tickets?ticket_id={ticket_id_extracted}")
-                if res.status_code == 200:
-                    ticket_details = res.json()
-            except:
+                conn = get_enterprise_db()
+                ticket = conn.execute("SELECT * FROM tickets WHERE ticket_id = ?", (ticket_id_extracted,)).fetchone()
+                conn.close()
+                if ticket:
+                    ticket_details = dict(ticket)
+            except Exception as e:
+                print(f"Error fetching ticket {ticket_id_extracted}: {e}")
                 pass
             
         if "[SHOW_ADVANCED_SEARCH]" in reply_text:
@@ -364,10 +393,13 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
             order_ids = [o_id.strip() for o_id in ids_str.split(",") if o_id.strip()]
             for o_id in order_ids:
                 try:
-                    res = requests.get(f"{API_BASE_URL}/orders/{o_id}")
-                    if res.status_code == 200:
-                        orders_to_select.append(res.json())
-                except:
+                    conn = get_enterprise_db()
+                    order = conn.execute("SELECT * FROM orders WHERE order_id = ?", (o_id,)).fetchone()
+                    conn.close()
+                    if order:
+                        orders_to_select.append(dict(order))
+                except Exception as e:
+                    print(f"Error fetching widget order {o_id}: {e}")
                     pass
             
     return {
