@@ -74,6 +74,28 @@ flowchart TD
     Frontend --> User
 ```
 
+### 🧠 Historical Architecture (The "Dual Brain" Multi-Agent System)
+Originally, we designed a complex Multi-Agent system to handle requests. While it was incredibly smart, we eventually pivoted away from it (see the Pivots section below) because the communication between the AI agents added 10+ seconds of latency. We are keeping this diagram here to document the original engineering design!
+
+```mermaid
+flowchart TD
+    Backend[FastAPI Backend] -->|User Message| Coordinator[👔 Coordinator Agent\nManager]
+    
+    Coordinator -->|Classifies & Routes| Sub1[🗂️ Order Search Sub-Agent]
+    Coordinator -->|Classifies & Routes| Sub2[📚 Policy Expert Sub-Agent]
+    Coordinator -->|Classifies & Routes| Sub3[🎫 Ticket Creation Sub-Agent]
+    
+    Sub1 <-->|SQL Queries| DB[(Internal Orders DB)]
+    Sub2 <-->|Vector Search| Chroma[(ChromaDB)]
+    Sub3 <-->|API Calls| MCP[MCP Servers]
+    
+    Sub1 -->|Returns Data| Coordinator
+    Sub2 -->|Returns Rules| Coordinator
+    Sub3 -->|Returns Ticket ID| Coordinator
+    
+    Coordinator -->|Synthesizes Final Answer| Frontend[React Frontend]
+```
+
 ---
 
 ## 📊 Results & Numbers
