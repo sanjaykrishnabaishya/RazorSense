@@ -192,15 +192,18 @@ Here is the complete list of every single problem we faced during development, h
 | **The "Traffic Jam" Hang:** The AI got stuck in a 4-minute loop trying to talk to busy Google servers during high traffic. | We disabled the built-in infinite retries and built a custom "fail-fast" system that instantly skips busy servers. |
 | **The "Technical Snag" Lie:** When the AI couldn't find an order, it would panic and hallucinate a "system glitch." | We updated its Prompt instructions to be honest and kindly ask the user to double-check their search details instead. |
 | **Telemetry Crash on Render:** The vector database crashed the server because it tried to send analytics data that Render blocked. | We fully disabled `anonymized_telemetry` inside the database settings to allow clean startups. |
+| **Server Timeout (Port Scan):** The backend took so long to download its AI model that the cloud server thought it was broken and shut it down. | We deleted the heavy local model and switched to a cloud API (Google Embeddings), letting the server boot in 1 second. |
 
 ### 2. 🚀 Major Features & Architectural Improvements
 
 | What We Improved | Why It Matters (Simple Words) |
 | :--- | :--- |
+| **Pivot from "Dual Brain":** We originally built two AI brains (a Manager and a Worker) but it took 10+ seconds to reply. | We pivoted to a single, highly-optimized "Agentic Brain." It completely eliminated the communication lag and made the app 70% faster! |
 | **Pivot to Video Proof:** The AI used to only ask for static photos. | We upgraded the AI instructions to ask for **videos** of broken items, taking full advantage of Gemini's new video-understanding capabilities. |
 | **Cloud Embeddings Migration:** The app used a 90MB downloaded model to search rules, making boot times incredibly slow. | We deleted the heavy local model and switched to lightning-fast Google Cloud Embeddings (`gemini-embedding-001`). |
 | **MCP Server Isolation:** All the heavy database tools were crammed into the main brain. | We extracted the tools into secure, isolated **MCP Servers**, making the system far safer for enterprise use. |
 | **PII Redaction & Auth:** The chat had no security restrictions. | We built a secure Authorization wall and a PII Redactor so private customer data (like credit cards) is scrubbed *before* hitting the AI. |
+| **Interactive UI Tags:** The AI only replied with plain text. | We added secret tags (like `[SHOW_ADVANCED_SEARCH]`) that the AI can type to instantly make interactive buttons pop up on the user's screen. |
 
 ---
 
