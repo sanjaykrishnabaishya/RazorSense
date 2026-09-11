@@ -9,9 +9,9 @@
 > **⚠️ Quick Disclaimer on Response Times:** 
 > If you test the live app and notice the first message takes a little while to respond (sometimes 1 to 2 minutes), don't worry! This is happening because we are hosting the backend on Render's free tier (which goes to "sleep" when not used and takes a minute to wake up) and using Google's free-tier API (which sometimes has high traffic). Once the app is "awake", it is incredibly fast!
 
-**RazorSense AI** is an enterprise-grade AI customer support tool that completely automates ticket resolution, handles refunds, and interacts with users using natural language. 
+**RazorSense AI** is an enterprise-grade AI customer support tool that completely automates ticket resolution. Unlike old, annoying chatbots that just say *"I don't understand"* or send you links to a boring FAQ page, RazorSense actually **thinks**. 
 
-Just type your issue, and RazorSense pulls up your orders securely, verifies your identity, safely redacts your private data, asks for video proof of damages, and logs support tickets without human intervention!
+It securely pulls up your specific order from the database, reads the secret company rules for your exact problem, actively watches the video proof you upload, and takes real action (like opening a support ticket) just like a human worker would!
 
 ---
 
@@ -38,9 +38,9 @@ Just type your issue, and RazorSense pulls up your orders securely, verifies you
 - It actively asks you to upload a **clear photo or video** of the damage.
 - The AI's multimodal vision watches the video, verifies the product matches your order, checks the damage, and approves the ticket.
 
-### 3. Enterprise Security (Auth & PII Redaction)
-- **Authenticator & Authorization:** You must be securely logged in. The AI will absolutely never show your orders to someone else.
-- **PII Redactor:** The system actively intercepts your chat messages and scrubs out Personal Identifiable Information (like credit card numbers) before it ever touches the AI.
+### 3. Enterprise Security Design (Auth & PII Redaction)
+- **Identity & Authorization:** The architecture is designed for enterprise OAuth. *(Note: For this Live Demo, authentication is bypassed so you can test the AI instantly without creating an account!)*
+- **PII Redactor:** The system is designed to intercept chat messages and scrub out Personal Identifiable Information (like credit card numbers) before it hits the AI.
 
 ### 4. Smart "Fail-Fast" Fallback System
 - If Google's API servers are experiencing high traffic, the system doesn't hang or freeze.
@@ -57,18 +57,18 @@ Here is a simple diagram showing how the whole system connects:
 
 ```mermaid
 flowchart TD
-    User([👤 User / Customer]) -->|Logs In| Auth[🔒 Authenticator & Authorization\nVerifies identity safely]
-    Auth -->|Access granted| Frontend[💻 React Frontend\nChat Interface]
-    Frontend -->|Types message| PII[🛡️ PII Redactor\nHides private data]
-    PII -->|Cleaned message| Backend[⚙️ FastAPI Backend\nPython AI Brain]
+    User([User / Customer]) -->|Visits Site| Auth[Auth Layer - Bypassed for Live Demo]
+    Auth -->|Access granted| Frontend[React Frontend Chat Interface]
+    Frontend -->|Types message| PII[PII Redactor - Hides private data]
+    PII -->|Cleaned message| Backend[FastAPI Backend - Python AI Brain]
     
-    Backend <-->|Fetches User Orders| Database[(💾 Razorpay Orders DB)]
-    Backend <-->|Searches Company Rules| VectorDB[(📚 ChromaDB\nKnowledge Base)]
+    Backend <-->|Fetches User Orders| Database[(Internal Orders DB)]
+    Backend <-->|Searches Company Rules| VectorDB[(ChromaDB Knowledge Base)]
     
-    Backend -->|Delegates Tools| MCP[🔌 MCP Servers\nIsolated Custom Tools]
-    Backend -->|Thinks & Decides| LLM[🧠 Google Gemini AI\n3.8-Flash & 3.7-Flash]
+    Backend -->|Delegates Tools| MCP[MCP Servers - Isolated Custom Tools]
+    Backend -->|Thinks & Decides| LLM[Google Gemini AI 3.8-Flash & 3.7-Flash]
     
-    LLM -->|Analyzes Image/Video| Multimodal[👁️ Multimodal Vision]
+    LLM -->|Analyzes Image/Video| Multimodal[Multimodal Vision]
     LLM -->|Sends response| Backend
     Backend --> Frontend
     Frontend --> User
@@ -174,7 +174,7 @@ Open your browser and go to: `http://localhost:3000`
 | Method | URL | What It Does |
 | :--- | :--- | :--- |
 | `POST` | `/api/chat` | Send a message to the AI Support Agent |
-| `POST` | `/api/orders/search` | Look up a customer's Razorpay orders |
+| `POST` | `/api/orders/search` | Look up a customer's orders |
 | `POST` | `/api/tickets/create` | Open a new support ticket in the database |
 | `GET`  | `/api/knowledge/sync` | Re-seeds the ChromaDB company rules |
 
