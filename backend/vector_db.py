@@ -1,16 +1,32 @@
 import chromadb
 import os
 from chromadb.config import Settings
+from chromadb.api.types import EmbeddingFunction, Documents, Embeddings
+from google import genai
+from dotenv import load_dotenv
+
+load_dotenv()
+
+class GeminiEmbeddingFunction(EmbeddingFunction):
+    def __call__(self, input: Documents) -> Embeddings:
+        client = genai.Client()
+        embeddings = []
+        for text in input:
+            res = client.models.embed_content(model='text-embedding-004', contents=text)
+            embeddings.append(res.embeddings[0].values)
+        return embeddings
+
+gemini_ef = GeminiEmbeddingFunction()
 
 # Initialize Persistent ChromaDB Client
 db_path = os.path.join(os.path.dirname(__file__), "chroma_db")
 client = chromadb.PersistentClient(path=db_path)
 
 # 1. KNOWLEDGE BASE COLLECTION (Point #3)
-kb_collection = client.get_or_create_collection(name="knowledge_base")
+kb_collection = client.get_or_create_collection(name="knowledge_base_v2", embedding_function=gemini_ef)
 
 # 2. SEMANTIC CACHE COLLECTION (Point #4)
-cache_collection = client.get_or_create_collection(name="semantic_cache")
+cache_collection = client.get_or_create_collection(name="semantic_cache_v2", embedding_function=gemini_ef)
 
 def seed_knowledge_base():
     """Populates the Vector DB with company policies if empty."""
