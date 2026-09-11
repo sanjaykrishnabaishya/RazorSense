@@ -1,10 +1,10 @@
 # 🎧 RazorSense AI — Enterprise Customer Support Agent
 
-[![Live Demo](https://img.shields.io/badge/Demo-Try%20Live%20App-0057D9?style=for-the-badge&logo=render)](#)
+[![Live Demo](https://img.shields.io/badge/Demo-Try%20Live%20App-0057D9?style=for-the-badge&logo=render)](https://razorsense-livid.vercel.app/immersive)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
-[![React](https://img.shields.io/badge/Frontend-React%20%26%20Tailwind-black?style=for-the-badge&logo=react)](#)
-[![FastAPI](https://img.shields.io/badge/Backend-FastAPI%20Python-009688?style=for-the-badge&logo=fastapi)](#)
-[![AI Model](https://img.shields.io/badge/AI%20Model-Gemini%203.8%20Flash-orange?style=for-the-badge)](#)
+[![React](https://img.shields.io/badge/Frontend-React%20%26%20Tailwind-black?style=for-the-badge&logo=react)](https://github.com/sanjaykrishnabaishya/RazorSense/tree/master/frontend)
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI%20Python-009688?style=for-the-badge&logo=fastapi)](https://github.com/sanjaykrishnabaishya/RazorSense/tree/master/backend)
+[![AI Model](https://img.shields.io/badge/AI%20Model-Gemini%203.8%20Flash-orange?style=for-the-badge)](https://aistudio.google.com/)
 
 > **⚠️ Quick Disclaimer on Response Times:** 
 > If you test the live app and notice the first message takes a little while to respond (sometimes 1 to 2 minutes), don't worry! This is happening because we are hosting the backend on Render's free tier (which goes to "sleep" when not used and takes a minute to wake up) and using Google's free-tier API (which sometimes has high traffic). Once the app is "awake", it is incredibly fast!
