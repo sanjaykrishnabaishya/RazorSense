@@ -603,76 +603,76 @@ function IssuePrompt({ icon: Icon, label, onClick, color }: any) {
     </motion.button>
   );
 }
-f u n c t i o n   O r d e r S e l e c t W i d g e t ( {   o r d e r s ,   s e n d T e x t   } :   {   o r d e r s :   a n y [ ] ,   s e n d T e x t :   ( t e x t :   s t r i n g )   = >   v o i d   } )   { 
-     c o n s t   [ s e l e c t e d O r d e r I d ,   R e a c t _ u s e S t a t e ]   =   R e a c t . u s e S t a t e < s t r i n g   |   n u l l > ( n u l l ) ; 
-     
-     c o n s t   h a n d l e S u b m i t   =   ( )   = >   { 
-         c o n s t   o r d e r   =   o r d e r s . f i n d ( o   = >   o . o r d e r _ i d   = = =   s e l e c t e d O r d e r I d ) ; 
-         i f   ( o r d e r )   { 
-             s e n d T e x t ( " I   s e l e c t   o r d e r   "   +   o r d e r . o r d e r _ i d   +   "   ( "   +   o r d e r . p r o d u c t   +   " ) " ) ; 
-         } 
-     } ; 
- 
-     r e t u r n   ( 
-         < d i v   c l a s s N a m e = " f l e x   f l e x - c o l   g a p - 3   w - f u l l " > 
-             < d i v   c l a s s N a m e = " p - 4   t e x t - [ 1 5 p x ]   l e a d i n g - [ 1 . 5 ]   s h a d o w - l g   b g - [ # 1 1 1 ]   t e x t - w h i t e   r o u n d e d - 2 x l   r o u n d e d - t l - s m   b o r d e r   b o r d e r - w h i t e / [ 0 . 0 5 ]   s e l f - s t a r t   m a x - w - f i t " > 
-                 I   f o u n d   t h e s e   r e c e n t   o r d e r s .   P l e a s e   s e l e c t   t h e   o n e   y o u   n e e d   h e l p   w i t h : 
-             < / d i v > 
-             < d i v   c l a s s N a m e = " f l e x   f l e x - c o l   g a p - 3   m t - 2   w - f u l l   m a x - w - m d " > 
-                 { o r d e r s . m a p ( ( o :   a n y )   = >   { 
-                     c o n s t   i s S e l e c t e d   =   s e l e c t e d O r d e r I d   = = =   o . o r d e r _ i d ; 
-                     r e t u r n   ( 
-                         < d i v   
-                             k e y = { o . o r d e r _ i d }   
-                             o n C l i c k = { ( )   = >   R e a c t _ u s e S t a t e ( o . o r d e r _ i d ) }   
-                             c l a s s N a m e = { ` b g - [ # 1 1 1 ]   p - 4   r o u n d e d - x l   c u r s o r - p o i n t e r   t r a n s i t i o n   f l e x   j u s t i f y - b e t w e e n   i t e m s - c e n t e r   g r o u p   r e l a t i v e   o v e r f l o w - h i d d e n   b o r d e r   $ { i s S e l e c t e d   ?   " b o r d e r - b l u e - 5 0 0   b g - b l u e - 5 0 0 / 5 "   :   " b o r d e r - w h i t e / 1 0   h o v e r : b o r d e r - w h i t e / 2 0   h o v e r : b g - w h i t e / 5 " } ` } 
-                         > 
-                               < d i v   c l a s s N a m e = { ` a b s o l u t e   l e f t - 0   t o p - 0   b o t t o m - 0   w - 1   b g - g r a d i e n t - t o - b   f r o m - b l u e - 5 0 0   t o - i n d i g o - 5 0 0   t r a n s i t i o n - o p a c i t y   $ { i s S e l e c t e d   ?   " o p a c i t y - 1 0 0 "   :   " o p a c i t y - 0   g r o u p - h o v e r : o p a c i t y - 1 0 0 " } ` } > < / d i v > 
-                               < d i v   c l a s s N a m e = " f l e x   f l e x - c o l   g a p - 1   w - f u l l   p l - 2 " > 
-                                   < h 4   c l a s s N a m e = " t e x t - w h i t e   f o n t - m e d i u m   t e x t - s m   t r a n s i t i o n " > { o . p r o d u c t } < / h 4 > 
-                                   < d i v   c l a s s N a m e = " f l e x   j u s t i f y - b e t w e e n   i t e m s - c e n t e r   w - f u l l   p r - 4 " > 
-                                       < p   c l a s s N a m e = " t e x t - w h i t e / 6 0   t e x t - [ 1 2 p x ]   f o n t - m o n o " > # { o . o r d e r _ i d } < / p > 
-                                       < p   c l a s s N a m e = " t e x t - w h i t e / 8 0   t e x t - [ 1 2 p x ]   f o n t - s e m i b o l d " > { o . m e r c h a n t } < / p > 
-                                   < / d i v > 
-                                   < d i v   c l a s s N a m e = " g r i d   g r i d - c o l s - 2   g a p - 2   t e x t - w h i t e / 4 0   t e x t - [ 1 1 p x ]   m t - 2   b g - b l a c k / 2 0   p - 2   r o u n d e d - l g   b o r d e r   b o r d e r - w h i t e / 5 " > 
-                                       < d i v   c l a s s N a m e = " f l e x   f l e x - c o l " > 
-                                           < s p a n   c l a s s N a m e = " t e x t - [ 9 p x ]   u p p e r c a s e   t r a c k i n g - w i d e r   t e x t - w h i t e / 3 0 " > O r d e r e d   O n < / s p a n > 
-                                           < s p a n > { n e w   D a t e ( o . o r d e r _ d a t e ) . t o L o c a l e D a t e S t r i n g ( " e n - G B " ,   { d a y :   " n u m e r i c " ,   m o n t h :   " s h o r t " ,   y e a r :   " n u m e r i c " } ) } < / s p a n > 
-                                       < / d i v > 
-                                       < d i v   c l a s s N a m e = " f l e x   f l e x - c o l " > 
-                                           < s p a n   c l a s s N a m e = " t e x t - [ 9 p x ]   u p p e r c a s e   t r a c k i n g - w i d e r   t e x t - w h i t e / 3 0 " > S t a t u s < / s p a n > 
-                                           < s p a n   c l a s s N a m e = { o . s t a t u s   = = =   " D e l i v e r e d "   ?   " t e x t - e m e r a l d - 4 0 0 / 8 0 "   :   " t e x t - b l u e - 4 0 0 / 8 0 " } > { o . s t a t u s } < / s p a n > 
-                                       < / d i v > 
-                                       < d i v   c l a s s N a m e = " f l e x   f l e x - c o l   c o l - s p a n - 2   b o r d e r - t   b o r d e r - w h i t e / 5   p t - 1   m t - 1 " > 
-                                           < s p a n   c l a s s N a m e = " t e x t - [ 9 p x ]   u p p e r c a s e   t r a c k i n g - w i d e r   t e x t - w h i t e / 3 0 " > P a i d   V i a < / s p a n > 
-                                           < s p a n > { o . p a y m e n t _ m o d e   | |   " O n l i n e " } < / s p a n > 
-                                       < / d i v > 
-                                   < / d i v > 
-                               < / d i v > 
-                               < d i v   c l a s s N a m e = { ` h - 8   w - 8   s h r i n k - 0   r o u n d e d - f u l l   f l e x   i t e m s - c e n t e r   j u s t i f y - c e n t e r   b o r d e r   t r a n s i t i o n   $ { i s S e l e c t e d   ?   " b g - b l u e - 5 0 0 / 2 0   b o r d e r - b l u e - 5 0 0 / 5 0   t e x t - b l u e - 4 0 0   s h a d o w - [ 0 _ 0 _ 1 5 p x _ r g b a ( 5 9 , 1 3 0 , 2 4 6 , 0 . 5 ) ] "   :   " b g - w h i t e / 5   b o r d e r - w h i t e / 1 0   t e x t - w h i t e / 3 0   g r o u p - h o v e r : b g - w h i t e / 1 0 " } ` } > 
-                                   < C h e c k C i r c l e 2   c l a s s N a m e = " w - 4   h - 4 "   / > 
-                               < / d i v > 
-                         < / d i v > 
-                     ) ; 
-                 } ) } 
-             < / d i v > 
-             
-             { s e l e c t e d O r d e r I d   & &   ( 
-                 < b u t t o n   
-                     o n C l i c k = { h a n d l e S u b m i t } 
-                     c l a s s N a m e = " m t - 2   b g - b l u e - 6 0 0   h o v e r : b g - b l u e - 5 0 0   t e x t - w h i t e   f o n t - s e m i b o l d   p y - 3   p x - 6   r o u n d e d - x l   t r a n s i t i o n   s h a d o w - l g   w - f u l l   m a x - w - m d   f l e x   i t e m s - c e n t e r   j u s t i f y - c e n t e r   g a p - 2 " 
-                 > 
-                     T h i s   i s   m y   p u r c h a s e 
-                 < / b u t t o n > 
-             ) } 
- 
-             < b u t t o n   
-                 o n C l i c k = { ( )   = >   s e n d T e x t ( " M y   o r d e r   i s   n o t   h e r e   i n   t h e   l i s t .   P l e a s e   c o n n e c t   m e   t o   a   h u m a n   e x e c u t i v e . " ) } 
-                 c l a s s N a m e = " m t - 2   t e x t - [ 1 3 p x ]   t e x t - w h i t e / 6 0   h o v e r : t e x t - w h i t e   t r a n s i t i o n   u n d e r l i n e   u n d e r l i n e - o f f s e t - 4   s e l f - s t a r t " 
-             > 
-                 N o t   h e r e   i n   t h e   l i s t 
-             < / b u t t o n > 
-         < / d i v > 
-     ) ; 
- }  
- 
+
+function OrderSelectWidget({ orders, sendText }: { orders: any[], sendText: (text: string) => void }) {
+  const [selectedOrderId, setSelectedOrderId] = React.useState<string | null>(null);
+
+  const handleSubmit = () => {
+    const order = orders.find(o => o.order_id === selectedOrderId);
+    if (order) {
+      sendText(`I select order ${order.order_id} (${order.product})`);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-3 w-full">
+      <div className="p-4 text-[15px] leading-[1.5] shadow-lg bg-[#111] text-white rounded-2xl rounded-tl-sm border border-white/[0.05] self-start max-w-fit">
+        I found these recent orders. Please select the one you need help with:
+      </div>
+      <div className="flex flex-col gap-3 mt-2 w-full max-w-md">
+        {orders.map((o: any) => {
+          const isSelected = selectedOrderId === o.order_id;
+          return (
+            <div 
+              key={o.order_id} 
+              onClick={() => setSelectedOrderId(o.order_id)} 
+              className={`bg-[#111] p-4 rounded-xl cursor-pointer transition flex justify-between items-center group relative overflow-hidden border ${isSelected ? 'border-blue-500 bg-blue-500/5' : 'border-white/10 hover:border-white/20 hover:bg-white/5'}`}
+            >
+               <div className={`absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-indigo-500 transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}></div>
+               <div className="flex flex-col gap-1 w-full pl-2">
+                 <h4 className="text-white font-medium text-sm transition">{o.product}</h4>
+                 <div className="flex justify-between items-center w-full pr-4">
+                   <p className="text-white/60 text-[12px] font-mono">#{o.order_id}</p>
+                   <p className="text-white/80 text-[12px] font-semibold">{o.merchant}</p>
+                 </div>
+                 <div className="grid grid-cols-2 gap-2 text-white/40 text-[11px] mt-2 bg-black/20 p-2 rounded-lg border border-white/5">
+                   <div className="flex flex-col">
+                     <span className="text-[9px] uppercase tracking-wider text-white/30">Ordered On</span>
+                     <span>{new Date(o.order_date).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'})}</span>
+                   </div>
+                   <div className="flex flex-col">
+                     <span className="text-[9px] uppercase tracking-wider text-white/30">Status</span>
+                     <span className={o.status === 'Delivered' ? 'text-emerald-400/80' : 'text-blue-400/80'}>{o.status}</span>
+                   </div>
+                   <div className="flex flex-col col-span-2 border-t border-white/5 pt-1 mt-1">
+                     <span className="text-[9px] uppercase tracking-wider text-white/30">Paid Via</span>
+                     <span>{o.payment_mode || 'Online'}</span>
+                   </div>
+                 </div>
+               </div>
+               <div className={`h-8 w-8 shrink-0 rounded-full flex items-center justify-center border transition ${isSelected ? 'bg-blue-500/20 border-blue-500/50 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'bg-white/5 border-white/10 text-white/30 group-hover:bg-white/10'}`}>
+                 <CheckCircle2 className="w-4 h-4" />
+               </div>
+            </div>
+          );
+        })}
+      </div>
+      
+      {selectedOrderId && (
+        <button 
+          onClick={handleSubmit}
+          className="mt-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg w-full max-w-md flex items-center justify-center gap-2"
+        >
+          This is my purchase
+        </button>
+      )}
+
+      <button 
+        onClick={() => sendText("My order is not here in the list. Please connect me to a human executive.")}
+        className="mt-2 text-[13px] text-white/60 hover:text-white transition underline underline-offset-4 self-start"
+      >
+        Not here in the list
+      </button>
+    </div>
+  );
+}
