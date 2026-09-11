@@ -18,9 +18,11 @@ INTERNAL_PORT = os.environ.get("PORT", "8000")
 API_BASE_URL = os.environ.get("ENTERPRISE_API_URL", f"http://127.0.0.1:{INTERNAL_PORT}/enterprise/api/v2")
 
 import sqlite3
+import os
 
 def get_enterprise_db():
-    conn = sqlite3.connect("enterprise.db")
+    db_path = os.path.join(os.path.dirname(__file__), 'rz_db.sqlite')
+    conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
 
