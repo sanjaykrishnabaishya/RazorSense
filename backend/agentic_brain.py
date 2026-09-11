@@ -169,10 +169,10 @@ tools = [
 # ==========================================
 from google.genai.types import HttpOptions, HttpRetryOptions
 
-# Disable infinite retries but allow 3 attempts to gracefully handle brief 503 API stutters
+# Disable infinite retries (attempts=1) to fail fast on 503s and trigger the fallback loop instantly!
 client = genai.Client(
     api_key=os.environ.get("GEMINI_API_KEY"),
-    http_options=HttpOptions(retry_options=HttpRetryOptions(attempts=3))
+    http_options=HttpOptions(retry_options=HttpRetryOptions(attempts=1))
 )
 
 system_prompt = """You are Krish, an elite, enterprise-grade Support Agent.
