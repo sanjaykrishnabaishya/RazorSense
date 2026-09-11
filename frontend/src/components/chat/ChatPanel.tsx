@@ -443,6 +443,12 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
                             </div>
                           ))}
                         </div>
+                        <button 
+                          onClick={() => sendText("My order is not here in the list. Please connect me to a human executive.")}
+                          className="mt-2 text-[13px] text-white/60 hover:text-white transition underline underline-offset-4 self-start"
+                        >
+                          Not here in the list
+                        </button>
                       </div>
                     )}
 

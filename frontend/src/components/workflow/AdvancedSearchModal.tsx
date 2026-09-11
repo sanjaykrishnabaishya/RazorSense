@@ -20,31 +20,17 @@ export default function AdvancedSearchModal({ isOpen, onClose, onSearch }: any) 
     setMounted(true);
   }, []);
 
-  const handleSearchClick = () => {
-    // If orderId is not given, show history step, else direct search
-    if (!orderId) {
-      setStep(2);
-    } else {
-      // simulate direct result
+    const handleSearchClick = () => {
       onSearch({
-        merchant: merchant || 'Unknown Merchant',
+        merchant: merchant,
         orderId: orderId,
+        date: orderDate,
         method: paymentMethod
       });
       onClose();
-    }
-  };
+    };
 
-  const handleFinalSubmit = () => {
-    onSearch({
-      merchant: merchant || 'Unknown Merchant',
-      orderId: selectedResult || 'MULTIPLE_ORDERS',
-      method: paymentMethod
-    });
-    onClose();
-  };
-
-  if (!isOpen || !mounted) return null;
+    if (!isOpen || !mounted) return null;
 
   return createPortal(
     <AnimatePresence>
@@ -141,52 +127,7 @@ export default function AdvancedSearchModal({ isOpen, onClose, onSearch }: any) 
               </div>
             )}
 
-            {step === 2 && (
-              <div className="space-y-4">
-                <p className="text-[14px] text-white/70 mb-4">We found multiple transactions matching these details in your last 10 purchases. Please select the one with the issue:</p>
-                <div className="space-y-2">
-                  {[
-                    { id: '#AMZ884512', amount: '₹11,499', date: 'Today, 2:30 PM', item: 'Wireless Earbuds' },
-                    { id: '#AMZ992144', amount: '₹1,450', date: 'Yesterday, 11:15 AM', item: 'Phone Case' },
-                    { id: '#AMZ771233', amount: '₹12,999', date: '2 days ago', item: 'Mechanical Keyboard' },
-                    { id: '#AMZ665322', amount: '₹899', date: '3 days ago', item: 'USB-C Cable' },
-                    { id: '#AMZ554112', amount: '₹3,499', date: '4 days ago', item: 'Smart Watch Band' },
-                    { id: '#AMZ443998', amount: '₹8,990', date: 'Last Week', item: 'Running Shoes' },
-                    { id: '#AMZ332887', amount: '₹450', date: 'Last Week', item: 'Coffee Beans 250g' },
-                    { id: '#AMZ221776', amount: '₹2,100', date: '2 Weeks ago', item: 'Desk Organizer' },
-                    { id: '#AMZ110665', amount: '₹15,400', date: '2 Weeks ago', item: 'Office Chair' },
-                    { id: '#AMZ009554', amount: '₹650', date: '3 Weeks ago', item: 'Notebook Pack' }
-                  ].map((res) => (
-                    <div key={res.id} onClick={() => setSelectedResult(res.id)} className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition ${selectedResult === res.id ? 'bg-blue-500/10 border-blue-500' : 'bg-[#111] border-white/10 hover:border-white/30'}`}>
-                      <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${selectedResult === res.id ? 'border-blue-500 bg-blue-500 text-white' : 'border-white/30'}`}>
-                        {selectedResult === res.id && <Check size={12} />}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between">
-                          <span className="font-semibold text-white text-[14px]">{res.item}</span>
-                          <span className="font-bold text-white text-[14px]">{res.amount}</span>
-                        </div>
-                        <div className="flex justify-between mt-1">
-                          <span className="text-[12px] text-white/50">{res.id}</span>
-                          <span className="text-[12px] text-white/50">{res.date}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
 
-                <div className="flex gap-3 mt-6">
-                  <button onClick={() => setStep(1)} className="px-4 py-2.5 rounded-xl border border-white/10 text-white hover:bg-white/5 transition text-[14px]">Back</button>
-                  <button 
-                    onClick={handleFinalSubmit}
-                    disabled={!selectedResult}
-                    className="flex-1 bg-white hover:bg-gray-200 disabled:opacity-50 text-black font-semibold py-2.5 rounded-xl transition flex items-center justify-center gap-2"
-                  >
-                    Confirm Selection <ChevronRight size={18} />
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         </motion.div>
       </div>
