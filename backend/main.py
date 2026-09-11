@@ -100,11 +100,13 @@ def get_order_details(order_number: str, db: Session = Depends(get_db), current_
         )
         
     return {
-        "order_number": order.order_number,
-        "product_name": order.product_name,
+        "order_id": order.order_number,
+        "product": order.product_name,
         "price": order.price,
         "merchant": order.merchant.name,
-        "transaction_mode": order.transaction_mode
+        "payment_mode": order.transaction_mode,
+        "order_date": order.order_date,
+        "status": order.status
     }
 
 

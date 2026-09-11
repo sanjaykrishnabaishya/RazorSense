@@ -414,15 +414,30 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
                         </div>
                         <div className="flex flex-col gap-3 mt-2 w-full max-w-md">
                           {m.orders.map((o: any) => (
-                            <div key={o.order_id} onClick={() => sendText(`I select order ${o.order_id} (${o.item})`)} className="bg-[#111] border border-white/10 p-4 rounded-xl cursor-pointer hover:bg-white/5 transition flex justify-between items-center group">
-                               <div>
-                                 <h4 className="text-white font-medium text-sm group-hover:text-blue-400 transition">{o.item}</h4>
-                                 <p className="text-white/50 text-[12px] mt-1">Order #{o.order_id} • {o.merchant}</p>
-                                 <p className="text-white/40 text-[11px] mt-0.5">
-                                   {new Date(o.order_date).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'})} • {o.status}
-                                 </p>
+                            <div key={o.order_id} onClick={() => sendText(`I select order ${o.order_id} (${o.product})`)} className="bg-[#111] border border-white/10 p-4 rounded-xl cursor-pointer hover:bg-white/5 transition flex justify-between items-center group relative overflow-hidden">
+                               <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                               <div className="flex flex-col gap-1 w-full pl-2">
+                                 <h4 className="text-white font-medium text-sm group-hover:text-blue-400 transition">{o.product}</h4>
+                                 <div className="flex justify-between items-center w-full pr-4">
+                                   <p className="text-white/60 text-[12px] font-mono">#{o.order_id}</p>
+                                   <p className="text-white/80 text-[12px] font-semibold">{o.merchant}</p>
+                                 </div>
+                                 <div className="grid grid-cols-2 gap-2 text-white/40 text-[11px] mt-2 bg-black/20 p-2 rounded-lg border border-white/5">
+                                   <div className="flex flex-col">
+                                     <span className="text-[9px] uppercase tracking-wider text-white/30">Ordered On</span>
+                                     <span>{new Date(o.order_date).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'})}</span>
+                                   </div>
+                                   <div className="flex flex-col">
+                                     <span className="text-[9px] uppercase tracking-wider text-white/30">Status</span>
+                                     <span className={o.status === 'Delivered' ? 'text-emerald-400/80' : 'text-blue-400/80'}>{o.status}</span>
+                                   </div>
+                                   <div className="flex flex-col col-span-2 border-t border-white/5 pt-1 mt-1">
+                                     <span className="text-[9px] uppercase tracking-wider text-white/30">Paid Via</span>
+                                     <span>{o.payment_mode || "Online"}</span>
+                                   </div>
+                                 </div>
                                </div>
-                               <div className="h-8 w-8 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20 group-hover:scale-110 transition">
+                               <div className="h-8 w-8 shrink-0 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20 group-hover:scale-110 transition group-hover:bg-blue-500/20 group-hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]">
                                  <CheckCircle2 className="text-blue-400 w-4 h-4" />
                                </div>
                             </div>

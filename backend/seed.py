@@ -27,11 +27,11 @@ def seed_db():
 
     # Create Orders
     orders = [
-        models.Order(order_number="ORD-5671", user_id=user1.id, merchant_id=amazon.id, product_name="Echo Dot (5th Gen)", price=49.99, transaction_id="TXN1", transaction_mode="Credit Card"),
-        models.Order(order_number="ORD-8923", user_id=user1.id, merchant_id=amazon.id, product_name="Kindle Paperwhite", price=139.99, transaction_id="TXN2", transaction_mode="Credit Card"),
-        models.Order(order_number="ORD-1045", user_id=user1.id, merchant_id=amazon.id, product_name="Sony WF-1000XM4 Earbuds", price=278.00, transaction_id="TXN3", transaction_mode="UPI - GPay"),
-        models.Order(order_number="ORD-9932", user_id=user1.id, merchant_id=amazon.id, product_name="Samsung Galaxy S24", price=799.00, transaction_id="TXN4", transaction_mode="Credit Card"),
-        models.Order(order_number="ORD-7711", user_id=user1.id, merchant_id=zomato.id, product_name="Margherita Pizza", price=14.50, transaction_id="TXN5", transaction_mode="UPI - PhonePe")
+        models.Order(order_number="ORD-5671", user_id=user1.id, merchant_id=amazon.id, product_name="Echo Dot (5th Gen)", price=49.99, transaction_id="TXN1", transaction_mode="Credit Card", order_date="2026-07-05", status="Delivered"),
+        models.Order(order_number="ORD-8923", user_id=user1.id, merchant_id=amazon.id, product_name="Kindle Paperwhite", price=139.99, transaction_id="TXN2", transaction_mode="Credit Card", order_date="2026-08-10", status="Delivered"),
+        models.Order(order_number="ORD-1045", user_id=user1.id, merchant_id=amazon.id, product_name="Sony WF-1000XM4 Earbuds", price=278.00, transaction_id="TXN3", transaction_mode="UPI - GPay", order_date="2026-08-25", status="Delivered"),
+        models.Order(order_number="ORD-9932", user_id=user1.id, merchant_id=amazon.id, product_name="Samsung Galaxy S24", price=799.00, transaction_id="TXN4", transaction_mode="Credit Card", order_date="2026-09-02", status="Shipped"),
+        models.Order(order_number="ORD-7711", user_id=user1.id, merchant_id=zomato.id, product_name="Margherita Pizza", price=14.50, transaction_id="TXN5", transaction_mode="UPI - PhonePe", order_date="2026-09-04", status="Delivered")
     ]
     
     for o in orders:

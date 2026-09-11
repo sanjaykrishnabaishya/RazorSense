@@ -33,8 +33,10 @@ class Order(Base):
     product_name = Column(String)
     price = Column(Float)
     transaction_id = Column(String)
-    transaction_mode = Column(String) # UPI, Card, COD
-    order_date = Column(DateTime, default=datetime.utcnow)
+    transaction_mode = Column(String) # e.g. UPI, Card
+    
+    order_date = Column(String, default="2026-09-01")
+    status = Column(String, default="Delivered")
     
     owner = relationship("User", back_populates="orders")
     merchant = relationship("Merchant", back_populates="orders")
