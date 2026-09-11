@@ -304,18 +304,19 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
     formatted_history.append(types.Content(role="user", parts=message_parts))
             
     def get_config(model_name: str) -> types.GenerateContentConfig:
-        """Return model config — thinking enabled for all models in cascade."""
-        if "3.5-flash-lite" in model_name:
-            # Lite model doesn't support thinking — plain fallback
+        """Return model config."""
+        if "lite" in model_name or "1.5" in model_name:
+            # Lite / legacy models don't support thinking
             return types.GenerateContentConfig(
                 system_instruction=system_prompt,
                 tools=tools,
                 temperature=0.3
             )
+        # Enable Thinking Mode for 2.5 and 2.0-thinking models to ensure maximum RCA and logical reasoning
         return types.GenerateContentConfig(
             system_instruction=system_prompt,
             tools=tools,
-            temperature=1,  # required for thinking mode
+            temperature=1.0,  # required for thinking mode
             thinking_config=types.ThinkingConfig(thinking_budget=1024)
         )
 
@@ -460,17 +461,18 @@ def run_agentic_brain_stream(user_id: str, message: str, history: List[Dict[str,
     SKIP_CODES = ("429", "404", "503", "RESOURCE_EXHAUSTED", "NOT_FOUND", "UNAVAILABLE")
 
     def get_stream_config(model_name: str) -> types.GenerateContentConfig:
-        if "3.8" in model_name or "3.7" in model_name:
+        if "lite" in model_name or "1.5" in model_name:
             return types.GenerateContentConfig(
                 system_instruction=system_prompt,
                 tools=tools,
-                temperature=1,
-                thinking_config=types.ThinkingConfig(thinking_budget=1024)
+                temperature=0.3
             )
+        # Enable Thinking Mode for 2.5 and 2.0-thinking models for maximum RCA
         return types.GenerateContentConfig(
             system_instruction=system_prompt,
             tools=tools,
-            temperature=0.3
+            temperature=1.0,
+            thinking_config=types.ThinkingConfig(thinking_budget=1024)
         )
 
     for model in MODELS:
@@ -482,7 +484,8 @@ def run_agentic_brain_stream(user_id: str, message: str, history: List[Dict[str,
                 config=get_stream_config(model)
             )
             stream = chat.send_message_stream(message_parts)
-            print(f"[Stream] Using {model} (thinking={'yes' if '3.8' in model or '3.7' in model else 'no'})")
+            thinking_enabled = "no" if "lite" in model or "1.5" in model else "yes"
+            print(f"[Stream] Using {model} (thinking={thinking_enabled})")
             for chunk in stream:
                 if chunk.text:
                     yield chunk.text
