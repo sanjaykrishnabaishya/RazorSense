@@ -20,7 +20,7 @@ gemini_ef = GeminiEmbeddingFunction()
 
 # Initialize Persistent ChromaDB Client
 db_path = os.path.join(os.path.dirname(__file__), "chroma_db")
-client = chromadb.PersistentClient(path=db_path)
+client = chromadb.PersistentClient(path=db_path, settings=Settings(anonymized_telemetry=False))
 
 # 1. KNOWLEDGE BASE COLLECTION (Point #3)
 kb_collection = client.get_or_create_collection(name="knowledge_base_v2", embedding_function=gemini_ef)

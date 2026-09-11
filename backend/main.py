@@ -13,6 +13,10 @@ models.Base.metadata.create_all(bind=engine)
 from seed import seed_db
 seed_db()
 
+# Seed Vector DB
+import vector_db
+vector_db.seed_knowledge_base()
+
 app = FastAPI(title="RazorSense Secure API")
 
 from enterprise_api import app as enterprise_app
