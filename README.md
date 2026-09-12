@@ -100,45 +100,45 @@ RazorSense natively embeds the international payment industry standard **4-Pilla
 
 ```mermaid
 flowchart TD
-    subgraph Client ["Client Layer (Web & Mobile)"]
-        User([Customer / User])
-        Frontend["React + Tailwind Chat Interface\n(Atlas Studio Style)"]
-        PII["Client-Side PII Scrubbing\n(PAN, CVV, Passwords)"]
+    subgraph Client ["Client Layer - Web & Mobile"]
+        User(["Customer / User"])
+        Frontend["React + Tailwind Chat Interface<br/>(Atlas Studio Style)"]
+        PII["Client-Side PII Scrubbing<br/>(PAN, CVV, Passwords)"]
     end
 
-    subgraph Core ["Enterprise Gateway & Brain (FastAPI)"]
+    subgraph Core ["Enterprise Gateway & Brain - FastAPI"]
         MainAPI["FastAPI Orchestrator (main.py)"]
-        Auth["RBAC & Mock Token Auth\n(models.py / database.py)"]
-        Krish["Agentic Brain 'Krish' (agentic_brain.py)\nGemini 2.5/2.0 with Thinking Mode"]
-        DisputeEngine["Autonomous Dispute Engine (dispute_engine.py)\nHMAC Webhook & Representment Compiler"]
+        Auth["RBAC & Mock Token Auth<br/>(models.py / database.py)"]
+        Krish["Agentic Brain 'Krish' (agentic_brain.py)<br/>Gemini with Thinking Mode"]
+        DisputeEngine["Autonomous Dispute Engine (dispute_engine.py)<br/>HMAC Webhook & Representment Compiler"]
     end
 
     subgraph Memory ["Knowledge & Storage"]
-        VectorDB[("ChromaDB Vector Store\n13 Seeded 4-Pillar Policies")]
-        OrderDB[("SQLite Transaction DB\nOrders, Payments, Telemetry")]
-        Vision["Multimodal Vision Analyzer\nPhoto/Video Damage Inspection"]
+        VectorDB[("ChromaDB Vector Store<br/>13 Seeded 4-Pillar Policies")]
+        OrderDB[("SQLite Transaction DB<br/>Orders, Payments, Telemetry")]
+        Vision["Multimodal Vision Analyzer<br/>Photo/Video Damage Inspection"]
     end
 
     subgraph Gateway ["Enterprise Payment Settlement Engine"]
         ExtGW["Enterprise Payment Gateway"]
-        Webhooks["Inbound Webhooks\n(dispute.created, refund.processed)"]
+        Webhooks["Inbound Webhooks<br/>(dispute.created, refund.processed)"]
     end
 
-    User <-->|Types message / Uploads proof| Frontend
-    Frontend --> PII
-    PII -->|Scrubbed request| MainAPI
-    MainAPI --> Auth
-    Auth --> Krish
+    User <-->|"Chat Interaction & Media Upload"| Frontend
+    Frontend -->|"User Input"| PII
+    PII -->|"Scrubbed Request"| MainAPI
+    MainAPI -->|"Authorized Context"| Auth
+    Auth -->|"User Session"| Krish
 
-    Krish <-->|Semantic Policy Search| VectorDB
-    Krish <-->|Order & Telemetry Lookup| OrderDB
-    Krish <-->|Inspects Media| Vision
-    Krish -->|Generates UI Tags / Actions| Frontend
+    Krish <-->|"Semantic Policy Retrieval"| VectorDB
+    Krish <-->|"Order & Delivery Telemetry"| OrderDB
+    Krish <-->|"Multimodal Vision Analysis"| Vision
+    Krish -->|"Direct Resolution & UI Tags"| Frontend
 
-    Webhooks -->|Signed Payload (HMAC-SHA256)| MainAPI
-    MainAPI --> DisputeEngine
-    DisputeEngine <-->|Collects 3DS & Delivery Proof| OrderDB
-    DisputeEngine -->|Submits Dispute Defense Packet| ExtGW
+    Webhooks -->|"Signed Gateway Webhooks"| MainAPI
+    MainAPI -->|"Dispute Event Routing"| DisputeEngine
+    DisputeEngine <-->|"Compiles Delivery & 3DS Proof"| OrderDB
+    DisputeEngine -->|"Submits Defense Dossier"| ExtGW
 ```
 
 ---
