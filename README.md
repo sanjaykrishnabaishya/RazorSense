@@ -9,9 +9,17 @@
 > **⚠️ Note on Free-Tier Cloud Wake-Up:**  
 > If you test the live demo and the first message takes 30–60 seconds, this is expected behavior on Render's free tier (the server sleeps during inactivity and wakes up upon your first request). Once warm, subsequent responses stream instantly within 2–3 seconds!
 
-**RazorSense AI** is an enterprise-grade AI customer support platform and autonomous dispute defense engine that completely automates ticket resolution and dispute management. Unlike old, annoying chatbots that just say *"I don't understand"* or send you links to a boring FAQ page, RazorSense is powered by an autonomous AI agent named **Krish** who actually **thinks**. 
+**RazorSense AI** is an enterprise-grade autonomous customer support platform and payment dispute resolution engine. Powered by an autonomous AI agent named **Krish**, the system resolves customer inquiries, manages post-purchase issues, and automates payment gateway dispute defense from a single conversational interface.
 
-Krish securely pulls up your specific order and transaction telemetry from the database, evaluates official company policies and card network regulations for your exact problem across all **4 Dispute Pillars**, actively watches the video or photo proof you upload with native multimodal vision, and takes real, decisive action—reversing duplicate charges, revoking recurring billing mandates, approving returns, opening support tickets, and compiling bank-grade chargeback defense packets—just like an expert human worker would!
+### What the Product Does:
+- **Order & Telemetry Lookup:** Connects to the internal transaction database to retrieve verified order records, merchant information, carrier AWB tracking, and 3DS payment authentication states.
+- **4-Pillar Dispute Resolution:** Analyzes and resolves customer claims across all major payment dispute categories:
+  - **Pillar 1 (Fraud & Authorization):** Validates 3DS 2FA/OTP logs and determines bank liability shift under card network rules.
+  - **Pillar 2 (Fulfillment & Merchandise):** Validates carrier delivery status (MNR) and enforces merchant return policies.
+  - **Pillar 3 (Billing & Duplicate Charges):** Identifies duplicate debits on the payment gateway ledger and executes instant reversals.
+  - **Pillar 4 (Subscriptions & Auto-Renewals):** Applies 48-hour renewal grace periods and revokes active e-mandates.
+- **Multimodal Visual Inspection:** Analyzes user-uploaded photos and unboxing videos using native computer vision to visually verify physical item damage, packaging integrity, and serial numbers before authorizing returns.
+- **Direct Backend Actions:** Executes resolution steps directly—reversing duplicate debits, canceling recurring billing mandates, issuing Return Merchandise Authorizations (RMAs), creating support tickets, and compiling legal-grade dispute representment packets for card networks and banks.
 
 ---
 
