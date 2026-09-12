@@ -29,7 +29,7 @@
 2. [The 4-Pillar Dispute & Resolution Framework](#-the-4-pillar-dispute--resolution-framework)
 3. [System Architecture](#-system-architecture)
 4. [Autonomous Agentic Brain ("Krish")](#-autonomous-agentic-brain-krish)
-5. [Human Reviewer Workflow (When Does the AI Escalate?)](#-human-reviewer-workflow-when-does-the-ai-escalate)
+5. [Where Does the Human Reviewer Come In? (Does AI Act Alone or Escalate First?)](#-where-does-the-human-reviewer-come-in-does-ai-act-alone-or-escalate-first)
 6. [Key Capabilities & Innovations](#-key-capabilities--innovations)
 7. [Performance Metrics & Results](#-performance-metrics--results)
 8. [Project Structure](#-project-structure)
@@ -162,13 +162,49 @@ Krish is the dedicated, single frontline representative of RazorSense AI:
 
 ---
 
-## 👥 Human Reviewer Workflow (When Does the AI Escalate?)
+## 👥 Where Does the Human Reviewer Come In? (Does AI Act Alone or Escalate First?)
 
-To prevent fraud and maintain strict financial safeguards, RazorSense is designed with clear boundaries between **Autonomous Resolutions** and **Human Reviewer Escalations**:
+RazorSense is built with strict safety and fraud guardrails. The AI does NOT blindly execute high-risk or irreversible financial actions on its own.
 
-### Does the AI act alone or send to a human first?
-- **Routine, Policy-Compliant Inquiries (Handled Autonomously):** For standard, safe actions—such as retrieving order statuses, canceling orders before shipment, refunding duplicate debits within 15 minutes, or processing subscription cancellations within the 48-hour zero-usage grace window—the AI resolves the issue immediately in seconds without making the customer wait.
-- **High-Risk, Ambiguous, or Out-of-Policy Situations (Escalated to Human First):** The AI **halts and escalates to a human specialist before taking any irreversible financial or dispute action**.
+Here is the exact boundary breakdown:
+
+```
+                                  CUSTOMER REQUEST
+                                         │
+                 ┌───────────────────────┴───────────────────────┐
+                 ▼                                               ▼
+         ROUTINE & SAFE                               HIGH-RISK / AMBIGUOUS
+       (Policy-Compliant)                           (Potential Fraud / Edge Case)
+                 │                                               │
+                 ▼                                               ▼
+      AI Resolves in Seconds                          AI Halts Action & Escalates
+                 │                                               │
+  • Track order status & courier updates          • Altered/tampered unboxing videos
+  • Reverse 15-min duplicate charges              • Missing item claims (weight mismatch)
+  • Cancel 48-hr/zero-usage subscription renewal  • Advanced order search returns 0 results
+  • Issue standard return within 7-day window     • User requests a human or is distressed
+                                                  • Out-of-policy refund requests
+                                                                 │
+                                                                 ▼
+                                                    Calls `escalate_to_human`
+                                                    Creates `[TICKET: ESC-XXXXX]`
+                                                    Routes to Senior Specialist
+```
+
+### A. When Does the AI Act Autonomously? (No Human Needed)
+For routine, low-risk, policy-compliant requests, the AI acts immediately so the customer does not have to wait 24–48 hours for a human:
+* **Order Status & Tracking:** Checking where an item is or why it is delayed.
+* **Duplicate Debits:** If the payment ledger shows two identical charges within 15 minutes due to a checkout network dropout, the AI immediately initiates an automated reversal.
+* **Subscription Grace Period:** If a customer requests cancellation within 48 hours of an auto-renewal and zero service usage occurred, the AI automatically refunds the charge and stops future billing.
+* **Eligible Return Approvals:** If an unboxing video clearly shows courier transit damage (e.g., shattered screen) on an item inside the 7-day return window, the AI automatically schedules an RMA pickup.
+
+### B. When Does the AI Escalate to a Human Reviewer BEFORE Acting?
+If there is any ambiguity, suspected fraud, or financial risk, the AI halts immediately and transfers the case to a human reviewer:
+* **Suspicious or Contradictory Damage Proof:** If an uploaded photo/video looks edited, shows intentional damage, or features a completely different product than what was ordered, the AI does not refund. It flags the file and routes it to a human fraud specialist.
+* **Missing Item with Weight Discrepancies:** If a customer claims a package arrived empty, but courier dock scale records show the package weighed full factory weight at delivery, the AI does not issue an instant refund; it escalates to warehouse operations for an internal audit.
+* **Advanced Order Search Failure (Scenario C):** If the customer tries Advanced Search and the order cannot be found, Krish does not guess; he immediately calls `escalate_to_human` and assigns a human agent to locate the order.
+* **Out-of-Policy Exceptions:** Any request past the return window (e.g., requesting a refund 25 days after delivery) requires human supervisor sign-off.
+* **Customer Request or Frustration:** If the user explicitly asks "I want to talk to a human" or expresses distress, Krish generates an escalation ticket (`ESC-XXXXX`) and hands off the conversation with full context.
 
 | Customer Scenario | AI Action | Human Reviewer Role |
 | :--- | :--- | :--- |
