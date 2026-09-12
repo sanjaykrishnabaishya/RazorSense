@@ -9,9 +9,9 @@
 > **⚠️ Note on Free-Tier Cloud Wake-Up:**  
 > If you test the live demo and the first message takes 30–60 seconds, this is expected behavior on Render's free tier (the server sleeps during inactivity and wakes up upon your first request). Once warm, subsequent responses stream instantly within 2–3 seconds!
 
-**RazorSense AI** is an enterprise-grade customer support platform and autonomous dispute resolution engine. Unlike conventional rule-based bots that regurgitate static FAQ links, RazorSense is powered by an autonomous, multimodal agentic brain named **Krish**. 
+**RazorSense AI** is an enterprise-grade AI customer support platform and autonomous dispute defense engine that completely automates ticket resolution and dispute management. Unlike old, annoying chatbots that just say *"I don't understand"* or send you links to a boring FAQ page, RazorSense is powered by an autonomous AI agent named **Krish** who actually **thinks**. 
 
-Krish directly resolves customer inquiries, manages orders, inspects damaged merchandise using multimodal computer vision, reverses duplicate charges, enforces return windows, and autonomously compiles legal-grade evidence dossiers to defend against bank chargebacks across all **4 Major Dispute Pillars**.
+Krish securely pulls up your specific order and transaction telemetry from the database, evaluates official company policies and card network regulations for your exact problem across all **4 Dispute Pillars**, actively watches the video or photo proof you upload with native multimodal vision, and takes real, decisive action—reversing duplicate charges, revoking recurring billing mandates, approving returns, opening support tickets, and compiling bank-grade chargeback defense packets—just like an expert human worker would!
 
 ---
 
