@@ -219,16 +219,6 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
           }]);
         }
 
-        // ── ADVANCED SEARCH widget ──
-        if (display.includes('[SHOW_ADVANCED_SEARCH]')) {
-          display = display.replace('[SHOW_ADVANCED_SEARCH]', '').trim();
-          setMessages((prev: any) => [...prev, {
-            id: (Date.now() + 3).toString(), role: 'assistant', kind: 'widget_search',
-            text: 'Here is the advanced search panel:',
-            timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-          }]);
-        }
-
         // ── ORDER WIDGET ──
         const orderMatch = display.match(/\[ORDER_WIDGET:\s*(.*?)\]/);
         if (orderMatch) {
@@ -247,6 +237,16 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
               orders, timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
             }]);
           }
+        }
+
+        // ── ADVANCED SEARCH widget ──
+        if (display.includes('[SHOW_ADVANCED_SEARCH]')) {
+          display = display.replace('[SHOW_ADVANCED_SEARCH]', '').trim();
+          setMessages((prev: any) => [...prev, {
+            id: (Date.now() + 3).toString(), role: 'assistant', kind: 'widget_search',
+            text: 'Here is the advanced search panel:',
+            timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+          }]);
         }
 
         // Update message bubble with clean text (markers stripped)
@@ -668,7 +668,7 @@ function OrderSelectWidget({ orders, sendText }: { orders: any[], sendText: (tex
       )}
 
       <button 
-        onClick={() => sendText("My order is not here in the list. Please connect me to a human executive.")}
+        onClick={() => sendText("My order is not here in the list. Please help me find it using Advanced Search.")}
         className="mt-2 text-[13px] text-white/60 hover:text-white transition underline underline-offset-4 self-start"
       >
         Not here in the list

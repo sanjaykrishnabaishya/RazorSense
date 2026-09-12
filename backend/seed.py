@@ -21,6 +21,20 @@ def seed_db():
         )
     ''')
     
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS tickets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ticket_id TEXT,
+            order_id TEXT,
+            merchant TEXT,
+            product TEXT,
+            issue TEXT,
+            date TEXT,
+            status TEXT,
+            action_taken TEXT
+        )
+    ''')
+    
     enterprise_orders = [
         ("ORD-5671", "Amazon", "Echo Dot (5th Gen)", 49.99, "2026-07-05", "Delivered", "Credit Card"),
         ("ORD-8923", "Amazon", "Kindle Paperwhite", 139.99, "2026-08-10", "Delivered", "Credit Card"),

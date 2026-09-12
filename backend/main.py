@@ -144,9 +144,18 @@ def create_ticket(ticket: TicketCreate, db: Session = Depends(get_db), current_u
 
 @app.get("/api/tickets")
 def get_user_tickets(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    """Get all tickets for the logged-in user."""
-    tickets = db.query(models.SupportTicket).filter(models.SupportTicket.user_id == current_user.id).all()
-    return tickets
+    """Get all tickets for the logged-in user from the enterprise DB."""
+    import sqlite3
+    import os
+    try:
+        db_path = os.path.join(os.path.dirname(__file__), 'rz_db.sqlite')
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute("SELECT * FROM tickets ORDER BY id DESC").fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+    except:
+        return []
 
 # -----------------
 # DUAL-BRAIN ENDPOINT
