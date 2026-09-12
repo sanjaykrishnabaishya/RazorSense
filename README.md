@@ -12,14 +12,15 @@
 **RazorSense AI** is an enterprise-grade autonomous customer support platform and payment dispute resolution engine. Powered by an autonomous AI agent named **Krish**, the system resolves customer inquiries, manages post-purchase issues, and automates payment gateway dispute defense from a single conversational interface.
 
 ### What the Product Does:
-- **Order & Telemetry Lookup:** Connects to the internal transaction database to retrieve verified order records, merchant information, carrier AWB tracking, and 3DS payment authentication states.
-- **4-Pillar Dispute Resolution:** Analyzes and resolves customer claims across all major payment dispute categories:
-  - **Pillar 1 (Fraud & Authorization):** Validates 3DS 2FA/OTP logs and determines bank liability shift under card network rules.
-  - **Pillar 2 (Fulfillment & Merchandise):** Validates carrier delivery status (MNR) and enforces merchant return policies.
-  - **Pillar 3 (Billing & Duplicate Charges):** Identifies duplicate debits on the payment gateway ledger and executes instant reversals.
-  - **Pillar 4 (Subscriptions & Auto-Renewals):** Applies 48-hour renewal grace periods and revokes active e-mandates.
-- **Multimodal Visual Inspection:** Analyzes user-uploaded photos and unboxing videos using native computer vision to visually verify physical item damage, packaging integrity, and serial numbers before authorizing returns.
-- **Direct Backend Actions:** Executes resolution steps directly—reversing duplicate debits, canceling recurring billing mandates, issuing Return Merchandise Authorizations (RMAs), creating support tickets, and compiling legal-grade dispute representment packets for card networks and banks.
+- **Instant Order & Delivery Verification:** Automatically retrieves verified purchase records, shipment delivery statuses, courier tracking updates, and bank payment confirmations.
+- **4-Pillar Customer Issue Resolution:** Directly resolves customer claims across all common support scenarios:
+  - **1. Fraud & Unrecognized Charges:** Verifies whether a transaction received bank confirmation and guides customers through immediate safety steps (card freezes and security reviews).
+  - **2. Delivery & Damaged Products:** Resolves missing delivery reports, verifies damaged items via photo/video proof, and approves replacements or returns.
+  - **3. Billing & Duplicate Charges:** Automatically identifies duplicate debits caused by network dropouts and initiates instant reversals.
+  - **4. Subscription Auto-Renewals:** Honors 48-hour post-renewal cancellation grace periods and immediately stops future automated charges.
+- **Visual Damage Inspection:** Allows customers to upload photos or unboxing videos in chat. The AI visually checks the damaged item, packaging condition, and serial tags to approve returns without waiting days for manual review.
+- **Jargon-Free Customer Experience:** Customers are completely shielded from internal banking and logistics acronyms. Krish communicates solely in plain, empathetic, everyday language focused on resolving their problem.
+- **Decisive Actions & Human Escalation:** Automatically executes safe, routine resolutions (reversing duplicate debits, stopping subscription renewals, scheduling returns, creating support tickets), while proactively routing suspicious or complex cases to human specialists before taking high-risk action.
 
 ---
 
@@ -28,12 +29,13 @@
 2. [The 4-Pillar Dispute & Resolution Framework](#-the-4-pillar-dispute--resolution-framework)
 3. [System Architecture](#-system-architecture)
 4. [Autonomous Agentic Brain ("Krish")](#-autonomous-agentic-brain-krish)
-5. [Key Capabilities & Innovations](#-key-capabilities--innovations)
-6. [Performance Metrics & Results](#-performance-metrics--results)
-7. [Project Structure](#-project-structure)
-8. [API Reference](#-api-reference)
-9. [Local Setup Guide](#-local-setup-guide)
-10. [Engineering Log: Bugs Fixed & Architecture Pivots](#-engineering-log-bugs-fixed--architecture-pivots)
+5. [Human Reviewer Workflow (When Does the AI Escalate?)](#-human-reviewer-workflow-when-does-the-ai-escalate)
+6. [Key Capabilities & Innovations](#-key-capabilities--innovations)
+7. [Performance Metrics & Results](#-performance-metrics--results)
+8. [Project Structure](#-project-structure)
+9. [API Reference](#-api-reference)
+10. [Local Setup Guide](#-local-setup-guide)
+11. [Engineering Log: Bugs Fixed & Architecture Pivots](#-engineering-log-bugs-fixed--architecture-pivots)
 
 ---
 
@@ -157,6 +159,27 @@ Krish is the dedicated, single frontline representative of RazorSense AI:
    - **Backup 1:** `gemini-2.0-flash`.
    - **Backup 2:** `gemini-1.5-flash`.
    - Guaranteed response delivery even during severe Google Cloud API rate-limiting or network spikes.
+
+---
+
+## 👥 Human Reviewer Workflow (When Does the AI Escalate?)
+
+To prevent fraud and maintain strict financial safeguards, RazorSense is designed with clear boundaries between **Autonomous Resolutions** and **Human Reviewer Escalations**:
+
+### Does the AI act alone or send to a human first?
+- **Routine, Policy-Compliant Inquiries (Handled Autonomously):** For standard, safe actions—such as retrieving order statuses, canceling orders before shipment, refunding duplicate debits within 15 minutes, or processing subscription cancellations within the 48-hour zero-usage grace window—the AI resolves the issue immediately in seconds without making the customer wait.
+- **High-Risk, Ambiguous, or Out-of-Policy Situations (Escalated to Human First):** The AI **halts and escalates to a human specialist before taking any irreversible financial or dispute action**.
+
+| Customer Scenario | AI Action | Human Reviewer Role |
+| :--- | :--- | :--- |
+| **Clear Damage Proof (Within Policy)** | Inspects unboxing photo/video with multimodal vision; verifies product match and transit damage. | Approves replacement RMA automatically; logs audit record. |
+| **Suspicious or Contradictory Damage** | Detects mismatched product, signs of intentional user damage, or edited media. | 👤 **AI halts action** and routes the unboxing media to a human fraud specialist for manual review. |
+| **Missing Item Claims** | Compares claim against dock fulfillment scale weight records. | 👤 If weight records show full package weight at dispatch, AI refers to warehouse audit team before refunding. |
+| **Duplicate Billing** | Detects identical amount & merchant debits within 15 mins. | Autonomously initiates gateway reversal and issues tracking receipt. |
+| **Unauthorized / Fraud Charges** | Advises customer to freeze card immediately; collects claim details. | 👤 AI logs priority security ticket (`ESC-XXXXX`) and alerts fraud operations before funds are credited. |
+| **Subscription Grace Period** | Verifies cancellation within 48h and 0 service usage. | Autonomously refunds renewal fee and revokes recurring mandate. |
+| **Order Not Found (Advanced Search)** | Executes advanced search across database. | 👤 If order cannot be found (Scenario C), AI immediately transfers the chat to a human agent. |
+| **Explicit Customer Request** | Customer types "I want to talk to a human" or is distressed. | 👤 Krish immediately transfers the conversation with full context to an available human agent. |
 
 ---
 
