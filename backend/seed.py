@@ -35,6 +35,24 @@ def seed_db():
         )
     ''')
     
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS disputes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            dispute_id TEXT UNIQUE,
+            payment_id TEXT,
+            order_id TEXT,
+            merchant TEXT,
+            product TEXT,
+            amount REAL,
+            currency TEXT DEFAULT 'INR',
+            reason TEXT,
+            status TEXT,
+            evidence_summary TEXT,
+            created_at TEXT,
+            updated_at TEXT
+        )
+    ''')
+    
     enterprise_orders = [
         ("ORD-5671", "Amazon", "Echo Dot (5th Gen)", 49.99, "2026-07-05", "Delivered", "Credit Card"),
         ("ORD-8923", "Amazon", "Kindle Paperwhite", 139.99, "2026-08-10", "Delivered", "Credit Card"),

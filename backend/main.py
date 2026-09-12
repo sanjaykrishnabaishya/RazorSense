@@ -236,3 +236,82 @@ async def chat_stream(req: ChatRequest, current_user: models.User = Depends(get_
             "X-Accel-Buffering": "no"
         }
     )
+
+# -----------------
+# ENTERPRISE GATEWAY & DISPUTE DEFENSE ENDPOINTS
+# -----------------
+import dispute_engine
+
+class DisputeSimulateRequest(BaseModel):
+    order_id: str = "ORD-9932"
+    reason: str = "merchandise_not_received"
+    payment_id: str | None = None
+
+@app.post("/api/webhooks/gateway")
+async def gateway_webhook(request: Request):
+    """
+    Receives inbound Webhooks from the Enterprise Payment Gateway.
+    Verifies HMAC-SHA256 signature and autonomously contests bank disputes.
+    """
+    payload = await request.body()
+    signature = request.headers.get("X-Razorpay-Signature") or request.headers.get("X-Gateway-Signature")
+
+    # Cryptographically verify the signature
+    if not dispute_engine.verify_gateway_signature(payload, signature):
+        raise HTTPException(status_code=400, detail="Invalid Gateway Signature")
+
+    try:
+        event_data = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Malformed JSON Payload")
+
+    event_type = event_data.get("event", "")
+    print(f"[Gateway Webhook] Event received: {event_type}")
+
+    if event_type == "dispute.created":
+        dispute_entity = event_data.get("payload", {}).get("dispute", {}).get("entity", {})
+        dispute_id = dispute_entity.get("id", f"disp_{int(time.time())}")
+        payment_id = dispute_entity.get("payment_id", "pay_unknown")
+        reason = dispute_entity.get("reason_code", "chargeback_claim")
+        
+        # Autonomously compile evidence and file representment defense
+        result = dispute_engine.record_and_contest_dispute(
+            payment_id=payment_id,
+            dispute_id=dispute_id,
+            reason=reason
+        )
+        return {"status": "SUCCESS", "action": "AUTONOMOUS_DEFENSE_FILED", "dispute": result}
+
+    elif event_type == "refund.processed":
+        refund_entity = event_data.get("payload", {}).get("refund", {}).get("entity", {})
+        refund_id = refund_entity.get("id")
+        print(f"[Gateway Webhook] Refund {refund_id} successfully settled.")
+        return {"status": "SUCCESS", "action": "REFUND_CONFIRMED"}
+
+    return {"status": "ACKNOWLEDGED", "event": event_type}
+
+@app.get("/api/disputes")
+def list_disputes():
+    """Returns all tracked bank chargebacks and their AI representment dossiers."""
+    return dispute_engine.get_all_disputes()
+
+@app.post("/api/disputes/simulate")
+def simulate_dispute(req: DisputeSimulateRequest):
+    """
+    Test harness: Simulates an inbound bank chargeback on a specified order.
+    Triggered locally to verify autonomous representment without real bank intervention.
+    """
+    dispute_id = f"disp_sim_{int(time.time())}"
+    payment_id = req.payment_id or f"pay_txn_{int(time.time())}"
+    
+    result = dispute_engine.record_and_contest_dispute(
+        payment_id=payment_id,
+        dispute_id=dispute_id,
+        reason=req.reason,
+        order_id_hint=req.order_id
+    )
+    return {
+        "message": "Bank dispute simulated and contested autonomously by RazorSense AI",
+        "data": result
+    }
+

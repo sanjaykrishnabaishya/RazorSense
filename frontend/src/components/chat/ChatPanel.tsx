@@ -586,6 +586,7 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
           </div>
         </div>
       )}
+
     </div>
   );
 }
