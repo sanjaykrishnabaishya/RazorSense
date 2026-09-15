@@ -203,15 +203,15 @@ from typing import Dict, Any
 import time
 import vector_db
 
-# ---- Rate Limiter (protects free Gemini quota) ----
+# ---- Rate Limiter (protects Gemini quota while allowing natural conversation) ----
 _rate_limit_store: Dict[str, float] = {}
-RATE_LIMIT_SECONDS = 10  # 1 request per user per 10 seconds
+RATE_LIMIT_SECONDS = 2  # 1 request per user per 2 seconds (safe for 500 RPD)
 
 def check_rate_limit(user_id: str):
     now = time.time()
     last = _rate_limit_store.get(user_id, 0)
     if now - last < RATE_LIMIT_SECONDS:
-        wait = round(RATE_LIMIT_SECONDS - (now - last))
+        wait = round(RATE_LIMIT_SECONDS - (now - last), 1)
         raise HTTPException(
             status_code=429,
             detail=f"Please wait {wait} seconds before sending another message."
