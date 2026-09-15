@@ -211,6 +211,17 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
         }
       }
 
+      // ── QUICK OPTIONS widget ──
+      const quickMatch = display.match(/\[QUICK_OPTIONS:\s*(.*?)\]/);
+      if (quickMatch) {
+        const options = quickMatch[1].split(',').map((s: string) => s.trim()).filter(Boolean);
+        display = display.replace(/\[QUICK_OPTIONS:\s*.*?\]/, '').trim();
+        setMessages((prev: any) => [...prev, {
+          id: (Date.now() + 5).toString(), role: 'assistant', kind: 'widget_quick_options',
+          options, timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+        }]);
+      }
+
       // ── ADVANCED SEARCH widget ──
       if (display.includes('[SHOW_ADVANCED_SEARCH]')) {
         display = display.replace('[SHOW_ADVANCED_SEARCH]', '').trim();
@@ -220,6 +231,15 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
           timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
         }]);
       }
+
+      // Comprehensive marker clean-up to ensure zero bracket tags leak into the message bubble
+      display = display
+        .replace(/\[ORDER_WIDGET:\s*.*?\]/g, '')
+        .replace(/\[ORDER_WIDGET_TITLE:\s*.*?\]/g, '')
+        .replace(/\[SHOW_ADVANCED_SEARCH\]/g, '')
+        .replace(/\[QUICK_OPTIONS:\s*.*?\]/g, '')
+        .replace(/\[TICKET:\s*.*?\]/g, '')
+        .trim();
 
       // Update message bubble with clean text (markers stripped)
       setMessages((prev: any) => prev.map((m: any) =>
@@ -428,6 +448,26 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
                       <OrderSelectWidget orders={m.orders} sendText={sendText} title={m.title} />
                     )}
 
+                    {m.kind === 'widget_quick_options' && (
+                      <div className="flex flex-col gap-2 mt-2 w-full max-w-md">
+                        <span className="text-[11px] font-semibold tracking-wider uppercase text-white/40">Select an option:</span>
+                        <div className="flex flex-wrap gap-2">
+                          {m.options.map((opt: string, i: number) => (
+                            <motion.button
+                              key={i}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => sendText(opt)}
+                              className="bg-[#18181b] hover:bg-blue-600/20 border border-white/10 hover:border-blue-500/60 text-white/90 hover:text-white text-[13px] font-medium py-2.5 px-4 rounded-xl transition shadow-md flex items-center gap-2 text-left active:scale-95"
+                            >
+                              <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0"></span>
+                              <span>{opt}</span>
+                            </motion.button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {m.kind === 'widget_search' && (
                       <div className="flex flex-col gap-3 w-full">
                         <div className="p-4 text-[15px] leading-[1.5] shadow-lg bg-[#111] text-white rounded-2xl rounded-tl-sm border border-white/[0.05] self-start max-w-fit">
@@ -625,71 +665,77 @@ function IssuePrompt({ icon: Icon, label, onClick, color }: any) {
 function OrderSelectWidget({ orders, sendText, title }: { orders: any[], sendText: (text: string) => void, title?: string }) {
   const [selectedOrderId, setSelectedOrderId] = React.useState<string | null>(null);
 
-  const handleSubmit = () => {
-    const order = orders.find(o => o.order_id === selectedOrderId);
-    if (order) {
-      sendText(`I select order ${order.order_id} (${order.product})`);
-    }
+  const handleSelect = (o: any) => {
+    setSelectedOrderId(o.order_id);
+    sendText(`I want to replace order ${o.order_id} (${o.product})`);
   };
 
   return (
     <div className="flex flex-col gap-3 w-full">
       <div className="p-4 text-[15px] leading-[1.5] shadow-lg bg-[#111] text-white rounded-2xl rounded-tl-sm border border-white/[0.05] self-start max-w-fit">
-        {title || "I found these recent orders. Please select the one you need help with:"}
+        {title || "Please select the delivered purchase you would like to replace:"}
       </div>
-      <div className="flex flex-col gap-3 mt-2 w-full max-w-md">
+      <div className="flex flex-col gap-3 mt-1 w-full max-w-md">
         {orders.map((o: any) => {
           const isSelected = selectedOrderId === o.order_id;
           return (
-            <div 
+            <motion.div 
               key={o.order_id} 
-              onClick={() => setSelectedOrderId(o.order_id)} 
-              className={`bg-[#111] p-4 rounded-xl cursor-pointer transition flex justify-between items-center group relative overflow-hidden border ${isSelected ? 'border-blue-500 bg-blue-500/5' : 'border-white/10 hover:border-white/20 hover:bg-white/5'}`}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              onClick={() => handleSelect(o)} 
+              className={`bg-[#111] p-4 rounded-xl cursor-pointer transition flex flex-col gap-3 group relative overflow-hidden border ${isSelected ? 'border-blue-500 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.25)]' : 'border-white/10 hover:border-white/20 hover:bg-white/5'}`}
             >
-               <div className={`absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-indigo-500 transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}></div>
-               <div className="flex flex-col gap-1 w-full pl-2">
-                 <h4 className="text-white font-medium text-sm transition">{o.product}</h4>
-                 <div className="flex justify-between items-center w-full pr-4">
-                   <p className="text-white/60 text-[12px] font-mono">#{o.order_id}</p>
-                   <p className="text-white/80 text-[12px] font-semibold">{o.merchant}</p>
+               <div className={`absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-blue-500 to-indigo-500 transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}></div>
+               <div className="flex justify-between items-start pl-2">
+                 <div>
+                   <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-white/10 text-white/90 border border-white/10">
+                     {o.merchant}
+                   </span>
+                   <h4 className="text-white font-medium text-sm mt-1.5 leading-snug">{o.product}</h4>
                  </div>
-                 <div className="grid grid-cols-2 gap-2 text-white/40 text-[11px] mt-2 bg-black/20 p-2 rounded-lg border border-white/5">
-                   <div className="flex flex-col">
-                     <span className="text-[9px] uppercase tracking-wider text-white/30">Ordered On</span>
-                     <span>{new Date(o.order_date).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'})}</span>
-                   </div>
-                   <div className="flex flex-col">
-                     <span className="text-[9px] uppercase tracking-wider text-white/30">Status</span>
-                     <span className={o.status === 'Delivered' ? 'text-emerald-400/80' : 'text-blue-400/80'}>{o.status}</span>
-                   </div>
-                   <div className="flex flex-col col-span-2 border-t border-white/5 pt-1 mt-1">
-                     <span className="text-[9px] uppercase tracking-wider text-white/30">Paid Via</span>
-                     <span>{o.payment_mode || 'Online'}</span>
-                   </div>
+                 <span className="text-white/50 text-[11px] font-mono shrink-0 ml-2">#{o.order_id}</span>
+               </div>
+               
+               <div className="grid grid-cols-3 gap-2 text-white/50 text-[11px] bg-black/40 p-2.5 rounded-lg border border-white/5 ml-2">
+                 <div className="flex flex-col">
+                   <span className="text-[9px] uppercase tracking-wider text-white/30">Delivered</span>
+                   <span className="text-white/80">{new Date(o.order_date).toLocaleDateString('en-GB', {day: 'numeric', month: 'short'})}</span>
+                 </div>
+                 <div className="flex flex-col">
+                   <span className="text-[9px] uppercase tracking-wider text-white/30">Status</span>
+                   <span className={o.status === 'Delivered' ? 'text-emerald-400 font-medium' : 'text-blue-400 font-medium'}>{o.status}</span>
+                 </div>
+                 <div className="flex flex-col">
+                   <span className="text-[9px] uppercase tracking-wider text-white/30">Paid Via</span>
+                   <span className="text-white/80 truncate">{o.payment_mode || 'Online'}</span>
                  </div>
                </div>
-               <div className={`h-8 w-8 shrink-0 rounded-full flex items-center justify-center border transition ${isSelected ? 'bg-blue-500/20 border-blue-500/50 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'bg-white/5 border-white/10 text-white/30 group-hover:bg-white/10'}`}>
-                 <CheckCircle2 className="w-4 h-4" />
+
+               <div className="flex justify-between items-center pl-2 pt-1 border-t border-white/5">
+                 <span className="text-white font-semibold text-sm">₹{o.price ? o.price.toLocaleString() : '—'}</span>
+                 <button 
+                   onClick={(e) => {
+                     e.stopPropagation();
+                     handleSelect(o);
+                   }}
+                   className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold py-1.5 px-3.5 rounded-lg transition shadow-md flex items-center gap-1.5"
+                 >
+                   <span>{isSelected ? 'Selected' : 'Select Order'}</span>
+                   <ChevronRight size={14} />
+                 </button>
                </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>
-      
-      {selectedOrderId && (
-        <button 
-          onClick={handleSubmit}
-          className="mt-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg w-full max-w-md flex items-center justify-center gap-2"
-        >
-          This is my purchase
-        </button>
-      )}
 
       <button 
         onClick={() => sendText("My order is not here in the list. Please help me find it using Advanced Search.")}
-        className="mt-2 text-[13px] text-white/60 hover:text-white transition underline underline-offset-4 self-start"
+        className="mt-2 text-[13px] text-blue-400 hover:text-blue-300 transition flex items-center gap-1.5 self-start underline underline-offset-4 py-1 group cursor-pointer"
       >
-        Not here in the list
+        <Search size={14} className="group-hover:scale-110 transition-transform" />
+        <span>Not here in the list? Search all purchases</span>
       </button>
     </div>
   );
