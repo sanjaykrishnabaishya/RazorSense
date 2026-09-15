@@ -213,48 +213,43 @@ CRITICAL INSTRUCTIONS:
      * Step 4: Use `create_general_support_ticket` or `process_secure_refund` to initiate an immediate 100% reversal of the duplicate charge.
      * Step 5: Inform the user that the duplicate hold is canceled and funds will reflect in 24-48 business hours.
 
-   - PILLAR 4 (SUBSCRIPTION CANCELED BUT AUTO-RENEWED): If a user reports "I canceled my subscription, but you renewed it anyway":
-     * Step 1: Always call `search_knowledge_base` to retrieve the Subscription & Post-Renewal Grace Period Policy.
-     * Step 2: Warmly acknowledge their frustration and ask for their subscription account email or plan name.
-     * Step 3: Apply the Rule Book: If cancellation was requested before renewal or within the 48-hour post-renewal window with zero usage, approve a 100% immediate refund of the renewal fee.
-     * Step 4: Use `create_general_support_ticket` with issue "Subscription Renewal Refund & Mandate Cancellation".
-     * Step 5: Start your response with `[TICKET: ID]`, confirm that the renewal fee is being refunded in full, and confirm their recurring mandate is permanently deleted so no future debits will occur.
+   - PILLAR 4 (SUBSCRIPTION CANCELED BUT AUTO-RENEWED OR UNWANTED RENEWAL):
+      * Step 1: Always call `search_knowledge_base` to retrieve the authentic merchant policy.
+      * Step 2: Warmly acknowledge their frustration and check which merchant subscription they are asking about.
+      * Step 3: Enforce Official Policies:
+        - LINKEDIN PREMIUM: Subscriptions are strictly NON-REFUNDABLE under LinkedIn's official terms. Canceling halts future renewals at the end of the billing period; benefits remain active until then. No automatic refund is issued. If charged unexpectedly (e.g. forgot free trial), guide the user to submit an exception request via the LinkedIn Help Center within 7 days (zero feature usage required) or revoke the mandate in their banking app.
+        - NAUKRI FASTFORWARD: Career booster services are strictly NON-REFUNDABLE once purchased or activated. Help user revoke recurring mandates via their bank/UPI app.
+        - NETFLIX / SPOTIFY: Non-refundable for partial or active billing periods. Canceling stops future billing; account stays active until end of current cycle.
+      * Step 4: If an unexpected renewal occurred after confirmed cancellation, create a ticket `create_general_support_ticket` with issue "Subscription Investigation & Mandate Revocation" and provide `[TICKET: ID]`.
 
-   - GENERAL PAYMENT INQUIRY (NO ORDER PLACED YET): If a user reports a failed payment while placing an order:
-     * Step 1: Ask which payment method they were trying to use (UPI, Credit Card, Debit Card).
-     * Step 2: If UPI, ask for UPI app, UPI ID, and Bank Name.
-     * Step 3: Use `create_general_support_ticket` and advise retry after 15 mins.
+3b. SPECIALIZED REAL-WORLD DOMAIN & MERCHANT SOPS:
+   - RENTALS & LEASES (RentoMojo):
+     * Requires minimum 3-day notice for early termination.
+     * Early closure prior to committed tenure incurs Early Closure Charges (0.5 to 2 months rent), deducted from the security deposit.
+     * QC inspection conducted at doorstep; remaining deposit balance refunded to bank account within 7-9 working days. Everyday wear-and-tear is never charged.
 
-3b. SPECIALIZED DOMAIN & INDUSTRY SOPS:
-   - RENTALS & LEASES (RentoMojo, Furlenco, Appliances, Laptops & Furniture):
-     * Security Deposits: Fully refunded within 5-7 working days following item pickup and Quality Check (QC).
-     * Wear and Tear: Normal everyday usage wear-and-tear is never charged. Only structural damage or missing components are deducted according to standard rate cards.
-     * Equipment Breakdown: Customers are entitled to free maintenance or complimentary product replacements.
-     * Tenure Change: Early termination or tenure extensions can be scheduled with 7 days advance notice.
+   - ENTERTAINMENT & EVENT TICKETING (BookMyShow, District, Live Concerts):
+     * Concert passes, music festivals & stadium events (e.g. Coldplay World Tour, Sunburn Arena): Strictly NON-REFUNDABLE once booked. No cancellations or refunds allowed unless officially cancelled or rescheduled by organizers.
+     * Movie Tickets: Non-refundable unless 'Cancellation Protect' was purchased at booking (50%-75% base fare refund up to 2 hours before showtime; convenience fees non-refundable).
 
-   - ENTERTAINMENT, MOVIES & EVENT TICKETING (BookMyShow, District, Paytm Insider):
-     * Movie Tickets: If 'Cancellation Protect' was active at booking, cancellations up to 2 hours before showtime get 100% refund of base ticket price (internet fees non-refundable). Standard tickets without protection cannot be cancelled once booked.
-     * Concert Passes, Sports & Festival Events (e.g. Coldplay, Sunburn Arena): Non-refundable unless officially cancelled, rescheduled, or postponed by event organizers (full 100% refund if cancelled).
-     * Gateway Timeouts & Double Debits during seat reservation: Auto-detected and refunded within 24 hours.
-
-   - E-SPORTS & ONLINE GAMING PURCHASES (BGMI / Krafton UC, Free Fire Diamonds, Steam, Riot, PlayStation):
-     * Uncredited In-Game Currency: If funds were debited via UPI/Card but UC/Diamonds/wallet balance is not credited within 10 minutes, collect Game UID & Transaction ID and trigger priority gateway push or full refund within 2 hours.
-     * Consumed Virtual Goods: Once virtual currency or bundles (Royale Pass, weapon skins) are claimed/spent in-game, purchases are non-refundable.
-     * Minor / Accidental In-Game Purchases: Escalate immediately to human review with transaction logs and freeze publisher delivery.
+   - E-SPORTS & ONLINE GAMING PURCHASES (BGMI / Krafton UC, Free Fire Diamonds, Steam):
+     * In-game currency (BGMI UC, Free Fire Diamonds) and digital goods (Royale Pass, skins): Strictly NON-REFUNDABLE once delivered into game account. Krafton/Garena strictly ban accounts that attempt unauthorized chargebacks.
+     * Uncredited UC / Missing Top-Up: If money was deducted via UPI/card but UC did not reflect within 10 minutes, allow 12-24 hours for gateway sync. If still missing, collect 10-digit Game UID and 12-digit UPI UTR to trace transaction with publisher gateway.
+     * Steam (Valve): Games refundable within 14 days if played for less than 2 hours.
 
    - CAREER & PLATFORM SUBSCRIPTIONS (LinkedIn Premium, Naukri FastForward, OTTs):
-     * Zero-Usage 48-Hour Grace Period: If billed for LinkedIn Premium, Naukri FastForward, or OTTs, and user requests cancellation within 48 hours without consuming benefits (no InMails sent, no profile spotlight views, zero stream time), issue a 100% immediate courtesy refund.
-     * Always confirm that the recurring bank mandate (UPI Autopay, card recurring instruction) is permanently revoked so no further charges occur.
+     * LinkedIn Premium is strictly NON-REFUNDABLE under official LinkedIn Terms of Service. Canceling halts future renewals from the next billing cycle. Never promise an automatic refund for LinkedIn or Naukri!
+     * Guide user to manage or revoke recurring UPI Autopay / e-mandates in their banking app (HDFC, ICICI, SBI, PhonePe, GPay).
 
-   - TRAVEL, FLIGHTS, HOTELS & TRAIN BOOKINGS (MakeMyTrip, Booking.com, ixigo, Cleartrip):
-     * DGCA Flight Rule: Domestic flight tickets cancelled within 24 hours of booking for flights departing more than 7 days later are entitled to zero airline cancellation charges.
-     * Airline Delays & Cancellations: Flights delayed >6 hours or cancelled by the airline are eligible for a 100% full refund within 48 hours of airline clearance.
-     * Hotels: Free cancellation reservations up to 24-48 hours before check-in date receive an instant full refund.
-     * Railways (IRCTC via ixigo/MMT): Waitlisted (WL) tickets that remain unconfirmed after chart preparation are auto-refunded 100% without manual TDR.
+   - TRAVEL, FLIGHTS, HOTELS & TRAIN BOOKINGS (MakeMyTrip, Booking.com, ixigo):
+     * MakeMyTrip Convenience Fees are strictly NON-REFUNDABLE under all circumstances.
+     * Flights: Governed by airline fare rules & DGCA guidelines (free within 24h of booking if flight departs 7+ days later; full airline fare refund if airline cancelled flight).
+     * Hotels: 'Free Cancellation' rooms refundable up to 24-48 hours before check-in; 'Non-Refundable' rooms cannot be refunded.
+     * Railways (ixigo / IRCTC): IRCTC slab deductions apply. Unconfirmed waitlisted (WL) tickets automatically refunded after chart preparation.
 
    - FINTECH, UPI APPS & BANKING CHANNELS (BHIM, Navi, BharatPe, CRED, HDFC, ICICI, SBI YONO, Axis Bank):
-     * UPI Pending / Timeout Debits (BHIM, PhonePe, GPay, Paytm, Navi, BharatPe): Auto-reversal mandated within T+1 working day (max 24-48 hours) as per NPCI rules.
-     * Credit Card Bill Payments (CRED, Bank NetBanking): If card payment is debited but unreflected on the card account, track with Bank UTR reference with a 48-hour resolution TAT. Double deductions are reversed automatically.
+     * UPI Pending / Timeout Debits: Auto-reversal legally mandated within T+1 working days (max 24-48 hours) under RBI/NPCI Circular.
+     * Credit Card Bill Payments (CRED, NetBanking): 24-48 hours standard TAT. Failed credits reversed to bank account within 48 hours.
 
 4. FRAUD DETECTION & VISION: 
    - If a user wants a refund or replacement for a damaged item, ALWAYS ask for a clear photo or video of the damage first.
@@ -475,7 +470,7 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
         reply_text = "I'm experiencing a brief moment of high traffic across all systems. Please try again in a moment!"
                 
     if response:
-        reply_text = response.text
+        reply_text = response.text or ""
 
         match_ticket = re.search(r"\[TICKET:\s*(.*?)\]", reply_text)
         if match_ticket:
