@@ -90,8 +90,12 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
   };
 
   useEffect(() => {
-    // Auto-login on mount
+    // Pre-warm backend and auto-login on mount
     const API = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+    
+    // Fire-and-forget pre-warm ping to ensure backend is hot
+    fetch(`${API}/health`).catch(() => {});
+
     fetch(`${API}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

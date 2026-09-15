@@ -336,20 +336,20 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
     formatted_history.append(types.Content(role="user", parts=message_parts))
             
     def get_config(model_name: str) -> types.GenerateContentConfig:
-        """Return model config."""
-        if "lite" in model_name or "3.5" in model_name or "3.6" in model_name or "3.1" in model_name:
-            # Lite / legacy models don't support thinking
+        """Return model config with thinking budget tuned for sub-2s responses."""
+        if "lite" in model_name:
             return types.GenerateContentConfig(
                 system_instruction=system_prompt,
                 tools=tools,
-                temperature=0.3
+                temperature=0.7,
+                thinking_config=types.ThinkingConfig(thinking_budget=128)
             )
-        # Enable Thinking Mode for 3.8 and 3.7
+        # Enable Thinking Mode for full flash models
         return types.GenerateContentConfig(
             system_instruction=system_prompt,
             tools=tools,
-            temperature=1.0,  # required for thinking mode
-            thinking_config=types.ThinkingConfig(thinking_budget=1024)
+            temperature=0.7,
+            thinking_config=types.ThinkingConfig(thinking_budget=128)
         )
 
     def try_generate(model_name: str):
@@ -370,37 +370,34 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
     ticket_details = None
     orders_to_select = []
 
-    # gemini-3.8-flash = most intelligent flash, free, thinking enabled
-    # gemini-3.7-flash = slightly older, same pool, thinking enabled
-    # gemini-3.5-flash-lite = highest quota safety net
+    # Ultra-low latency priority list:
+    # 1. gemini-3.5-flash-lite (500 RPD, ~0.8s response, supports thinking)
+    # 2. gemini-3.6-flash (high intelligence fallback)
+    # 3. gemini-3.5-flash (reliable fallback)
+    # 4. gemini-3.1-flash-lite (500 RPD backup)
+    # 5. gemini-3.8-flash (thinking flagship)
     MODELS = [
-        "gemini-3.8-flash",       # 20 RPD
-        "gemini-3.7-flash",       # 20 RPD
-        "gemini-3.6-flash",       # 20 RPD
-        "gemini-3.5-flash",       # 20 RPD
-        "gemini-3.5-flash-lite",  # 500 RPD
-        "gemini-3.1-flash-lite"   # 500 RPD
+        "gemini-3.5-flash-lite",  # 500 RPD, ~0.8s latency
+        "gemini-3.6-flash",       # High intelligence fallback
+        "gemini-3.5-flash",       # Ultra-reliable fallback
+        "gemini-3.1-flash-lite",  # 500 RPD fallback
+        "gemini-3.8-flash",       # Premium thinking fallback
+        "gemini-3.7-flash"
     ]
-    max_retries = 3
     response = None
     last_error = None
 
     for model in MODELS:
-        for attempt in range(max_retries):
-            try:
-                response = try_generate(model)
-                print(f"[Agentic Brain] Success with {model}")
-                break
-            except Exception as e:
-                last_error = e
-                err_str = str(e)
-                print(f"[Agentic Brain] {model} failed (attempt {attempt+1}): {err_str[:120]}")
-                if "429" in err_str or "404" in err_str or "RESOURCE_EXHAUSTED" in err_str or "NOT_FOUND" in err_str:
-                    break
-                if attempt < max_retries - 1:
-                    time.sleep(2)
-        if response:
+        try:
+            response = try_generate(model)
+            print(f"[Agentic Brain] Success with {model}")
             break
+        except Exception as e:
+            last_error = e
+            err_str = str(e)
+            print(f"[Agentic Brain] {model} failed: {err_str[:120]}")
+            # Instant failover to the next available model without blocking
+            continue
 
     if not response:
         reply_text = "I'm experiencing a brief moment of high traffic across all systems. Please try again in a moment!"
@@ -487,28 +484,21 @@ def run_agentic_brain_stream(user_id: str, message: str, history: List[Dict[str,
     formatted_history.append(types.Content(role="user", parts=message_parts))
 
     MODELS = [
-        "gemini-3.8-flash",       # 20 RPD
-        "gemini-3.7-flash",       # 20 RPD
-        "gemini-3.6-flash",       # 20 RPD
-        "gemini-3.5-flash",       # 20 RPD
-        "gemini-3.5-flash-lite",  # 500 RPD
-        "gemini-3.1-flash-lite"   # 500 RPD
+        "gemini-3.5-flash-lite",  # 500 RPD, sub-second TTFT
+        "gemini-3.6-flash",       # High intelligence fallback
+        "gemini-3.5-flash",       # Ultra-reliable fallback
+        "gemini-3.1-flash-lite",  # 500 RPD fallback
+        "gemini-3.8-flash",       # Premium thinking fallback
+        "gemini-3.7-flash"
     ]
     SKIP_CODES = ("429", "404", "503", "RESOURCE_EXHAUSTED", "NOT_FOUND", "UNAVAILABLE")
 
     def get_stream_config(model_name: str) -> types.GenerateContentConfig:
-        if "lite" in model_name or "3.5" in model_name or "3.6" in model_name or "3.1" in model_name:
-            return types.GenerateContentConfig(
-                system_instruction=system_prompt,
-                tools=tools,
-                temperature=0.3
-            )
-        # Enable Thinking Mode for 3.8 and 3.7
         return types.GenerateContentConfig(
             system_instruction=system_prompt,
             tools=tools,
-            temperature=1.0,
-            thinking_config=types.ThinkingConfig(thinking_budget=1024)
+            temperature=0.7,
+            thinking_config=types.ThinkingConfig(thinking_budget=128)
         )
 
     for model in MODELS:

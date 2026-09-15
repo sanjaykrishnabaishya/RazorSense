@@ -44,6 +44,42 @@ class TicketCreate(BaseModel):
 # ROUTES
 # -----------------
 
+import os
+import threading
+import time
+import urllib.request
+
+# -----------------
+# KEEP-ALIVE DAEMON (Prevents Render Free-Tier Spin-Down)
+# -----------------
+def _keep_alive_loop():
+    """Pings the live Render endpoint every 9 minutes to keep the container awake 24/7."""
+    time.sleep(15)  # Wait for server startup
+    backend_url = os.environ.get("RENDER_EXTERNAL_URL", "https://razorsense-backend.onrender.com")
+    health_url = f"{backend_url.rstrip('/')}/health"
+    print(f"[Keep-Alive] Daemon started. Target: {health_url}")
+    while True:
+        try:
+            time.sleep(540)  # Ping every 9 minutes (Render timeout is 15 minutes)
+            req = urllib.request.Request(health_url, headers={"User-Agent": "RazorSenseKeepAlive/1.0"})
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                print(f"[Keep-Alive] Pinged {health_url} -> Status {resp.status}")
+        except Exception as e:
+            print(f"[Keep-Alive] Ping note: {e}")
+
+_keep_alive_thread = threading.Thread(target=_keep_alive_loop, daemon=True)
+_keep_alive_thread.start()
+
+@app.get("/health")
+def health_check():
+    """Health & pre-warm check endpoint for instant response."""
+    return {
+        "status": "ok",
+        "service": "RazorSense AI Gateway",
+        "timestamp": time.time(),
+        "warmed": True
+    }
+
 @app.post("/login")
 def login(req: LoginRequest, db: Session = Depends(get_db)):
     """Mock OTP Login. In prod, this verifies an OTP and returns a JWT."""
