@@ -225,8 +225,8 @@ class ChatRequest(BaseModel):
     history: list = []
 
 @app.post("/api/chat")
-async def chat(req: ChatRequest, current_user: models.User = Depends(get_current_user)):
-    """Main Chat API — non-streaming fallback."""
+def chat(req: ChatRequest, current_user: models.User = Depends(get_current_user)):
+    """Main Chat API — non-blocking threadpool execution."""
     check_rate_limit(str(current_user.id))
     try:
         response = run_agentic_brain(
@@ -243,8 +243,8 @@ async def chat(req: ChatRequest, current_user: models.User = Depends(get_current
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/chat/stream")
-async def chat_stream(req: ChatRequest, current_user: models.User = Depends(get_current_user)):
-    """Streaming Chat API — streams tokens as they arrive from Gemini (low latency)."""
+def chat_stream(req: ChatRequest, current_user: models.User = Depends(get_current_user)):
+    """Streaming Chat API — non-blocking SSE streaming from threadpool."""
     check_rate_limit(str(current_user.id))
 
     def generate():
