@@ -8,6 +8,16 @@ import remarkGfm from 'remark-gfm';
 
 import { audioBufferToWav } from '../../utils/wav';
 
+const getApiUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    return 'http://127.0.0.1:8000';
+  }
+  return 'https://razorsense-backend.onrender.com';
+};
+
 export default function ChatPanel({ messages, setMessages }: { messages: ChatMessage[], setMessages: any }) {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -91,7 +101,7 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
 
   useEffect(() => {
     // Pre-warm backend and auto-login on mount
-    const API = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+    const API = getApiUrl();
     
     // Fire-and-forget pre-warm ping to ensure backend is hot
     fetch(`${API}/health`).catch(() => {});
@@ -107,7 +117,7 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
   }, []);
 
   const sendText = async (text: string, mediaOverride?: string) => {
-    const API = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+    const API = getApiUrl();
 
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
@@ -168,6 +178,67 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
       timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
     }]);
 
+    const processWidgets = async (raw: string) => {
+      let display = raw;
+
+      // ── TICKET widget ──
+      const ticketMatch = display.match(/\[TICKET:\s*(.*?)\]/);
+      if (ticketMatch) {
+        const ticketId = ticketMatch[1].trim();
+        display = display.replace(/\[TICKET:\s*.*?\]/, '').trim();
+        let ticketDetails = null;
+        try {
+          const tr = await fetch(`${API}/api/tickets`, { headers: { Authorization: `Bearer ${currentToken}` } });
+          if (tr.ok) {
+            const tickets = await tr.json();
+            ticketDetails = tickets.find((t: any) => t.ticket_id === ticketId) || null;
+          }
+        } catch {}
+        setMessages((prev: any) => [...prev, {
+          id: (Date.now() + 2).toString(), role: 'assistant', kind: 'widget_ticket',
+          text: 'I have created a support ticket for this issue.',
+          ticket_id: ticketId, merchant: ticketDetails?.merchant || 'RazorSense Support',
+          status: ticketDetails?.status || 'In Review', ticket_details: ticketDetails,
+          timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+        }]);
+      }
+
+      // ── ORDER WIDGET ──
+      const orderMatch = display.match(/\[ORDER_WIDGET:\s*(.*?)\]/);
+      if (orderMatch) {
+        const ids = orderMatch[1].split(',').map((s: string) => s.trim()).filter(Boolean);
+        display = display.replace(/\[ORDER_WIDGET:\s*.*?\]/, '').trim();
+        const orders: any[] = [];
+        for (const oid of ids) {
+          try {
+            const or = await fetch(`${API}/api/orders/${oid}`, { headers: { Authorization: `Bearer ${currentToken}` } });
+            if (or.ok) orders.push(await or.json());
+          } catch {}
+        }
+        if (orders.length > 0) {
+          setMessages((prev: any) => [...prev, {
+            id: (Date.now() + 4).toString(), role: 'assistant', kind: 'widget_order_select',
+            orders, timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+          }]);
+        }
+      }
+
+      // ── ADVANCED SEARCH widget ──
+      if (display.includes('[SHOW_ADVANCED_SEARCH]')) {
+        display = display.replace('[SHOW_ADVANCED_SEARCH]', '').trim();
+        setMessages((prev: any) => [...prev, {
+          id: (Date.now() + 3).toString(), role: 'assistant', kind: 'widget_search',
+          text: 'Here is the advanced search panel:',
+          timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+        }]);
+      }
+
+      // Update message bubble with clean text (markers stripped)
+      setMessages((prev: any) => prev.map((m: any) =>
+        m.id === streamMsgId ? { ...m, text: display } : m
+      ));
+    };
+
     try {
       const res = await fetch(`${API}/api/chat/stream`, {
         method: 'POST',
@@ -197,67 +268,6 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
       const decoder = new TextDecoder();
       let fullText = '';
       let buffer = '';
-
-      const processWidgets = async (raw: string) => {
-        let display = raw;
-
-        // ── TICKET widget ──
-        const ticketMatch = display.match(/\[TICKET:\s*(.*?)\]/);
-        if (ticketMatch) {
-          const ticketId = ticketMatch[1].trim();
-          display = display.replace(/\[TICKET:\s*.*?\]/, '').trim();
-          let ticketDetails = null;
-          try {
-            const tr = await fetch(`${API}/api/tickets`, { headers: { Authorization: `Bearer ${currentToken}` } });
-            if (tr.ok) {
-              const tickets = await tr.json();
-              ticketDetails = tickets.find((t: any) => t.ticket_id === ticketId) || null;
-            }
-          } catch {}
-          setMessages((prev: any) => [...prev, {
-            id: (Date.now() + 2).toString(), role: 'assistant', kind: 'widget_ticket',
-            text: 'I have created a support ticket for this issue.',
-            ticket_id: ticketId, merchant: ticketDetails?.merchant || 'RazorSense Support',
-            status: ticketDetails?.status || 'In Review', ticket_details: ticketDetails,
-            timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-          }]);
-        }
-
-        // ── ORDER WIDGET ──
-        const orderMatch = display.match(/\[ORDER_WIDGET:\s*(.*?)\]/);
-        if (orderMatch) {
-          const ids = orderMatch[1].split(',').map((s: string) => s.trim()).filter(Boolean);
-          display = display.replace(/\[ORDER_WIDGET:\s*.*?\]/, '').trim();
-          const orders: any[] = [];
-          for (const oid of ids) {
-            try {
-              const or = await fetch(`${API}/api/orders/${oid}`, { headers: { Authorization: `Bearer ${currentToken}` } });
-              if (or.ok) orders.push(await or.json());
-            } catch {}
-          }
-          if (orders.length > 0) {
-            setMessages((prev: any) => [...prev, {
-              id: (Date.now() + 4).toString(), role: 'assistant', kind: 'widget_order_select',
-              orders, timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-            }]);
-          }
-        }
-
-        // ── ADVANCED SEARCH widget ──
-        if (display.includes('[SHOW_ADVANCED_SEARCH]')) {
-          display = display.replace('[SHOW_ADVANCED_SEARCH]', '').trim();
-          setMessages((prev: any) => [...prev, {
-            id: (Date.now() + 3).toString(), role: 'assistant', kind: 'widget_search',
-            text: 'Here is the advanced search panel:',
-            timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-          }]);
-        }
-
-        // Update message bubble with clean text (markers stripped)
-        setMessages((prev: any) => prev.map((m: any) =>
-          m.id === streamMsgId ? { ...m, text: display } : m
-        ));
-      };
 
       while (true) {
         const { done, value } = await reader.read();
@@ -290,9 +300,33 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
         }
       }
     } catch (err) {
-      console.error("Stream error:", err);
+      console.warn("Stream error, falling back to direct chat API:", err);
+      // Fallback to robust non-streaming endpoint if streaming fails or disconnects
+      try {
+        const fallbackRes = await fetch(`${API}/api/chat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${currentToken}`
+          },
+          body: JSON.stringify({
+            message: text,
+            checklist: checklist,
+            media: mediaOverride || selectedFile,
+            history: history
+          })
+        });
+        if (fallbackRes.ok) {
+          const data = await fallbackRes.json();
+          await processWidgets(data.reply || '');
+          return;
+        }
+      } catch (fallbackErr) {
+        console.error("Fallback chat error:", fallbackErr);
+      }
+
       setMessages((prev: any) => prev.map((m: any) =>
-        m.id === streamMsgId ? { ...m, text: `Network error: ${err}` } : m
+        m.id === streamMsgId ? { ...m, text: "I'm having a little trouble reaching my systems right now. Please try again in a moment!" } : m
       ));
     } finally {
       setIsLoading(false);
