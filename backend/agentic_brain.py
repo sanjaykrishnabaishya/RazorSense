@@ -41,10 +41,10 @@ def fetch_order_details(order_id: str) -> str:
 
 def search_orders(merchant: str = None, payment_mode: str = None, order_date: str = None, query: str = None) -> str:
     """Search for orders in the database using filters.
-    - query: Keyword matching product name, category, or order ID (e.g., 'headphones', 'pizza', 'saree', 'shoes', 'ORD-1028')
-    - merchant: Filter by merchant name (e.g., 'meesho', 'myntra', 'amazon', 'zomato', 'swiggy', 'blinkit', 'zepto', 'flipkart')
+    - query: Keyword matching product name, category, or order ID (e.g., 'headphones', 'macbook', 'coldplay', 'diamonds', 'uc', 'flight', 'kurta', 'ORD-1028')
+    - merchant: Filter by merchant name (e.g., 'rentomojo', 'bookmyshow', 'district', 'bgmi', 'free fire', 'steam', 'linkedin', 'naukri', 'netflix', 'spotify', 'makemytrip', 'booking.com', 'ixigo', 'meesho', 'myntra', 'amazon', 'zomato', 'swiggy', 'blinkit', 'zepto', 'flipkart')
     - order_date: Exact date or substring in YYYY-MM-DD format (e.g., '2026-01-28', '2026-09', '2026-09-10')
-    - payment_mode: Filter by payment method (e.g., 'UPI', 'Credit Card', 'Cash on Delivery')
+    - payment_mode: Filter by payment method (e.g., 'BHIM', 'Navi', 'BharatPe', 'CRED', 'PhonePe', 'GPay', 'Paytm', 'HDFC', 'ICICI', 'SBI', 'Axis', 'Cash on Delivery')
     Returns matching orders ordered from newest to oldest.
     """
     try:
@@ -224,6 +224,37 @@ CRITICAL INSTRUCTIONS:
      * Step 1: Ask which payment method they were trying to use (UPI, Credit Card, Debit Card).
      * Step 2: If UPI, ask for UPI app, UPI ID, and Bank Name.
      * Step 3: Use `create_general_support_ticket` and advise retry after 15 mins.
+
+3b. SPECIALIZED DOMAIN & INDUSTRY SOPS:
+   - RENTALS & LEASES (RentoMojo, Furlenco, Appliances, Laptops & Furniture):
+     * Security Deposits: Fully refunded within 5-7 working days following item pickup and Quality Check (QC).
+     * Wear and Tear: Normal everyday usage wear-and-tear is never charged. Only structural damage or missing components are deducted according to standard rate cards.
+     * Equipment Breakdown: Customers are entitled to free maintenance or complimentary product replacements.
+     * Tenure Change: Early termination or tenure extensions can be scheduled with 7 days advance notice.
+
+   - ENTERTAINMENT, MOVIES & EVENT TICKETING (BookMyShow, District, Paytm Insider):
+     * Movie Tickets: If 'Cancellation Protect' was active at booking, cancellations up to 2 hours before showtime get 100% refund of base ticket price (internet fees non-refundable). Standard tickets without protection cannot be cancelled once booked.
+     * Concert Passes, Sports & Festival Events (e.g. Coldplay, Sunburn Arena): Non-refundable unless officially cancelled, rescheduled, or postponed by event organizers (full 100% refund if cancelled).
+     * Gateway Timeouts & Double Debits during seat reservation: Auto-detected and refunded within 24 hours.
+
+   - E-SPORTS & ONLINE GAMING PURCHASES (BGMI / Krafton UC, Free Fire Diamonds, Steam, Riot, PlayStation):
+     * Uncredited In-Game Currency: If funds were debited via UPI/Card but UC/Diamonds/wallet balance is not credited within 10 minutes, collect Game UID & Transaction ID and trigger priority gateway push or full refund within 2 hours.
+     * Consumed Virtual Goods: Once virtual currency or bundles (Royale Pass, weapon skins) are claimed/spent in-game, purchases are non-refundable.
+     * Minor / Accidental In-Game Purchases: Escalate immediately to human review with transaction logs and freeze publisher delivery.
+
+   - CAREER & PLATFORM SUBSCRIPTIONS (LinkedIn Premium, Naukri FastForward, OTTs):
+     * Zero-Usage 48-Hour Grace Period: If billed for LinkedIn Premium, Naukri FastForward, or OTTs, and user requests cancellation within 48 hours without consuming benefits (no InMails sent, no profile spotlight views, zero stream time), issue a 100% immediate courtesy refund.
+     * Always confirm that the recurring bank mandate (UPI Autopay, card recurring instruction) is permanently revoked so no further charges occur.
+
+   - TRAVEL, FLIGHTS, HOTELS & TRAIN BOOKINGS (MakeMyTrip, Booking.com, ixigo, Cleartrip):
+     * DGCA Flight Rule: Domestic flight tickets cancelled within 24 hours of booking for flights departing more than 7 days later are entitled to zero airline cancellation charges.
+     * Airline Delays & Cancellations: Flights delayed >6 hours or cancelled by the airline are eligible for a 100% full refund within 48 hours of airline clearance.
+     * Hotels: Free cancellation reservations up to 24-48 hours before check-in date receive an instant full refund.
+     * Railways (IRCTC via ixigo/MMT): Waitlisted (WL) tickets that remain unconfirmed after chart preparation are auto-refunded 100% without manual TDR.
+
+   - FINTECH, UPI APPS & BANKING CHANNELS (BHIM, Navi, BharatPe, CRED, HDFC, ICICI, SBI YONO, Axis Bank):
+     * UPI Pending / Timeout Debits (BHIM, PhonePe, GPay, Paytm, Navi, BharatPe): Auto-reversal mandated within T+1 working day (max 24-48 hours) as per NPCI rules.
+     * Credit Card Bill Payments (CRED, Bank NetBanking): If card payment is debited but unreflected on the card account, track with Bank UTR reference with a 48-hour resolution TAT. Double deductions are reversed automatically.
 
 4. FRAUD DETECTION & VISION: 
    - If a user wants a refund or replacement for a damaged item, ALWAYS ask for a clear photo or video of the damage first.

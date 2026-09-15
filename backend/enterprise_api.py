@@ -37,26 +37,52 @@ def init_db():
     # Auto-seed Demo Data for Portfolio Visitors!
     cursor = conn.execute("SELECT COUNT(*) FROM orders")
     count = cursor.fetchone()[0]
-    if count < 17:
+    if count < 32:
         print("Auto-seeding / Syncing Demo Database for visitors...")
         demo_orders = [
-            ("ORD-1028", "Amazon", "boAt Rockerz 450 Bluetooth Headphones", 1499.00, "2026-01-28", "Delivered", "UPI - PhonePe"),
-            ("ORD-3315", "Myntra", "Roadster Men Navy Blue Solid Denim Jacket", 1899.00, "2026-03-15", "Delivered", "Credit Card"),
-            ("ORD-4410", "Flipkart", "Noise ColorFit Pulse Smartwatch", 1799.00, "2026-05-10", "Delivered", "UPI - GPay"),
-            ("ORD-5671", "Amazon", "Echo Dot (5th Gen)", 4499.00, "2026-07-05", "Delivered", "Credit Card"),
-            ("ORD-8923", "Amazon", "Kindle Paperwhite 16GB", 12999.00, "2026-08-10", "Delivered", "Credit Card"),
+            # --- January 2026 ---
+            ("ORD-1028", "Amazon", "boAt Rockerz 450 Bluetooth Headphones", 1499.00, "2026-01-28", "Delivered", "UPI - BHIM"),
+            
+            # --- March 2026 ---
+            ("ORD-3315", "Myntra", "Roadster Men Navy Blue Solid Denim Jacket", 1899.00, "2026-03-15", "Delivered", "CRED Pay"),
+            ("ORD-6104", "Spotify", "Spotify Premium Family Plan (Annual Subscription)", 1799.00, "2026-03-25", "Delivered", "UPI - Paytm"),
+            
+            # --- May 2026 ---
+            ("ORD-4410", "Flipkart", "Noise ColorFit Pulse Smartwatch", 1799.00, "2026-05-10", "Delivered", "UPI - Navi"),
+            ("ORD-8201", "RentoMojo", "Apple MacBook Pro 16 M3 (Monthly Rental - 6 Month Tenure)", 4299.00, "2026-05-18", "Delivered", "HDFC NetBanking"),
+            
+            # --- July 2026 ---
+            ("ORD-5671", "Amazon", "Echo Dot (5th Gen)", 4499.00, "2026-07-05", "Delivered", "HDFC Credit Card"),
+            ("ORD-5501", "MakeMyTrip", "IndiGo Flight BOM to DEL (PNR: 6E-2849, Non-Stop)", 6450.00, "2026-07-12", "Delivered", "Axis Bank Credit Card"),
+            ("ORD-7301", "BookMyShow", "Coldplay Music of the Spheres World Tour (2 Diamond Passes)", 14500.00, "2026-07-20", "Delivered", "CRED Pay"),
+            
+            # --- August 2026 ---
+            ("ORD-8202", "RentoMojo", "Ergonomic Office Chair & Workstation Table (Rental)", 1199.00, "2026-08-01", "Delivered", "UPI - Navi"),
+            ("ORD-5502", "Booking.com", "Taj Lands End Mumbai (2 Nights Luxury Deluxe Room)", 28900.00, "2026-08-05", "Delivered", "HDFC Credit Card"),
+            ("ORD-8923", "Amazon", "Kindle Paperwhite 16GB", 12999.00, "2026-08-10", "Delivered", "ICICI NetBanking"),
+            ("ORD-9401", "BGMI", "3,850 Unknown Cash (UC) + Royale Pass Season A7", 3800.00, "2026-08-15", "Delivered", "UPI - Google Pay"),
             ("ORD-6218", "Meesho", "Embroidered Anarkali Kurta Set", 749.00, "2026-08-18", "Delivered", "Cash on Delivery"),
+            ("ORD-6101", "LinkedIn", "LinkedIn Premium Career Plan (Monthly Recurring)", 1499.00, "2026-08-20", "Delivered", "HDFC Credit Card Auto-Debit"),
             ("ORD-1045", "Amazon", "Sony WF-1000XM4 Noise Canceling Earbuds", 19990.00, "2026-08-25", "Delivered", "UPI - GPay"),
-            ("ORD-6528", "Meesho", "Men Pure Cotton Casual Regular Shirt", 499.00, "2026-08-28", "Delivered", "UPI - Paytm"),
-            ("ORD-9932", "Amazon", "Samsung Galaxy S24 Ultra 5G", 79999.00, "2026-09-02", "Delivered", "Credit Card"),
+            ("ORD-6102", "Naukri", "Naukri FastForward Resume Display & Job Spotlight (3 Months)", 3250.00, "2026-08-26", "Delivered", "ICICI Credit Card"),
+            ("ORD-6528", "Meesho", "Men Pure Cotton Casual Regular Shirt", 499.00, "2026-08-28", "Delivered", "UPI - BharatPe"),
+            
+            # --- September 2026 ---
+            ("ORD-6103", "Netflix", "Netflix Premium 4K UHD Multi-Screen (Monthly Mandate)", 649.00, "2026-09-01", "Delivered", "CRED E-Mandate"),
+            ("ORD-9932", "Amazon", "Samsung Galaxy S24 Ultra 5G", 79999.00, "2026-09-02", "Delivered", "SBI Credit Card"),
             ("ORD-3891", "Myntra", "Puma Men Black Dazzler Running Shoes", 2499.00, "2026-09-03", "Delivered", "UPI - PhonePe"),
             ("ORD-7711", "Zomato", "Margherita Pizza & Cheesy Garlic Bread", 485.00, "2026-09-04", "Delivered", "UPI - PhonePe"),
             ("ORD-5104", "Swiggy", "Hyderabadi Chicken Dum Biryani", 380.00, "2026-09-05", "Delivered", "UPI - GPay"),
+            ("ORD-9402", "Free Fire", "2,180 In-Game Diamonds + Elite Pass Bundle", 1599.00, "2026-09-06", "Delivered", "UPI - BharatPe"),
+            ("ORD-7302", "BookMyShow", "IMAX 3D: Interstellar Re-Release (2 Recliner Seats)", 1200.00, "2026-09-08", "Delivered", "UPI - BHIM"),
             ("ORD-2110", "Blinkit", "Amul Taaza Milk (1L), Bread & Organic Eggs", 165.00, "2026-09-10", "Delivered", "UPI - Paytm"),
             ("ORD-2111", "Zepto", "Fresh Nagpur Oranges (1kg) & Robusta Bananas", 210.00, "2026-09-10", "Delivered", "UPI - PhonePe"),
+            ("ORD-5503", "ixigo", "Vande Bharat Express AC Chair Car (PNR: 2849104819)", 1680.00, "2026-09-11", "Delivered", "UPI - BHIM"),
+            ("ORD-7303", "District", "Sunburn Arena EDM Music Festival Pass", 3500.00, "2026-09-12", "Delivered", "UPI - PhonePe"),
             ("ORD-6714", "Meesho", "Floral Print Georgette Saree with Blouse Piece", 620.00, "2026-09-14", "Delivered", "Cash on Delivery"),
-            ("ORD-5915", "Swiggy", "Cold Coffee & Dark Chocolate Brownie", 290.00, "2026-09-15", "Delivered", "UPI - PhonePe"),
-            ("ORD-9116", "Flipkart", "Logitech MX Master 3S Wireless Mouse", 8495.00, "2026-09-15", "Shipped", "Credit Card")
+            ("ORD-9403", "Steam", "Grand Theft Auto VI - Deluxe Edition (Pre-Order)", 5499.00, "2026-09-14", "Delivered", "SBI YONO NetBanking"),
+            ("ORD-5915", "Swiggy", "Cold Coffee & Dark Chocolate Brownie", 290.00, "2026-09-15", "Delivered", "CRED UPI"),
+            ("ORD-9116", "Flipkart", "Logitech MX Master 3S Wireless Mouse", 8495.00, "2026-09-15", "Shipped", "Axis Bank Credit Card")
         ]
         for o in demo_orders:
             conn.execute(
