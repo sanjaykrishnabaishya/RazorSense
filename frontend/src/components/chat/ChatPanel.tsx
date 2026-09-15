@@ -32,7 +32,7 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState<string>('9999999999');
   const [checklist, setChecklist] = useState({});
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -133,27 +133,7 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
       setChatStep(prev => prev + 1);
     }
 
-    let currentToken = token;
-    if (!currentToken) {
-      try {
-        const loginRes = await fetch(`${API}/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone_number: '9999999999' })
-        });
-        const loginData = await loginRes.json();
-        currentToken = loginData.access_token;
-        setToken(currentToken);
-      } catch (err) {
-        addBotMessage('text', 'Server is booting up. Please try again in 5 seconds.');
-        return;
-      }
-    }
-
-    if (!currentToken) {
-      addBotMessage('text', 'Could not authenticate. Please try again.');
-      return;
-    }
+    let currentToken = token || '9999999999';
 
     setInput('');
     setSelectedFile(null);
@@ -255,13 +235,7 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
       });
 
       if (!res.ok || !res.body) {
-        // Fallback to non-streaming if SSE fails
-        const data = await res.json().catch(() => null);
-        setMessages((prev: any) => prev.map((m: any) =>
-          m.id === streamMsgId ? { ...m, text: data?.reply || data?.detail || 'Something went wrong. Please try again.' } : m
-        ));
-        setIsLoading(false);
-        return;
+        throw new Error(`Streaming returned ${res.status}`);
       }
 
       const reader = res.body.getReader();
