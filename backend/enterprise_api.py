@@ -36,19 +36,33 @@ def init_db():
     
     # Auto-seed Demo Data for Portfolio Visitors!
     cursor = conn.execute("SELECT COUNT(*) FROM orders")
-    if cursor.fetchone()[0] == 0:
-        print("Auto-seeding Demo Database for visitors...")
+    count = cursor.fetchone()[0]
+    if count < 17:
+        print("Auto-seeding / Syncing Demo Database for visitors...")
         demo_orders = [
-            ("ORD-5671", "Amazon", "Echo Dot (5th Gen)", 49.99, "2026-07-05", "Delivered", "Credit Card"),
-            ("ORD-8923", "Amazon", "Kindle Paperwhite", 139.99, "2026-08-10", "Delivered", "Credit Card"),
-            ("ORD-1045", "Amazon", "Sony WF-1000XM4 Earbuds", 278.00, "2026-08-25", "Delivered", "UPI - GPay"),
-            ("ORD-9932", "Flipkart", "Samsung Galaxy S24", 799.00, "2026-09-02", "Shipped", "Credit Card"),
-            ("ORD-7711", "Swiggy", "Margherita Pizza", 14.50, "2026-09-04", "Delivered", "UPI - PhonePe")
+            ("ORD-1028", "Amazon", "boAt Rockerz 450 Bluetooth Headphones", 1499.00, "2026-01-28", "Delivered", "UPI - PhonePe"),
+            ("ORD-3315", "Myntra", "Roadster Men Navy Blue Solid Denim Jacket", 1899.00, "2026-03-15", "Delivered", "Credit Card"),
+            ("ORD-4410", "Flipkart", "Noise ColorFit Pulse Smartwatch", 1799.00, "2026-05-10", "Delivered", "UPI - GPay"),
+            ("ORD-5671", "Amazon", "Echo Dot (5th Gen)", 4499.00, "2026-07-05", "Delivered", "Credit Card"),
+            ("ORD-8923", "Amazon", "Kindle Paperwhite 16GB", 12999.00, "2026-08-10", "Delivered", "Credit Card"),
+            ("ORD-6218", "Meesho", "Embroidered Anarkali Kurta Set", 749.00, "2026-08-18", "Delivered", "Cash on Delivery"),
+            ("ORD-1045", "Amazon", "Sony WF-1000XM4 Noise Canceling Earbuds", 19990.00, "2026-08-25", "Delivered", "UPI - GPay"),
+            ("ORD-6528", "Meesho", "Men Pure Cotton Casual Regular Shirt", 499.00, "2026-08-28", "Delivered", "UPI - Paytm"),
+            ("ORD-9932", "Amazon", "Samsung Galaxy S24 Ultra 5G", 79999.00, "2026-09-02", "Delivered", "Credit Card"),
+            ("ORD-3891", "Myntra", "Puma Men Black Dazzler Running Shoes", 2499.00, "2026-09-03", "Delivered", "UPI - PhonePe"),
+            ("ORD-7711", "Zomato", "Margherita Pizza & Cheesy Garlic Bread", 485.00, "2026-09-04", "Delivered", "UPI - PhonePe"),
+            ("ORD-5104", "Swiggy", "Hyderabadi Chicken Dum Biryani", 380.00, "2026-09-05", "Delivered", "UPI - GPay"),
+            ("ORD-2110", "Blinkit", "Amul Taaza Milk (1L), Bread & Organic Eggs", 165.00, "2026-09-10", "Delivered", "UPI - Paytm"),
+            ("ORD-2111", "Zepto", "Fresh Nagpur Oranges (1kg) & Robusta Bananas", 210.00, "2026-09-10", "Delivered", "UPI - PhonePe"),
+            ("ORD-6714", "Meesho", "Floral Print Georgette Saree with Blouse Piece", 620.00, "2026-09-14", "Delivered", "Cash on Delivery"),
+            ("ORD-5915", "Swiggy", "Cold Coffee & Dark Chocolate Brownie", 290.00, "2026-09-15", "Delivered", "UPI - PhonePe"),
+            ("ORD-9116", "Flipkart", "Logitech MX Master 3S Wireless Mouse", 8495.00, "2026-09-15", "Shipped", "Credit Card")
         ]
-        conn.executemany(
-            "INSERT INTO orders (order_id, merchant, product, amount, order_date, status, payment_mode) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            demo_orders
-        )
+        for o in demo_orders:
+            conn.execute(
+                "INSERT OR REPLACE INTO orders (order_id, merchant, product, amount, order_date, status, payment_mode) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                o
+            )
         conn.commit()
     conn.close()
 
@@ -72,23 +86,26 @@ def get_order(order_id: str):
     raise HTTPException(status_code=404, detail="Order not found")
 
 @app.get("/api/v2/orders")
-def search_orders(merchant: Optional[str] = None, payment_mode: Optional[str] = None, order_date: Optional[str] = None):
+def search_orders(merchant: Optional[str] = None, payment_mode: Optional[str] = None, order_date: Optional[str] = None, query: Optional[str] = None):
     conn = get_db()
-    query = "SELECT * FROM orders WHERE 1=1"
+    sql = "SELECT * FROM orders WHERE 1=1"
     params = []
     if merchant:
-        query += " AND LOWER(merchant) LIKE ?"
+        sql += " AND LOWER(merchant) LIKE ?"
         params.append(f"%{merchant.lower()}%")
     if payment_mode:
-        query += " AND LOWER(payment_mode) LIKE ?"
+        sql += " AND LOWER(payment_mode) LIKE ?"
         params.append(f"%{payment_mode.lower()}%")
     if order_date:
-        query += " AND order_date = ?"
-        params.append(order_date)
-    else:
-        query += " ORDER BY order_date DESC LIMIT 10"
+        sql += " AND order_date LIKE ?"
+        params.append(f"%{order_date}%")
+    if query:
+        sql += " AND (LOWER(product) LIKE ? OR LOWER(merchant) LIKE ? OR LOWER(order_id) LIKE ?)"
+        q_like = f"%{query.lower()}%"
+        params.extend([q_like, q_like, q_like])
+    sql += " ORDER BY order_date DESC LIMIT 15"
         
-    rows = conn.execute(query, params).fetchall()
+    rows = conn.execute(sql, params).fetchall()
     conn.close()
     return [dict(row) for row in rows]
 

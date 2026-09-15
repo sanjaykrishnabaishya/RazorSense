@@ -188,6 +188,14 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
       if (orderMatch) {
         const ids = orderMatch[1].split(',').map((s: string) => s.trim()).filter(Boolean);
         display = display.replace(/\[ORDER_WIDGET:\s*.*?\]/, '').trim();
+
+        let widgetTitle: string | undefined = undefined;
+        const titleMatch = display.match(/\[ORDER_WIDGET_TITLE:\s*(.*?)\]/);
+        if (titleMatch) {
+          widgetTitle = titleMatch[1].trim();
+          display = display.replace(/\[ORDER_WIDGET_TITLE:\s*.*?\]/, '').trim();
+        }
+
         const orders: any[] = [];
         for (const oid of ids) {
           try {
@@ -198,7 +206,7 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
         if (orders.length > 0) {
           setMessages((prev: any) => [...prev, {
             id: (Date.now() + 4).toString(), role: 'assistant', kind: 'widget_order_select',
-            orders, timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            orders, title: widgetTitle, timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
           }]);
         }
       }
@@ -420,7 +428,7 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
                     )}
 
                     {m.kind === 'widget_order_select' && (
-                      <OrderSelectWidget orders={m.orders} sendText={sendText} />
+                      <OrderSelectWidget orders={m.orders} sendText={sendText} title={m.title} />
                     )}
 
                     {m.kind === 'widget_search' && (
@@ -617,7 +625,7 @@ function IssuePrompt({ icon: Icon, label, onClick, color }: any) {
   );
 }
 
-function OrderSelectWidget({ orders, sendText }: { orders: any[], sendText: (text: string) => void }) {
+function OrderSelectWidget({ orders, sendText, title }: { orders: any[], sendText: (text: string) => void, title?: string }) {
   const [selectedOrderId, setSelectedOrderId] = React.useState<string | null>(null);
 
   const handleSubmit = () => {
@@ -630,7 +638,7 @@ function OrderSelectWidget({ orders, sendText }: { orders: any[], sendText: (tex
   return (
     <div className="flex flex-col gap-3 w-full">
       <div className="p-4 text-[15px] leading-[1.5] shadow-lg bg-[#111] text-white rounded-2xl rounded-tl-sm border border-white/[0.05] self-start max-w-fit">
-        I found these recent orders. Please select the one you need help with:
+        {title || "I found these recent orders. Please select the one you need help with:"}
       </div>
       <div className="flex flex-col gap-3 mt-2 w-full max-w-md">
         {orders.map((o: any) => {
