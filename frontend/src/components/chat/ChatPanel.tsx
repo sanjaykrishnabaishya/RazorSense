@@ -75,8 +75,21 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
         const reader = new FileReader();
         reader.readAsDataURL(wavBlob);
         reader.onloadend = () => {
-          setSelectedFile(reader.result as string);
-          setFilePreview("AUDIO");
+          const audioBase64 = reader.result as string;
+          // Auto-display user voice note bubble with audio player
+          setMessages((prev: any) => [...prev, {
+            id: Date.now().toString(),
+            role: 'user',
+            kind: 'image',
+            text: '🎤 Voice message sent',
+            imageUrl: null,
+            base64: audioBase64,
+            timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+          }]);
+          // Direct 1-shot dispatch to Krish
+          sendText("I have sent a voice message. Please listen to it.", audioBase64);
+          setSelectedFile(null);
+          setFilePreview(null);
         };
       };
 
