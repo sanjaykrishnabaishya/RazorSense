@@ -37,37 +37,35 @@ export default function ImmersivePage() {
           </div>
           RazorSense
         </div>
+        <button 
+          onClick={() => router.push('/chat')}
+          className="px-5 py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:shadow-[0_0_30px_rgba(37,99,235,0.6)] cursor-pointer"
+        >
+          Launch Chat →
+        </button>
       </nav>
 
       {/* Hero Section */}
       <section className="relative flex-1 flex flex-col items-center justify-center z-10 px-6">
-        <motion.div 
-          initial={{ opacity: 0, y: 50, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center flex flex-col items-center mt-10"
-        >
+        <div className="text-center flex flex-col items-center mt-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-semibold tracking-widest uppercase text-white/70 mb-10 backdrop-blur-md hover:bg-white/10 transition-colors cursor-default">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.8)]"></span>
             RazorSense Engine v2.0 Live
           </div>
           
-          <h1 className="text-[5rem] md:text-[9rem] font-[800] tracking-tighter leading-[0.9] text-transparent bg-clip-text bg-gradient-to-b from-white via-white/90 to-white/20 mb-6 drop-shadow-2xl text-center">
+          <h1 className="text-[5rem] md:text-[8rem] font-[800] tracking-tighter leading-[0.9] text-transparent bg-clip-text bg-gradient-to-b from-white via-white/90 to-white/30 mb-8 drop-shadow-2xl text-center">
             Resolve.
             <br />
-            <span className="italic font-light opacity-80">Instantly.</span>
+            <span className="italic font-light opacity-85">Instantly.</span>
           </h1>
           
-
-          <motion.button 
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <button 
             onClick={() => router.push('/chat')}
-            className="flex items-center gap-3 px-10 py-5 bg-white text-black rounded-full font-bold text-xl transition-all shadow-[0_0_40px_rgba(255,255,255,0.3)] hover:shadow-[0_0_60px_rgba(255,255,255,0.5)] cursor-pointer"
+            className="flex items-center gap-3 px-10 py-5 bg-white text-black hover:bg-gray-100 rounded-full font-bold text-xl transition-all shadow-[0_0_40px_rgba(255,255,255,0.3)] hover:shadow-[0_0_60px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 cursor-pointer"
           >
             Get Assistance <ArrowRight size={24} />
-          </motion.button>
-        </motion.div>
+          </button>
+        </div>
       </section>
     </div>
   );

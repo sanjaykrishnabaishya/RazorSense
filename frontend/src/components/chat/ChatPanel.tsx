@@ -355,18 +355,15 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
       <div className="flex-1 overflow-y-auto p-4 custom-scrollbar flex flex-col relative z-10">
         
         {messages.length === 0 ? (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+          <div 
             className="w-full flex flex-col items-center justify-center pt-8 pb-20 mt-auto mb-auto"
           >
-            <motion.div 
-              animate={{ y: ["-10px", "10px"], rotate: [-2, 2] }}
-              transition={{ duration: 4, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+            <div 
               className="w-48 h-48 mb-6 shrink-0"
             >
               {/* Fallback to /robot.png if krish.png is not ready */}
               <img src="/krish.png" alt="Krish AI" className="w-full h-full object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]" onError={(e) => e.currentTarget.src='/robot.png'} />
-            </motion.div>
+            </div>
             
             <h2 className="text-[32px] font-[800] text-white mb-2 tracking-tight">Hi! I'm Krish 👋</h2>
             <p className="text-white/50 mb-10 text-[16px]">Tell me what happened, and I'll look into it for you.</p>
@@ -381,7 +378,7 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
               <IssuePrompt icon={Clock} label="Ticket History" onClick={() => sendText("Show my ticket history")} color="text-pink-400" />
               <IssuePrompt icon={HelpCircle} label="Other Issue" onClick={() => sendText("I have an issue that I need help with.")} color="text-zinc-300" />
             </div>
-          </motion.div>
+          </div>
         ) : (
           <div className="space-y-6 pb-32">
             {messages.map((m: any) => {
