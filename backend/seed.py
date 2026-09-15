@@ -109,6 +109,18 @@ def seed_db():
     conn.close()
     print("Enterprise database seeded successfully!")
 
+    from database import engine
+    try:
+        with engine.connect() as check_conn:
+            cols = [c[1] for c in check_conn.exec_driver_sql("PRAGMA table_info(orders)").fetchall()]
+            if cols and 'status' not in cols:
+                check_conn.exec_driver_sql("ALTER TABLE orders ADD COLUMN status VARCHAR DEFAULT 'Delivered'")
+            if cols and 'order_date' not in cols:
+                check_conn.exec_driver_sql("ALTER TABLE orders ADD COLUMN order_date VARCHAR DEFAULT '2026-09-01'")
+            check_conn.commit()
+    except Exception:
+        pass
+
     db = SessionLocal()
 
     # Create / Fetch Users
