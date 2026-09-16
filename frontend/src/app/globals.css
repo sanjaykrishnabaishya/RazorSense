@@ -1,29 +1,29 @@
 @import "tailwindcss";
 
 @theme {
-  --color-page-bg: #030303;
-  --color-surface: rgba(10, 10, 10, 0.6);
-  --color-hero: #030303;
-  --color-hero-deep: #050505;
+  --color-page-bg: #06070a;
+  --color-surface: rgba(10, 12, 18, 0.75);
+  --color-hero: #06070a;
+  --color-hero-deep: #080a0f;
   --color-text-main: #ffffff;
-  --color-text-secondary: rgba(255, 255, 255, 0.7);
-  --color-text-muted: rgba(255, 255, 255, 0.4);
-  --color-border-main: rgba(255, 255, 255, 0.1);
-  --color-border-soft: rgba(255, 255, 255, 0.05);
-  --color-primary: #3b82f6;
-  --color-primary-dark: #2563eb;
-  --color-primary-soft: rgba(59, 130, 246, 0.1);
+  --color-text-secondary: rgba(255, 255, 255, 0.75);
+  --color-text-muted: rgba(255, 255, 255, 0.45);
+  --color-border-main: rgba(255, 255, 255, 0.12);
+  --color-border-soft: rgba(255, 255, 255, 0.06);
+  --color-primary: #0284c7;
+  --color-primary-dark: #0369a1;
+  --color-primary-soft: rgba(14, 165, 233, 0.15);
   --color-violet-main: #8b5cf6;
-  --color-violet-soft: rgba(139, 92, 246, 0.1);
+  --color-violet-soft: rgba(139, 92, 246, 0.15);
   --color-cyan-main: #06b6d4;
   --color-mint: #10b981;
   --color-mint-dark: #059669;
-  --color-mint-soft: rgba(16, 185, 129, 0.1);
+  --color-mint-soft: rgba(16, 185, 129, 0.15);
   --color-warning: #f59e0b;
-  --color-warning-soft: rgba(245, 158, 11, 0.1);
+  --color-warning-soft: rgba(245, 158, 11, 0.15);
   --color-danger: #ef4444;
-  --shadow-custom-lg: 0 20px 40px rgba(0, 0, 0, 0.5);
-  --shadow-custom-sm: 0 4px 14px rgba(0, 0, 0, 0.3);
+  --shadow-custom-lg: 0 20px 40px rgba(0, 0, 0, 0.6);
+  --shadow-custom-sm: 0 4px 14px rgba(0, 0, 0, 0.35);
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
@@ -31,6 +31,74 @@ body {
   background-color: var(--color-page-bg);
   color: var(--color-text-main);
   overflow-x: hidden;
+}
+
+/* Performant Glass & Muted UI Elements (Smooth 60fps, less shiny) */
+.glass-3d {
+  background: rgba(12, 15, 22, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.6);
+}
+
+.glass-3d-elevated {
+  background: rgba(12, 15, 22, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 30px -6px rgba(0, 0, 0, 0.7);
+}
+
+.glass-3d-btn-blue {
+  background: rgba(30, 58, 138, 0.3);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.glass-3d-btn-purple {
+  background: rgba(88, 28, 135, 0.3);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+/* Subtle, Muted Capability Cards: Gentle tint at top fading into dark background */
+.glass-3d-card-cyan {
+  background: linear-gradient(180deg, rgba(6, 182, 212, 0.08) 0%, rgba(6, 7, 10, 0.85) 100%);
+  border: 1px solid rgba(6, 182, 212, 0.16);
+  box-shadow: 0 6px 20px -4px rgba(0, 0, 0, 0.5);
+}
+
+.glass-3d-card-blue {
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.08) 0%, rgba(6, 7, 10, 0.85) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.16);
+  box-shadow: 0 6px 20px -4px rgba(0, 0, 0, 0.5);
+}
+
+.glass-3d-card-purple {
+  background: linear-gradient(180deg, rgba(168, 85, 247, 0.08) 0%, rgba(6, 7, 10, 0.85) 100%);
+  border: 1px solid rgba(168, 85, 247, 0.16);
+  box-shadow: 0 6px 20px -4px rgba(0, 0, 0, 0.5);
+}
+
+.glass-3d-card-amber {
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.08) 0%, rgba(6, 7, 10, 0.85) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.16);
+  box-shadow: 0 6px 20px -4px rgba(0, 0, 0, 0.5);
+}
+
+.glass-3d-card-rose {
+  background: linear-gradient(180deg, rgba(244, 63, 94, 0.08) 0%, rgba(6, 7, 10, 0.85) 100%);
+  border: 1px solid rgba(244, 63, 94, 0.16);
+  box-shadow: 0 6px 20px -4px rgba(0, 0, 0, 0.5);
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -46,7 +114,6 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-muted);
 }
-
 
 .markdown-container table {
   width: 100%;

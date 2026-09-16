@@ -1,10 +1,17 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SendHorizontal, Paperclip, Loader2, CheckCircle2, RefreshCcw, Package, PackageX, AlertTriangle, CreditCard, Search, Clock, HelpCircle, FileText, ChevronRight, Mic, Square, X } from 'lucide-react';
+import { SendHorizontal, Paperclip, Loader2, CheckCircle2, RefreshCcw, Package, PackageX, AlertTriangle, CreditCard, Search, Clock, HelpCircle, FileText, ChevronRight, Mic, Square, X, ShieldCheck, Video, FileCheck, Sparkles, Bot, Plus } from 'lucide-react';
 import { ChatMessage } from '../../types/support';
 import PurchaseSearch from '../workflow/PurchaseSearch';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import ProactiveDeliveryBanner from './ProactiveDeliveryBanner';
+import TicketReceiptCard from './TicketReceiptCard';
+import InlineResolutionCard from './InlineResolutionCard';
+import BentoCard from './BentoCard';
+import TicketHistoryWidget from './TicketHistoryWidget';
+import RazorSenseLogo from '../common/RazorSenseLogo';
+import EnterpriseAgentsSection from './EnterpriseAgentsSection';
 
 import { audioBufferToWav } from '../../utils/wav';
 
@@ -245,12 +252,49 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
         }]);
       }
 
+      // ── INLINE RESOLUTION widget ──
+      const inlineMatch = display.match(/\[INLINE_RESOLUTION:\s*(.*?)\]/);
+      if (inlineMatch) {
+        const orderId = inlineMatch[1].trim();
+        display = display.replace(/\[INLINE_RESOLUTION:\s*.*?\]/, '').trim();
+        let targetOrder = null;
+        try {
+          const or = await fetch(`${API}/api/orders/${orderId}`, { headers: { Authorization: `Bearer ${currentToken}` } });
+          if (or.ok) targetOrder = await or.json();
+        } catch {}
+        setMessages((prev: any) => [...prev, {
+          id: (Date.now() + 6).toString(), role: 'assistant', kind: 'widget_inline_resolution',
+          order: targetOrder, timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+        }]);
+      }
+
+      // ── TICKET HISTORY widget ──
+      if (display.includes('[SHOW_TICKET_HISTORY]')) {
+        display = display.replace('[SHOW_TICKET_HISTORY]', '').trim();
+        // If display text contains ticket bullet lines, condense to clean welcome intro
+        if (display.includes('* **Ticket #') || display.includes('Ticket #')) {
+          display = 'Here are your active support tickets and dispute dossiers from our Sentinel Engine records:';
+        }
+        let tickets: any[] = [];
+        try {
+          const tr = await fetch(`${API}/api/tickets`, { headers: { Authorization: `Bearer ${currentToken}` } });
+          if (tr.ok) tickets = await tr.json();
+        } catch {}
+        setMessages((prev: any) => [...prev, {
+          id: (Date.now() + 7).toString(), role: 'assistant', kind: 'widget_history',
+          tickets: tickets,
+          timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+        }]);
+      }
+
       // Comprehensive marker clean-up to ensure zero bracket tags leak into the message bubble
       display = display
         .replace(/\[ORDER_WIDGET:\s*.*?\]/g, '')
         .replace(/\[ORDER_WIDGET_TITLE:\s*.*?\]/g, '')
         .replace(/\[SHOW_ADVANCED_SEARCH\]/g, '')
+        .replace(/\[SHOW_TICKET_HISTORY\]/g, '')
         .replace(/\[QUICK_OPTIONS:\s*.*?\]/g, '')
+        .replace(/\[INLINE_RESOLUTION:\s*.*?\]/g, '')
         .replace(/\[TICKET:\s*.*?\]/g, '')
         .trim();
 
@@ -381,39 +425,137 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
     setInput('');
   };
 
+  const handlePostPurchaseClick = () => {
+    sendText("I need post-purchase support for my delivered order");
+  };
+
+  const renderComposer = (isDocked: boolean) => (
+    <div className={`relative flex flex-col glass-3d rounded-2xl transition-all p-1.5 mx-auto w-full max-w-4xl ${isDocked ? 'focus-within:border-cyan-400/40' : 'focus-within:border-cyan-400/40 border-white/15 shadow-lg'}`}>
+      {filePreview && (
+        <div className="relative self-start m-2">
+          {filePreview === "AUDIO" ? (
+             <div className="h-10 px-3.5 rounded-xl border border-blue-400/30 flex items-center bg-blue-500/15 text-cyan-300 text-xs font-semibold">
+               🎤 Voice Note Ready for Krish
+             </div>
+          ) : selectedFile?.includes('data:video/') ? (
+             <div className="h-16 px-3 rounded-xl border border-purple-400/30 flex items-center gap-2 bg-purple-500/15 text-purple-200 text-xs font-semibold">
+               <Video size={16} /> Unboxing Video Attached
+             </div>
+          ) : (
+             <img src={filePreview} alt="Preview" className="h-16 rounded-xl object-contain border border-white/10" />
+          )}
+          <button 
+            onClick={() => { setFilePreview(null); setSelectedFile(null); }}
+            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-400 cursor-pointer"
+          >
+            <PackageX size={12} />
+          </button>
+        </div>
+      )}
+      <div className="flex items-end w-full">
+        <label className="p-2.5 text-slate-400 hover:text-white hover:bg-white/[0.08] transition rounded-xl cursor-pointer shrink-0" title="Attach defect photo or unboxing video">
+          <Paperclip size={18} />
+          <input type="file" accept="image/*,video/*" className="hidden" onChange={handleFileChange} />
+        </label>
+        
+        <button 
+          onClick={toggleRecording}
+          className={`p-2.5 transition-all rounded-xl shrink-0 cursor-pointer ${isRecording ? 'text-rose-400 animate-pulse bg-rose-500/20' : 'text-slate-400 hover:text-white hover:bg-white/[0.08]'}`}
+          title={isRecording ? "Stop recording" : "Record voice note"}
+        >
+          {isRecording ? <Square size={18} /> : <Mic size={18} />}
+        </button>
+        
+        {isRecording ? (
+          <div className="flex-1 py-2.5 px-3 flex items-center gap-2 text-rose-400 text-xs font-medium">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+            </span>
+            <span>Recording voice note... Speak now (tap square to send)</span>
+          </div>
+        ) : (
+          <textarea 
+            placeholder="Ask Krish anything or describe your order issue..."
+            className="flex-1 max-h-28 min-h-[42px] py-2 px-2 text-[14px] bg-transparent focus:outline-none resize-none custom-scrollbar text-white placeholder-slate-400"
+            rows={1}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
+          />
+        )}
+        
+        <button 
+          onClick={handleSend}
+          disabled={!input.trim() && !selectedFile}
+          className="p-2.5 m-0.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl disabled:opacity-20 disabled:cursor-not-allowed transition-all shrink-0 cursor-pointer active:scale-95 shadow-sm"
+          title="Send message"
+        >
+          <SendHorizontal size={17} />
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="flex flex-col h-full bg-transparent relative w-full">
       
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 custom-scrollbar flex flex-col relative z-10">
+      {/* Messages / Home Area */}
+      <div className={`flex-1 ${messages.length === 0 ? 'w-full' : 'overflow-y-auto p-4 custom-scrollbar'} flex flex-col relative z-10`}>
         
         {messages.length === 0 ? (
-          <div 
-            className="w-full flex flex-col items-center justify-center pt-8 pb-20 mt-auto mb-auto"
-          >
-            <div 
-              className="w-48 h-48 mb-6 shrink-0"
+          <div className="w-full flex flex-col items-center justify-start max-w-6xl mx-auto">
+            {/* Live App Bot Avatar & Single Greeting */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.35, delay: 0.05 }}
+              className="mb-6 flex flex-col items-center select-none"
             >
-              {/* Fallback to /robot.png if krish.png is not ready */}
-              <img src="/krish.png" alt="Krish AI" className="w-full h-full object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]" onError={(e) => e.currentTarget.src='/robot.png'} />
-            </div>
-            
-            <h2 className="text-[32px] font-[800] text-white mb-2 tracking-tight">Hi! I'm Krish 👋</h2>
-            <p className="text-white/50 mb-10 text-[16px]">Tell me what happened, and I'll look into it for you.</p>
+              {/* Krish Bot Icon: Transparent BG, Sized Generously (w-36 h-36), Floating Animation & Interactive Cursor Tilt/Pop-up */}
+              <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
+                whileHover={{ scale: 1.15, rotate: [0, -5, 5, 0], y: -10 }}
+                className="w-28 h-28 sm:w-36 sm:h-36 mb-3 flex items-center justify-center filter drop-shadow-[0_16px_32px_rgba(6,182,212,0.35)] cursor-pointer select-none"
+              >
+                <img
+                  src="/krish.png"
+                  alt="Krish AI"
+                  className="w-full h-full object-contain"
+                  onError={(e) => (e.currentTarget.src = '/robot.png')}
+                />
+              </motion.div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white text-center mb-4">
+                Hi! I'm Krish 👋
+              </h1>
+            </motion.div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full max-w-4xl px-2">
-              <IssuePrompt icon={RefreshCcw} label="I want a refund" onClick={() => sendText("I want a refund")} color="text-emerald-400" />
-              <IssuePrompt icon={Package} label="I need a replacement" onClick={() => sendText("I need a replacement")} color="text-blue-400" />
-              <IssuePrompt icon={PackageX} label="Received wrong item" onClick={() => sendText("I received the wrong item")} color="text-purple-400" />
-              <IssuePrompt icon={AlertTriangle} label="Return item" onClick={() => sendText("I want to return an item")} color="text-orange-400" />
-              <IssuePrompt icon={CreditCard} label="Payment issue" onClick={() => sendText("I have a payment issue")} color="text-red-400" />
-              <IssuePrompt icon={Search} label="Find a purchase" onClick={() => sendText("Can you help me find a purchase?")} color="text-cyan-400" />
-              <IssuePrompt icon={Clock} label="Ticket History" onClick={() => sendText("Show my ticket history")} color="text-pink-400" />
-              <IssuePrompt icon={HelpCircle} label="Other Issue" onClick={() => sendText("I have an issue that I need help with.")} color="text-zinc-300" />
+            {/* Chat box in center flow on home page (Widescreen max-w-4xl) */}
+            <div className="w-full max-w-4xl mb-6 px-1">
+              {renderComposer(false)}
+            </div>
+
+            {/* Proactive Multi-Delivery Highlight Card */}
+            <div className="w-full max-w-4xl mb-6 px-1">
+              <ProactiveDeliveryBanner sendText={sendText} token={token} apiUrl={getApiUrl()} />
+            </div>
+
+            {/* Autonomous Agents Built for Enterprise Scale */}
+            <div className="w-full max-w-6xl px-1">
+              <EnterpriseAgentsSection
+                sendText={sendText}
+                onPostPurchaseClick={handlePostPurchaseClick}
+              />
             </div>
           </div>
         ) : (
-          <div className="space-y-6 pb-32">
+          <div className="space-y-6 pb-24 max-w-4xl mx-auto w-full">
             {messages.map((m: any) => {
               const isUser = m.role === 'user';
               return (
@@ -424,15 +566,20 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
                   className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
                 >
                   {!isUser && (
-                     <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center mr-3 mt-1 shrink-0 overflow-hidden border border-white/10">
-                       <img src="/krish.png" alt="Bot" className="w-[120%] h-[120%] object-contain" onError={(e) => e.currentTarget.src='/robot.png'} />
+                     <div className="w-7 h-7 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center mr-2.5 mt-1 shrink-0 overflow-hidden text-cyan-300 shadow-sm">
+                       <img
+                         src="/krish.png"
+                         alt="Krish AI"
+                         className="w-[115%] h-[115%] object-contain"
+                         onError={(e) => (e.currentTarget.src = '/robot.png')}
+                       />
                      </div>
                   )}
                   
                   <div className={`flex flex-col max-w-[85%] ${isUser ? 'items-end' : 'items-start'}`}>
                     {m.kind === 'text' && (
                       m.text ? (
-                        <div className={`p-4 text-[15px] leading-[1.5] shadow-lg markdown-container ${isUser ? 'bg-white text-black rounded-2xl rounded-tr-sm font-medium' : 'bg-[#111] text-white rounded-2xl rounded-tl-sm border border-white/[0.05]'}`}>
+                        <div className={`p-4 text-[14.5px] leading-[1.6] shadow-xl markdown-container ${isUser ? 'bg-blue-600 text-white rounded-2xl rounded-tr-sm font-medium' : 'bg-[#0e1018]/90 text-white/90 rounded-2xl rounded-tl-sm border border-white/[0.08] backdrop-blur-xl'}`}>
                           <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.text}</ReactMarkdown>
                         </div>
                       ) : !isUser ? (
@@ -457,6 +604,29 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
                       </div>
                     )}
 
+                    {m.kind === 'widget_post_purchase_bar' && (
+                      <div className="flex flex-col gap-2 mt-1 w-full max-w-xl">
+                        <div className="p-3.5 text-[14px] leading-relaxed bg-[#0e1018] text-white/90 rounded-2xl rounded-tl-sm border border-white/[0.08] shadow-md">
+                          {m.text}
+                        </div>
+                        {/* Interactive Post-Purchase Options Bar */}
+                        <div className="flex flex-wrap items-center gap-2 p-2 bg-[#0a0d14]/90 border border-white/[0.08] rounded-2xl shadow-md">
+                          {m.options?.map((opt: any, i: number) => (
+                            <motion.button
+                              key={i}
+                              whileHover={{ scale: 1.05, y: -2 }}
+                              whileTap={{ scale: 0.96 }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                              onClick={() => sendText(opt.prompt)}
+                              className="px-3.5 py-1.5 rounded-xl bg-white/[0.05] hover:bg-cyan-500/20 border border-white/[0.08] hover:border-cyan-400/40 text-white/90 hover:text-cyan-200 text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow-[0_4px_16px_rgba(6,182,212,0.25)]"
+                            >
+                              <span>{opt.label}</span>
+                            </motion.button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {m.kind === 'widget_order_select' && (
                       <OrderSelectWidget orders={m.orders} sendText={sendText} title={m.title} />
                     )}
@@ -468,10 +638,11 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
                           {m.options.map((opt: string, i: number) => (
                             <motion.button
                               key={i}
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
+                              whileHover={{ scale: 1.04, y: -2 }}
+                              whileTap={{ scale: 0.96 }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                               onClick={() => sendText(opt)}
-                              className="bg-[#18181b] hover:bg-blue-600/20 border border-white/10 hover:border-blue-500/60 text-white/90 hover:text-white text-[13px] font-medium py-2.5 px-4 rounded-xl transition shadow-md flex items-center gap-2 text-left active:scale-95"
+                              className="bg-[#18181b] hover:bg-blue-600/20 border border-white/10 hover:border-blue-500/60 text-white/90 hover:text-white text-[13px] font-medium py-2.5 px-4 rounded-xl transition-colors shadow-md hover:shadow-[0_6px_20px_rgba(59,130,246,0.25)] flex items-center gap-2 text-left"
                             >
                               <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0"></span>
                               <span>{opt}</span>
@@ -500,46 +671,47 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
                     )}
 
                     {m.kind === 'widget_history' && (
-                      <div className="flex flex-col gap-3 w-full">
-                        <div className="p-4 text-[15px] leading-[1.5] shadow-lg bg-[#111] text-white rounded-2xl rounded-tl-sm border border-white/[0.05] self-start max-w-fit">
-                          {m.text}
-                        </div>
-                        <div className="w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl p-5 shadow-2xl mt-2 space-y-3">
-                          <div className="flex justify-between items-center p-4 bg-[#111] rounded-xl border border-white/5">
-                            <div>
-                              <p className="text-white font-medium text-[14px]">Ticket #RZ-99412</p>
-                              <p className="text-white/40 text-[12px]">Amazon • Wireless Earbuds</p>
-                            </div>
-                            <span className="px-3 py-1 bg-blue-500/10 text-blue-400 text-[12px] font-bold rounded-full">In Review</span>
+                      <div className="flex flex-col gap-2.5 w-full">
+                        {m.text && (
+                          <div className="p-3.5 text-[14px] leading-relaxed bg-[#0e1018] text-white/90 rounded-2xl rounded-tl-sm border border-white/[0.08] shadow-md max-w-fit">
+                            {m.text}
                           </div>
-                          <div className="flex justify-between items-center p-4 bg-[#111] rounded-xl border border-white/5">
-                            <div>
-                              <p className="text-white font-medium text-[14px]">Ticket #RZ-88102</p>
-                              <p className="text-white/40 text-[12px]">Zomato • Late Delivery</p>
-                            </div>
-                            <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-[12px] font-bold rounded-full">Resolved</span>
-                          </div>
-                        </div>
+                        )}
+                        <TicketHistoryWidget
+                          tickets={m.tickets || []}
+                          onSelectTicket={(t) => setSelectedTicket(t)}
+                          onRaiseNewIssue={() => sendText("Raise a New Issue")}
+                          onEscalateTicket={(t) => {
+                            sendText(`I am not satisfied with the resolution on ticket #${t.ticket_id} (${t.product || t.merchant}). Can we review this?`);
+                          }}
+                        />
                       </div>
                     )}
 
                     {m.kind === 'widget_ticket' && (
-                      <div className="flex flex-col gap-3 w-full">
-                        <div className="p-4 text-[15px] leading-[1.5] shadow-lg bg-[#111] text-white rounded-2xl rounded-tl-sm border border-white/[0.05] self-start max-w-fit">
-                          {m.text}
-                        </div>
-                        <div className="w-full max-w-md bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-blue-500/30 rounded-2xl p-6 shadow-2xl mt-2 relative overflow-hidden">
-                           <FileText className="absolute -right-4 -bottom-4 text-white/5 w-32 h-32" />
-                           <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2"><CheckCircle2 className="text-emerald-400" /> Ticket Created</h3>
-                           <div className="space-y-2 text-[13px]">
-                             <div className="flex justify-between"><span className="text-white/50">Ticket ID</span><span className="text-white font-mono">{m.ticket_id || "RZ-99413"}</span></div>
-                             <div className="flex justify-between"><span className="text-white/50">Status</span><span className="text-blue-400 font-semibold">{m.status || "Investigation Active"}</span></div>
-                             <div className="flex justify-between"><span className="text-white/50">Merchant</span><span className="text-white">{m.merchant || "Unknown"}</span></div>
-                             <div className="flex justify-between"><span className="text-white/50">Date</span><span className="text-white">{new Date().toLocaleDateString('en-GB', {day: '2-digit', month: 'short', year: 'numeric'})}</span></div>
-                           </div>
-                           <button onClick={() => setSelectedTicket(m.ticket_details)} className="w-full mt-5 bg-white/10 hover:bg-white/20 text-white font-medium py-2.5 rounded-xl transition text-[13px]">View Full Details</button>
-                        </div>
+                      <div className="flex flex-col gap-2 w-full">
+                        {m.text && (
+                          <div className="p-4 text-[15px] leading-[1.5] shadow-lg bg-[#111] text-white rounded-2xl rounded-tl-sm border border-white/[0.05] self-start max-w-fit markdown-container">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.text}</ReactMarkdown>
+                          </div>
+                        )}
+                        <TicketReceiptCard
+                          ticket={m.ticket_details || {
+                            ticket_id: m.ticket_id || "RZ-99413",
+                            order_id: m.order_id || "N/A",
+                            merchant: m.merchant || "RazorSense Support",
+                            product: m.product || "Delivered Purchase",
+                            status: m.status || "Investigation Active",
+                            action_taken: m.action_taken || "Logged claim for review.",
+                            date: m.date || new Date().toLocaleDateString('en-GB', {day: '2-digit', month: 'short', year: 'numeric'})
+                          }}
+                          onOpenDetails={(t) => setSelectedTicket(t)}
+                        />
                       </div>
+                    )}
+
+                    {m.kind === 'widget_inline_resolution' && (
+                      <InlineResolutionCard order={m.order} sendText={sendText} />
                     )}
 
                     <span className="text-[11px] text-white/30 mt-1.5 px-1">{m.timestamp}</span>
@@ -552,126 +724,135 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
         )}
       </div>
 
-      {/* Composer */}
-      <div className="p-4 pb-4 bg-transparent sticky bottom-0 z-20">
-        <div className="relative flex flex-col border border-white/[0.1] rounded-2xl bg-[#0a0a0a]/80 backdrop-blur-xl shadow-[0_0_30px_rgba(0,0,0,0.8)] focus-within:border-white/30 transition-colors p-1.5 mx-auto max-w-3xl">
-          {filePreview && (
-            <div className="relative self-start m-2">
-              {filePreview === "AUDIO" ? (
-                 <div className="h-12 px-4 rounded-xl border border-white/10 flex items-center bg-blue-500/20 text-blue-400">
-                   🎤 Voice Note Recorded
-                 </div>
-              ) : (
-                 <img src={filePreview} alt="Preview" className="h-20 rounded-xl object-contain border border-white/10" />
-              )}
-              <button 
-                onClick={() => { setFilePreview(null); setSelectedFile(null); }}
-                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
-              >
-                <PackageX size={12} />
-              </button>
-            </div>
-          )}
-          <div className="flex items-end w-full">
-            <label className="p-3 text-white/40 hover:text-white transition rounded-xl cursor-pointer shrink-0">
-              <Paperclip size={20} />
-              <input type="file" accept="image/*,video/*" className="hidden" onChange={handleFileChange} />
-            </label>
-            
-            <button 
-              onClick={toggleRecording}
-              className={`p-3 transition rounded-xl shrink-0 ${isRecording ? 'text-red-500 animate-pulse' : 'text-white/40 hover:text-white'}`}
-            >
-              {isRecording ? <Square size={20} /> : <Mic size={20} />}
-            </button>
-            
-            <textarea 
-              placeholder={isRecording ? "Recording... (Click square to stop)" : "Message Krish..."}
-              disabled={isRecording}
-              className="flex-1 max-h-32 min-h-[44px] py-3 text-[15px] bg-transparent focus:outline-none resize-none custom-scrollbar text-white placeholder-white/30"
-              rows={1}
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSend();
-                }
-              }}
-            />
-            <button 
-              onClick={handleSend}
-              disabled={!input.trim() && !selectedFile}
-              className="p-3 m-1 bg-white hover:bg-gray-200 text-black rounded-xl disabled:opacity-30 transition-all shadow-sm shrink-0"
-            >
-              <SendHorizontal size={18} />
-            </button>
-          </div>
+      {/* Docked composer ONLY when messages.length > 0 */}
+      {messages.length > 0 && (
+        <div className="pt-2 pb-2 px-1 bg-transparent shrink-0 z-30">
+          {renderComposer(true)}
         </div>
-        <p className="text-center text-white/30 text-[11px] mt-4">RazorSense AI can make mistakes. Please verify important information.</p>
-      </div>
+      )}
 
-      {/* Ticket Modal */}
+      {/* Sentinel Audit Dossier Modal */}
       {selectedTicket && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-[#111] border border-white/[0.05] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden relative">
-            <button onClick={() => setSelectedTicket(null)} className="absolute top-4 right-4 text-white/50 hover:text-white"><X className="w-5 h-5" /></button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="bg-gradient-to-b from-[#13151f] via-[#0e1017] to-[#0a0b0f] border border-white/[0.12] rounded-3xl w-full max-w-lg shadow-[0_25px_70px_rgba(0,0,0,0.85)] overflow-hidden relative"
+          >
+            {/* Holographic accent glow at top */}
+            <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-blue-500 via-indigo-400 to-purple-500" />
+            
+            <button 
+              onClick={() => setSelectedTicket(null)} 
+              className="absolute top-5 right-5 text-white/40 hover:text-white transition p-1.5 rounded-full hover:bg-white/10 cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
             <div className="p-6">
-              <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><CheckCircle2 className="text-emerald-400 w-6 h-6" /> Ticket Details</h3>
-              <div className="space-y-4 text-sm">
-                <div className="grid grid-cols-3 gap-2 border-b border-white/10 pb-3">
-                  <span className="text-white/50">Ticket ID</span>
-                  <span className="col-span-2 text-white font-mono">{selectedTicket.ticket_id}</span>
+              {/* Header */}
+              <div className="flex items-center gap-2.5 mb-5">
+                <div className="w-9 h-9 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400">
+                  <ShieldCheck size={20} />
                 </div>
-                <div className="grid grid-cols-3 gap-2 border-b border-white/10 pb-3">
-                  <span className="text-white/50">Order ID</span>
-                  <span className="col-span-2 text-white font-mono">{selectedTicket.order_id || 'N/A'}</span>
-                </div>
-                <div className="grid grid-cols-3 gap-2 border-b border-white/10 pb-3">
-                  <span className="text-white/50">Product</span>
-                  <span className="col-span-2 text-white">{selectedTicket.product || 'N/A'}</span>
-                </div>
-                <div className="grid grid-cols-3 gap-2 border-b border-white/10 pb-3">
-                  <span className="text-white/50">Merchant</span>
-                  <span className="col-span-2 text-white">{selectedTicket.merchant}</span>
-                </div>
-                <div className="grid grid-cols-3 gap-2 border-b border-white/10 pb-3">
-                  <span className="text-white/50">Issue</span>
-                  <span className="col-span-2 text-white">{selectedTicket.issue}</span>
-                </div>
-                <div className="grid grid-cols-3 gap-2 border-b border-white/10 pb-3">
-                  <span className="text-white/50">Action Taken</span>
-                  <span className="col-span-2 text-white">{selectedTicket.action_taken}</span>
-                </div>
-                <div className="grid grid-cols-3 gap-2 border-b border-white/10 pb-3">
-                  <span className="text-white/50">Status</span>
-                  <span className="col-span-2 text-blue-400 font-semibold">{selectedTicket.status}</span>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <span className="text-white/50">Date</span>
-                  <span className="col-span-2 text-white">{selectedTicket.date}</span>
+                <div>
+                  <h3 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+                    Sentinel Audit Dossier
+                  </h3>
+                  <p className="text-[11px] text-emerald-400 font-medium flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Two-Tier Deterministic Engine Verified
+                  </p>
                 </div>
               </div>
+
+              {/* Security Telemetry Banner */}
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+                  <span className="text-[10px] uppercase font-bold text-white/40 tracking-wider block mb-1">
+                    Fraud Risk Score
+                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-emerald-400 font-bold text-sm">
+                      {selectedTicket.fraud_score !== undefined ? `${selectedTicket.fraud_score} / 100` : '15 / 100'}
+                    </span>
+                    <span className="text-[10px] font-semibold text-emerald-400/90 px-2 py-0.5 rounded-md bg-emerald-500/10">
+                      {selectedTicket.risk_level || 'LOW RISK'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+                  <span className="text-[10px] uppercase font-bold text-white/40 tracking-wider block mb-1">
+                    Settlement SLA
+                  </span>
+                  <span className="text-white font-semibold text-sm">
+                    T+1 Working Day
+                  </span>
+                </div>
+              </div>
+
+              {/* Data Rows */}
+              <div className="space-y-2.5 text-xs bg-black/40 p-4 rounded-2xl border border-white/[0.05]">
+                <div className="flex justify-between items-center pb-2 border-b border-white/[0.06]">
+                  <span className="text-white/40">Ticket Reference</span>
+                  <span className="text-white font-mono font-bold">#{selectedTicket.ticket_id}</span>
+                </div>
+
+                {selectedTicket.order_id && selectedTicket.order_id !== 'N/A' && (
+                  <div className="flex justify-between items-center pb-2 border-b border-white/[0.06]">
+                    <span className="text-white/40">Linked Order</span>
+                    <span className="text-white font-mono">#{selectedTicket.order_id}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center pb-2 border-b border-white/[0.06]">
+                  <span className="text-white/40">Product / Item</span>
+                  <span className="text-white font-medium text-right max-w-[65%] truncate">{selectedTicket.product || 'N/A'}</span>
+                </div>
+
+                <div className="flex justify-between items-center pb-2 border-b border-white/[0.06]">
+                  <span className="text-white/40">Merchant Partner</span>
+                  <span className="text-white font-semibold">{selectedTicket.merchant}</span>
+                </div>
+
+                <div className="flex justify-between items-center pb-2 border-b border-white/[0.06]">
+                  <span className="text-white/40">Resolution Status</span>
+                  <span className="text-blue-400 font-bold px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
+                    {selectedTicket.status}
+                  </span>
+                </div>
+
+                <div className="pt-1">
+                  <span className="text-white/40 block mb-1">Official Action Taken:</span>
+                  <p className="text-white/90 leading-relaxed bg-white/[0.03] p-2.5 rounded-xl border border-white/[0.05]">
+                    {selectedTicket.action_taken}
+                  </p>
+                </div>
+
+                {selectedTicket.policy_rule_cited && (
+                  <div className="pt-1">
+                    <span className="text-white/40 block mb-1">Merchant Policy SOP:</span>
+                    <p className="text-white/70 text-[11px] leading-relaxed bg-white/[0.02] p-2.5 rounded-xl border border-white/[0.04]">
+                      {selectedTicket.policy_rule_cited}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer Button */}
+              <button
+                onClick={() => setSelectedTicket(null)}
+                className="w-full mt-4 py-2.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.14] text-white font-medium transition text-xs cursor-pointer"
+              >
+                Close Audit Dossier
+              </button>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
 
     </div>
-  );
-}
-
-function IssuePrompt({ icon: Icon, label, onClick, color }: any) {
-  return (
-    <motion.button 
-      whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.08)' }}
-      whileTap={{ scale: 0.98 }}
-      onClick={onClick}
-      className="flex flex-col items-center justify-center p-5 rounded-2xl border border-white/[0.05] bg-[#111]/50 backdrop-blur-sm transition-colors text-center h-full hover:border-white/20"
-    >
-      <Icon size={24} className={`mb-3 ${color}`} />
-      <span className="text-[13px] font-semibold text-white/90">{label}</span>
-    </motion.button>
   );
 }
 
@@ -680,32 +861,54 @@ function OrderSelectWidget({ orders, sendText, title }: { orders: any[], sendTex
 
   const handleSelect = (o: any) => {
     setSelectedOrderId(o.order_id);
-    sendText(`I want to replace order ${o.order_id} (${o.product})`);
+    const t = (title || '').toLowerCase();
+    if (t.includes("revoke") || t.includes("mandate")) {
+      sendText(`Revoke bank mandate for order ${o.order_id} (${o.product})`);
+    } else if (t.includes("renewal") || t.includes("48-hour")) {
+      sendText(`Claim 48-hour renewal refund for order ${o.order_id} (${o.product})`);
+    } else if (t.includes("subscription")) {
+      sendText(`Revoke bank mandate for order ${o.order_id} (${o.product})`);
+    } else if (t.includes("replace")) {
+      sendText(`I want to replace order ${o.order_id} (${o.product})`);
+    } else if (t.includes("refund")) {
+      sendText(`I want a refund for order ${o.order_id} (${o.product})`);
+    } else if (t.includes("return")) {
+      sendText(`I want to return order ${o.order_id} (${o.product})`);
+    } else if (t.includes("exchange")) {
+      sendText(`I want to exchange order ${o.order_id} (${o.product})`);
+    } else if (t.includes("recent") || t.includes("find") || t.includes("purchase")) {
+      sendText(`Please show me the details and status for order ${o.order_id} (${o.product})`);
+    } else {
+      sendText(`I'm selecting order ${o.order_id} (${o.product})`);
+    }
   };
 
   return (
-    <div className="flex flex-col gap-3 w-full">
-      <div className="p-4 text-[15px] leading-[1.5] shadow-lg bg-[#111] text-white rounded-2xl rounded-tl-sm border border-white/[0.05] self-start max-w-fit">
-        {title || "Please select the delivered purchase you would like to replace:"}
-      </div>
-      <div className="flex flex-col gap-3 mt-1 w-full max-w-md">
+    <div className="flex flex-col gap-2.5 w-full">
+      {title && (
+        <span className="text-[11px] uppercase tracking-wider font-semibold text-white/50 pl-1">
+          {title}
+        </span>
+      )}
+      <div className="flex flex-col gap-3 mt-0.5 w-full max-w-md">
         {orders.map((o: any) => {
           const isSelected = selectedOrderId === o.order_id;
           return (
             <motion.div 
               key={o.order_id} 
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
+              whileHover={{ scale: 1.02, y: -3 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
               onClick={() => handleSelect(o)} 
-              className={`bg-[#111] p-4 rounded-xl cursor-pointer transition flex flex-col gap-3 group relative overflow-hidden border ${isSelected ? 'border-blue-500 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.25)]' : 'border-white/10 hover:border-white/20 hover:bg-white/5'}`}
+              className={`bg-[#111] p-4 rounded-xl cursor-pointer transition-colors flex flex-col gap-3 group relative overflow-hidden border ${isSelected ? 'border-cyan-400 bg-cyan-500/10 shadow-[0_0_20px_rgba(6,182,212,0.25)]' : 'border-white/10 hover:border-cyan-400/40 hover:bg-white/[0.07] hover:shadow-[0_8px_24px_rgba(0,0,0,0.6),0_0_16px_rgba(6,182,212,0.12)]'}`}
             >
-               <div className={`absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-blue-500 to-indigo-500 transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}></div>
+               <div className={`absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-cyan-400 to-blue-500 transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}></div>
                <div className="flex justify-between items-start pl-2">
                  <div>
                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-white/10 text-white/90 border border-white/10">
                      {o.merchant}
                    </span>
-                   <h4 className="text-white font-medium text-sm mt-1.5 leading-snug">{o.product}</h4>
+                   <h4 className="text-white font-medium text-sm mt-1.5 leading-snug group-hover:text-cyan-200 transition-colors">{o.product}</h4>
                  </div>
                  <span className="text-white/50 text-[11px] font-mono shrink-0 ml-2">#{o.order_id}</span>
                </div>
@@ -727,29 +930,33 @@ function OrderSelectWidget({ orders, sendText, title }: { orders: any[], sendTex
 
                <div className="flex justify-between items-center pl-2 pt-1 border-t border-white/5">
                  <span className="text-white font-semibold text-sm">₹{o.price ? o.price.toLocaleString() : '—'}</span>
-                 <button 
+                 <motion.button 
+                   whileHover={{ scale: 1.05 }}
+                   whileTap={{ scale: 0.95 }}
                    onClick={(e) => {
                      e.stopPropagation();
                      handleSelect(o);
                    }}
-                   className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold py-1.5 px-3.5 rounded-lg transition shadow-md flex items-center gap-1.5"
+                   className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold py-1.5 px-3.5 rounded-lg transition-colors shadow-md flex items-center gap-1.5 cursor-pointer"
                  >
                    <span>{isSelected ? 'Selected' : 'Select Order'}</span>
                    <ChevronRight size={14} />
-                 </button>
+                 </motion.button>
                </div>
             </motion.div>
           );
         })}
       </div>
 
-      <button 
+      <motion.button 
+        whileHover={{ scale: 1.02, x: 2 }}
+        whileTap={{ scale: 0.98 }}
         onClick={() => sendText("My order is not here in the list. Please help me find it using Advanced Search.")}
-        className="mt-2 text-[13px] text-blue-400 hover:text-blue-300 transition flex items-center gap-1.5 self-start underline underline-offset-4 py-1 group cursor-pointer"
+        className="mt-2 text-[13px] text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-1.5 self-start underline underline-offset-4 py-1 group cursor-pointer"
       >
         <Search size={14} className="group-hover:scale-110 transition-transform" />
         <span>Not here in the list? Search all purchases</span>
-      </button>
+      </motion.button>
     </div>
   );
 }

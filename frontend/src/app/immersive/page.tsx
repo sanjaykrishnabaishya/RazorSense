@@ -37,12 +37,6 @@ export default function ImmersivePage() {
           </div>
           RazorSense
         </div>
-        <button 
-          onClick={() => router.push('/chat')}
-          className="px-5 py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:shadow-[0_0_30px_rgba(37,99,235,0.6)] cursor-pointer"
-        >
-          Launch Chat →
-        </button>
       </nav>
 
       {/* Hero Section */}

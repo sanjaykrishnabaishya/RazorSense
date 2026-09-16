@@ -9,18 +9,19 @@
 > **⚠️ Note on Free-Tier Cloud Wake-Up:**  
 > If you test the live demo and the first message takes 30–60 seconds, this is expected behavior on Render's free tier (the server sleeps during inactivity and wakes up upon your first request). Once warm, subsequent responses stream instantly within 2–3 seconds!
 
-**RazorSense AI** is an enterprise-grade autonomous customer support platform and payment dispute resolution engine. Powered by an autonomous AI agent named **Krish**, the system resolves customer inquiries, manages post-purchase issues, and automates payment gateway dispute defense from a single conversational interface.
+**RazorSense AI** is a next-generation autonomous consumer support platform and payment dispute resolution engine. Powered by an empathetic, context-aware AI agent named **Krish**, the system resolves customer inquiries, manages post-purchase issues, expedites in-transit deliveries, and automates payment gateway dispute defense from a single, human-like conversational interface.
 
 ### What the Product Does:
-- **Instant Order & Delivery Verification:** Automatically retrieves verified purchase records, shipment delivery statuses, courier tracking updates, and bank payment confirmations.
-- **4-Pillar Customer Issue Resolution:** Directly resolves customer claims across all common support scenarios:
-  - **1. Fraud & Unrecognized Charges:** Verifies whether a transaction received bank confirmation and guides customers through immediate safety steps (card freezes and security reviews).
-  - **2. Delivery & Damaged Products:** Resolves missing delivery reports, verifies damaged items via photo/video proof, and approves replacements or returns.
-  - **3. Billing & Duplicate Charges:** Automatically identifies duplicate debits caused by network dropouts and initiates instant reversals.
-  - **4. Subscription Auto-Renewals:** Honors 48-hour post-renewal cancellation grace periods and immediately stops future automated charges.
-- **Visual Damage Inspection:** Allows customers to upload photos or unboxing videos in chat. The AI visually checks the damaged item, packaging condition, and serial tags to approve returns without waiting days for manual review.
-- **Jargon-Free Customer Experience:** Customers are completely shielded from internal banking and logistics acronyms. Krish communicates solely in plain, empathetic, everyday language focused on resolving their problem.
-- **Decisive Actions & Human Escalation:** Automatically executes safe, routine resolutions (reversing duplicate debits, stopping subscription renewals, scheduling returns, creating support tickets), while proactively routing suspicious or complex cases to human specialists before taking high-risk action.
+- **Human-Like Conversational Resolution:** Zero rigid forms, robotic duplicate bubbles, or repetitive templates. Krish communicates like a helpful, attentive support specialist with proactive order awareness.
+- **Smart Logistics & In-Transit Escalation:** Automatically identifies delayed or stuck shipments (e.g., `#ORD-9116`), retrieves live courier telemetry (BlueDart AWB tracking, driver contact), and issues expedited dispatch tickets (`#TCK-EXP-9116`) with a single click.
+- **4-Pillar Customer Issue Resolution:** Directly resolves customer claims across all consumer transaction categories:
+  - **1. Fraud & Unrecognized Charges:** Verifies 3DS 2FA bank authentication, explains card issuer liability shift, and guides customers through immediate card freezes and security escalations.
+  - **2. Fulfillment & Merchandise Disputes:** Resolves delivery delays, inspects damaged or missing items via multimodal photo/video unboxing verification, and issues instant replacement or return RMAs.
+  - **3. Billing & Duplicate Charges:** Automatically identifies duplicate debits caused by network dropouts within a 15-minute window and issues instant bank reversals with verified RRN tracking.
+  - **4. Subscriptions & Mandates:** Manages recurring auto-debits across OTT platforms, music streaming apps, e-sports gaming, and networking tools, honoring 48-hour renewal refunds and revoking standing e-mandates.
+- **Multimodal Visual Damage Inspection:** Customers upload photos or unboxing videos directly in chat. The AI visually verifies physical damage, serial numbers, and tamper seals to authorize replacements without human queue delays.
+- **Immersive Modern Landing Experience:** Features an interactive hero showcase (`/immersive`) leading directly into the intelligent support workspace.
+- **Decisive Autonomous Actions & Human Guardrails:** Safely executes routine refunds, cancellations, and escalations autonomously while routing suspicious edge cases to human specialists with complete audit dossiers.
 
 ---
 
@@ -250,28 +251,37 @@ If there is any ambiguity, suspected fraud, or financial risk, the AI halts imme
 ```bash
 RazorSense/
 ├── backend/
-│   ├── agentic_brain.py       # Core Gemini AI engine, Thinking Mode, and 4-Pillar SOPs
+│   ├── agentic_brain.py       # Core Gemini AI engine, multi-merchant resolution & dispatch tools
 │   ├── dispute_engine.py      # Autonomous 4-pillar chargeback compiler & webhook handler
+│   ├── fraud_engine.py        # Fraud heuristics, velocity rules & claim shifting analyzer
+│   ├── mcp_server.py          # Model Context Protocol server exposing merchant resolution tools
 │   ├── main.py                # FastAPI server, SSE streaming, and dispute endpoints
 │   ├── vector_db.py           # ChromaDB semantic store with 13 seeded enterprise policies
 │   ├── pii_redactor.py        # Client & server PII masking engine
 │   ├── seed.py                # Database seeder for sample orders and merchant telemetry
 │   ├── models.py              # SQLAlchemy database models (Users, Orders, Tickets, Disputes)
 │   ├── database.py            # SQLite database engine connection
-│   ├── rz_db.sqlite           # Persistent transaction & dispute ledger
 │   └── requirements.txt       # Production Python dependencies
 ├── frontend/
 │   ├── src/
+│   │   ├── app/
+│   │   │   ├── page.tsx               # Root redirect to /immersive
+│   │   │   ├── immersive/page.tsx     # Modern interactive landing showcase
+│   │   │   ├── chat/page.tsx          # Full-screen Krish AI resolution workspace
+│   │   │   └── globals.css            # Dark mode palette, typography & animations
 │   │   ├── components/
 │   │   │   ├── chat/
-│   │   │   │   ├── ChatPanel.tsx     # Unified customer chat interface with Krish
-│   │   │   │   └── MessageList.tsx   # Message bubbles & markdown rendering
-│   │   │   ├── orders/               # Order search and detail cards
-│   │   │   └── common/               # UI components, badges, modals
-│   │   ├── context/                  # Auth and Chat state providers
-│   │   └── App.tsx                   # Main React entrypoint
-│   └── package.json                  # Frontend scripts and dependencies
-└── README.md                         # Documentation & architectural specifications
+│   │   │   │   ├── ChatPanel.tsx               # Main conversational stream & speech bubbles
+│   │   │   │   ├── EnterpriseAgentsSection.tsx # Modern consumer resolution cards
+│   │   │   │   ├── BentoCard.tsx               # High-contrast interactive bento components
+│   │   │   │   ├── TicketHistoryWidget.tsx     # Paginated support tickets & dispute dossiers
+│   │   │   │   ├── ProactiveDeliveryBanner.tsx # Live in-transit shipment tracking alerts
+│   │   │   │   └── TicketReceiptCard.tsx       # Downloadable resolution receipts
+│   │   │   └── common/
+│   │   │       └── RazorSenseLogo.tsx          # Vector brand identity
+│   │   └── context/                   # Auth and Chat state providers
+│   └── package.json                   # Frontend Next.js dependencies
+└── README.md                          # Documentation & architectural specifications
 ```
 
 ---

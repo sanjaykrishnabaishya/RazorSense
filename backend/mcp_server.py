@@ -10,6 +10,7 @@ if backend_dir not in sys.path:
 from mcp.server.mcpserver import MCPServer
 import agentic_brain
 import vector_db
+import fraud_engine
 
 # Initialize RazorSense MCP Server
 server = MCPServer(
@@ -77,6 +78,29 @@ def create_support_ticket(issue: str) -> str:
 def fetch_recent_tickets(order_id: str = None) -> str:
     """Fetches recent support tickets logged in the enterprise database, optionally filtered by order_id."""
     return agentic_brain.fetch_recent_tickets(order_id=order_id)
+
+@server.tool()
+def evaluate_fraud_and_policy(
+    order_id: str,
+    claim_type: str,
+    issue_description: str,
+    has_photo: bool = False
+) -> str:
+    """Evaluates a customer dispute or refund claim using RazorSense Sentinel Two-Tier Fraud & Policy Guardian.
+    Calculates dynamic fraud risk score (0-100), checks merchant SOPs (Swiggy, Meesho, Amazon, Flipkart, etc.),
+    and generates an immutable audit dossier with ticket ID.
+    - order_id: The order ID (e.g. 'ORD-5915', 'ORD-6714', 'ORD-1028')
+    - claim_type: 'refund', 'replacement', 'return', 'cancellation', or 'dispute'
+    - issue_description: Details of customer complaint (e.g. 'food tasted bad', 'saree is too small', 'screen defective')
+    - has_photo: True if customer provided photo/video proof, False otherwise
+    """
+    result = fraud_engine.evaluate_claim(
+        order_id=order_id,
+        claim_type=claim_type,
+        issue_description=issue_description,
+        has_photo=has_photo
+    )
+    return json.dumps(result)
 
 # ---------------------------------------------------------
 # 2. MCP RESOURCES (Live contextual documents)

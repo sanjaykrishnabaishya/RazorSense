@@ -121,6 +121,24 @@ async def search_orders(q: str, current_user: models.User = Depends(get_current_
         })
         
     return results
+
+@app.get("/api/orders/recent-deliveries")
+def get_recent_deliveries():
+    """Returns the most recent delivered orders for the proactive delivery pill."""
+    import sqlite3
+    db_path = os.path.join(os.path.dirname(__file__), 'rz_db.sqlite')
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    orders = conn.execute("""
+        SELECT order_id, merchant, product, amount, order_date, status, payment_mode
+        FROM orders
+        WHERE status = 'Delivered'
+        ORDER BY order_date DESC
+        LIMIT 5
+    """).fetchall()
+    conn.close()
+    return [dict(o) for o in orders]
+
 @app.get("/api/orders/{order_number}")
 def get_order_details(order_number: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
@@ -187,7 +205,7 @@ def get_user_tickets(db: Session = Depends(get_db), current_user: models.User = 
         db_path = os.path.join(os.path.dirname(__file__), 'rz_db.sqlite')
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row
-        rows = conn.execute("SELECT * FROM tickets ORDER BY id DESC").fetchall()
+        rows = conn.execute("SELECT * FROM tickets ORDER BY rowid DESC").fetchall()
         conn.close()
         return [dict(r) for r in rows]
     except:

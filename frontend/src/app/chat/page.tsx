@@ -2,53 +2,79 @@
 import React, { useState, useEffect } from 'react';
 import ChatPanel from '../../components/chat/ChatPanel';
 import { ChatMessage } from '../../types/support';
-import { Home } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import RazorSenseLogo from '../../components/common/RazorSenseLogo';
 
 export default function RazorSenseApp() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
+    const glow = document.getElementById('cursor-glow');
+    if (!glow) return;
+
+    let targetX = window.innerWidth / 2;
+    let targetY = 200;
+    let currentX = targetX;
+    let currentY = targetY;
+    let rafId: number;
+
+    const onMouseMove = (e: MouseEvent) => {
+      targetX = e.clientX;
+      targetY = e.clientY;
+      glow.style.opacity = '0.75';
     };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+
+    const animate = () => {
+      currentX += (targetX - currentX) * 0.12;
+      currentY += (targetY - currentY) * 0.12;
+      glow.style.transform = `translate3d(${currentX - 350}px, ${currentY - 350}px, 0)`;
+      rafId = requestAnimationFrame(animate);
+    };
+
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
+    rafId = requestAnimationFrame(animate);
+
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      cancelAnimationFrame(rafId);
+    };
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0b0c10] via-[#0b1021] to-[#150a21] flex flex-col font-sans selection:bg-indigo-500/30 relative overflow-hidden">
+    <div className={`min-h-screen bg-[#06070a] text-white flex flex-col font-sans selection:bg-cyan-500/20 relative ${messages.length > 0 ? 'h-screen max-h-screen overflow-hidden' : 'overflow-y-auto'}`}>
       
-      {/* Mouse-tracking animated gradient */}
-      <div 
-        className="pointer-events-none absolute inset-0 z-0 transition-opacity duration-300"
-        style={{
-          background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(29, 78, 216, 0.15), transparent 80%)`
-        }}
+      {/* Interactive Cursor-Following Ambient Light */}
+      <div
+        id="cursor-glow"
+        className="pointer-events-none fixed top-0 left-0 w-[700px] h-[700px] rounded-full bg-[radial-gradient(circle,rgba(14,165,233,0.15)_0%,rgba(99,102,241,0.06)_40%,transparent_70%)] blur-[90px] opacity-60 transition-opacity duration-300 z-0 will-change-transform"
       />
-      
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full p-6 px-10 flex justify-between items-center z-50 bg-transparent">
-        <div className="text-xl font-bold tracking-tighter flex items-center gap-2 text-white">
-          <div className="relative flex items-center justify-center animate-pulse drop-shadow-[0_0_15px_rgba(59,130,246,0.8)] transition-all duration-500 hover:scale-110 hover:drop-shadow-[0_0_25px_rgba(0,191,255,1)]">
-            <img src="/logo.png" alt="RazorSense Logo" className="w-10 h-10 object-contain drop-shadow-xl mix-blend-screen" style={{ filter: 'contrast(1.2) saturate(1.5)' }} />
-          </div>
-          RazorSense
+      <div className="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 w-[900px] h-[260px] bg-gradient-to-b from-blue-600/10 via-cyan-600/5 to-transparent blur-[90px]" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(#ffffff06_1px,transparent_1px)] [background-size:32px_32px] opacity-40" />
+
+      {/* Seamless Top Bar: Logo & Name at Top Left, Zero Black Border or Bar */}
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pt-6 pb-2 flex items-center justify-between z-20">
+        <div
+          onClick={() => setMessages([])}
+          className="cursor-pointer flex items-center"
+          title="RazorSense Home"
+        >
+          <RazorSenseLogo size="md" />
         </div>
-        
+
         {messages.length > 0 && (
-          <button 
+          <button
             onClick={() => setMessages([])}
-            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-full text-[14px] font-medium transition-colors backdrop-blur-md border border-white/10"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.14] border border-white/10 text-white text-xs font-semibold transition active:scale-95 cursor-pointer shadow-sm"
+            title="Start a new resolution session"
           >
-            <Home size={16} />
-            Home
+            <Plus size={14} />
+            <span>New Resolution</span>
           </button>
         )}
-      </nav>
+      </div>
 
-      {/* Main Chat Interface */}
-      <main className="flex-1 w-full max-w-[900px] mx-auto px-4 lg:px-0 flex flex-col pt-24 pb-20 z-10 relative">
+      {/* Main Content Area - Seamless Expansive Container */}
+      <main className={`flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 flex flex-col z-10 relative ${messages.length > 0 ? 'py-3 min-h-0' : 'pt-2 pb-20'}`}>
         <ChatPanel messages={messages} setMessages={setMessages} />
       </main>
 
