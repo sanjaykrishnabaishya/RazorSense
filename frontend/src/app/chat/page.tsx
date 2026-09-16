@@ -52,7 +52,7 @@ export default function RazorSenseApp() {
       <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(#ffffff06_1px,transparent_1px)] [background-size:32px_32px] opacity-40" />
 
       {/* Seamless Top Bar: Logo & Name at Top Left, Zero Black Border or Bar */}
-      <div className="w-full px-4 sm:px-6 md:px-8 lg:px-8 pt-5 pb-2 flex items-center justify-between z-20">
+      <div className="w-full pl-2 sm:pl-3 md:pl-4 pr-4 sm:pr-6 pt-4 pb-2 flex items-center justify-between z-20">
         <div
           onClick={() => setMessages([])}
           className="cursor-pointer flex items-center"
