@@ -1056,27 +1056,158 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
             orders_to_select = []
             show_search = False
 
-        elif any(k in msg_clean for k in ["post-purchase support", "post purchase support", "help with my delivered order", "need post-purchase support"]):
-            try:
-                conn = get_enterprise_db()
-                ord_rows = conn.execute("SELECT * FROM orders WHERE LOWER(status) = 'delivered' ORDER BY rowid DESC LIMIT 4").fetchall()
-                orders_to_select = [dict(o) for o in ord_rows]
-                conn.close()
-            except:
-                orders_to_select = []
+        elif any(k in msg_clean for k in ["post-purchase support", "post purchase support", "help with my delivered order", "need post-purchase support", "post purchase", "post-purchase"]):
+            orders_to_select = []
             show_search = False
             ticket_status = "none"
             ticket_details = None
             reply_text = (
-                "I can help you arrange an immediate replacement, return pickup, or refund for your delivered orders.\n\n"
-                "Which purchase would you like help with?"
+                "I can help with refunds, replacements, returns, wrong item received, missing items, or exchanges.\n\n"
+                "What would you like to do?"
             )
             quick_options = [
-                "🔄 Request Replacement",
-                "⚡ Request Full Refund",
-                "📦 Wrong / Missing Item",
-                "↩ Return Product"
+                "⚡ Refund",
+                "🔄 Replacement",
+                "📦 Wrong Item",
+                "❗ Missing Item",
+                "↩ Return",
+                "🔄 Exchange"
             ]
+
+        # Post-Purchase Option: Replacement
+        elif any(k in msg_clean for k in ["replace an item", "replacement", "i want to replace", "request replacement", "replace order", "🔄 replacement"]) and not any(k in msg_clean for k in ["not received", "pedal"]):
+            ord_match = re.search(r"ORD-(\d+)", message, re.IGNORECASE)
+            if not ord_match:
+                try:
+                    conn = get_enterprise_db()
+                    ord_rows = conn.execute("SELECT * FROM orders WHERE LOWER(status) = 'delivered' AND LOWER(merchant) NOT IN ('swiggy', 'zomato') ORDER BY rowid DESC LIMIT 3").fetchall()
+                    orders_to_select = [dict(o) for o in ord_rows]
+                    conn.close()
+                except:
+                    orders_to_select = []
+                show_search = False
+                ticket_status = "none"
+                ticket_details = None
+                reply_text = "I would be glad to help you get a replacement! Please select your delivered purchase below to proceed:"
+                quick_options = [
+                    "Defective Item",
+                    "Damaged in Transit",
+                    "Size/Fit Issue",
+                    "Search all purchases"
+                ]
+
+        # Post-Purchase Option: Refund
+        elif any(k in msg_clean for k in ["i want a refund", "request a refund", "request full refund", "refund for my order", "refund my purchase", "⚡ refund", "want a refund"]) and not any(k in msg_clean for k in ["not received", "pending refund", "48-hour", "double", "charged", "bank"]):
+            ord_match = re.search(r"ORD-(\d+)", message, re.IGNORECASE)
+            if not ord_match:
+                try:
+                    conn = get_enterprise_db()
+                    ord_rows = conn.execute("SELECT * FROM orders WHERE LOWER(status) = 'delivered' ORDER BY rowid DESC LIMIT 4").fetchall()
+                    orders_to_select = [dict(o) for o in ord_rows]
+                    conn.close()
+                except:
+                    orders_to_select = []
+                show_search = False
+                ticket_status = "none"
+                ticket_details = None
+                reply_text = "I would be glad to help you arrange a refund. Please select your delivered purchase below to proceed:"
+                quick_options = [
+                    "Spoilage / Food Quality",
+                    "Item Damaged",
+                    "Never Arrived",
+                    "Search all purchases"
+                ]
+
+        # Post-Purchase Option: Wrong Item
+        elif any(k in msg_clean for k in ["wrong item", "received the wrong item", "incorrect item", "different product", "📦 wrong item"]):
+            ord_match = re.search(r"ORD-(\d+)", message, re.IGNORECASE)
+            if not ord_match:
+                try:
+                    conn = get_enterprise_db()
+                    ord_rows = conn.execute("SELECT * FROM orders WHERE LOWER(status) = 'delivered' ORDER BY rowid DESC LIMIT 4").fetchall()
+                    orders_to_select = [dict(o) for o in ord_rows]
+                    conn.close()
+                except:
+                    orders_to_select = []
+                show_search = False
+                ticket_status = "none"
+                ticket_details = None
+                reply_text = (
+                    "I'm sorry you received the wrong item! Let's get this resolved with an immediate replacement or refund.\n\n"
+                    "Please select your delivered order below:"
+                )
+                quick_options = [
+                    "📸 Upload Photo of Wrong Item",
+                    "Request Immediate Replacement",
+                    "Request Full Refund"
+                ]
+
+        # Post-Purchase Option: Missing Item
+        elif any(k in msg_clean for k in ["missing item", "item missing", "item was missing", "empty box", "part missing", "❗ missing item"]):
+            ord_match = re.search(r"ORD-(\d+)", message, re.IGNORECASE)
+            if not ord_match:
+                try:
+                    conn = get_enterprise_db()
+                    ord_rows = conn.execute("SELECT * FROM orders WHERE LOWER(status) = 'delivered' ORDER BY rowid DESC LIMIT 4").fetchall()
+                    orders_to_select = [dict(o) for o in ord_rows]
+                    conn.close()
+                except:
+                    orders_to_select = []
+                show_search = False
+                ticket_status = "none"
+                ticket_details = None
+                reply_text = (
+                    "I'm sorry to hear that an item was missing from your delivery! Please select the affected order below so I can verify and initiate a replacement or refund:"
+                )
+                quick_options = [
+                    "Entire Order Missing",
+                    "Specific Item Missing in Box",
+                    "Damaged/Torn Seal"
+                ]
+
+        # Post-Purchase Option: Return
+        elif any(k in msg_clean for k in ["return product", "return an item", "i want to return", "schedule return", "return pickup", "↩ return"]) and not any(k in msg_clean for k in ["status", "refund"]):
+            ord_match = re.search(r"ORD-(\d+)", message, re.IGNORECASE)
+            if not ord_match:
+                try:
+                    conn = get_enterprise_db()
+                    ord_rows = conn.execute("SELECT * FROM orders WHERE LOWER(status) = 'delivered' AND LOWER(merchant) NOT IN ('swiggy', 'zomato') ORDER BY rowid DESC LIMIT 3").fetchall()
+                    orders_to_select = [dict(o) for o in ord_rows]
+                    conn.close()
+                except:
+                    orders_to_select = []
+                show_search = False
+                ticket_status = "none"
+                ticket_details = None
+                reply_text = "I can help you arrange a doorstep return pickup. Please select your delivered purchase below to proceed:"
+                quick_options = [
+                    "Quality Not as Expected",
+                    "Defective / Not Working",
+                    "Changed Mind",
+                    "Search all purchases"
+                ]
+
+        # Post-Purchase Option: Exchange
+        elif any(k in msg_clean for k in ["exchange", "exchange my item", "exchange an item", "size exchange", "color exchange", "🔄 exchange"]):
+            ord_match = re.search(r"ORD-(\d+)", message, re.IGNORECASE)
+            if not ord_match:
+                try:
+                    conn = get_enterprise_db()
+                    ord_rows = conn.execute("SELECT * FROM orders WHERE LOWER(status) = 'delivered' AND LOWER(merchant) IN ('meesho', 'myntra', 'flipkart', 'amazon') ORDER BY rowid DESC LIMIT 2").fetchall()
+                    orders_to_select = [dict(o) for o in ord_rows]
+                    conn.close()
+                except:
+                    orders_to_select = []
+                show_search = False
+                ticket_status = "none"
+                ticket_details = None
+                reply_text = "I would be glad to help you arrange an exchange for size, color, or variant! Please select your delivered purchase below to proceed:"
+                quick_options = [
+                    "Need Bigger Size",
+                    "Need Smaller Size",
+                    "Different Color",
+                    "Defective Unit"
+                ]
 
         elif any(k in msg_clean for k in ["delivery partner misbehavior", "rider misbehavior", "rude rider", "partner misbehavior"]):
             try:
@@ -1324,24 +1455,20 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
             "show my subscriptions", "show subscriptions", "my subscriptions",
             "manage subscriptions", "my active recurring subscriptions",
             "active recurring subscriptions", "manage or cancel my recurring subscription",
+            "manage or cancel my recurring subscriptions",
             "subscriptions & mandates", "subscriptions and mandates",
             "show my active recurring subscriptions and standing mandates"
-        ]) or msg_clean in ["recurring subscriptions", "standing mandates", "active subscriptions"]:
-            try:
-                conn = get_enterprise_db()
-                ord_rows = conn.execute("SELECT * FROM orders WHERE LOWER(merchant) IN ('netflix', 'spotify', 'linkedin', 'naukri') OR LOWER(payment_mode) LIKE '%mandate%' ORDER BY rowid DESC").fetchall()
-                orders_to_select = [dict(o) for o in ord_rows]
-                conn.close()
-            except:
-                orders_to_select = []
+        ]) or msg_clean in ["recurring subscriptions", "standing mandates", "active subscriptions", "subscriptions"]:
+            orders_to_select = []
             show_search = False
             ticket_status = "none"
             ticket_details = None
             reply_text = (
-                "Here are your active recurring subscriptions and standing bank mandates. Under RBI e-mandate guidelines and the 48-Hour Auto-Renewal Grace Policy:\n\n"
+                "I can help you manage recurring auto-debits, cancel unwanted subscriptions, claim 48-hour renewal refunds, or check active bank mandates.\n\n"
+                "Under RBI e-mandate guidelines and the 48-Hour Auto-Renewal Grace Policy:\n"
                 "* **48-Hour Grace Period**: If an unwanted renewal debited within the last 48 hours and zero platform usage occurred, you are entitled to a full refund.\n"
                 "* **Revoke Bank Mandate**: We can halt future recurring charges immediately with the payment gateway.\n\n"
-                "Which subscription would you like to manage or cancel?"
+                "What would you like to do?"
             )
             quick_options = [
                 "🛑 Revoke Bank e-Mandate",
@@ -1614,14 +1741,80 @@ def run_agentic_brain_stream(user_id: str, message: str, history: List[Dict[str,
         )
         return
 
-    if any(k in msg_clean for k in ["post-purchase support", "post purchase support", "help with my delivered order", "need post-purchase support"]):
+    if any(k in msg_clean for k in ["post-purchase support", "post purchase support", "help with my delivered order", "need post-purchase support", "post purchase", "post-purchase"]):
         yield (
-            "I can help you arrange an immediate replacement, return pickup, or refund for your delivered orders.\n\n"
-            "Which purchase would you like help with?\n\n"
-            "[ORDER_WIDGET: ORD-5915, ORD-6714, ORD-3891, ORD-9932] [ORDER_WIDGET_TITLE: Delivered purchases eligible for support:]\n\n"
-            "[QUICK_OPTIONS: 🔄 Request Replacement, ⚡ Request Full Refund, 📦 Wrong / Missing Item, ↩ Return Product]"
+            "I can help with refunds, replacements, returns, wrong item received, missing items, or exchanges.\n\n"
+            "What would you like to do?\n\n"
+            "[QUICK_OPTIONS: ⚡ Refund, 🔄 Replacement, 📦 Wrong Item, ❗ Missing Item, ↩ Return, 🔄 Exchange]"
         )
         return
+
+    # Streaming Post-Purchase Option: Replacement
+    if any(k in msg_clean for k in ["replace an item", "replacement", "i want to replace", "request replacement", "replace order", "🔄 replacement"]) and not any(k in msg_clean for k in ["not received", "pedal"]):
+        ord_m = re.search(r"ORD-(\d+)", message, re.IGNORECASE)
+        if not ord_m:
+            yield (
+                "I would be glad to help you get a replacement! Please select your delivered purchase below to proceed:\n\n"
+                "[ORDER_WIDGET: ORD-6714, ORD-3891, ORD-9932] [ORDER_WIDGET_TITLE: Delivered purchases eligible for replacement:]\n\n"
+                "[QUICK_OPTIONS: Defective Item, Damaged in Transit, Size/Fit Issue, Search all purchases]"
+            )
+            return
+
+    # Streaming Post-Purchase Option: Refund
+    if any(k in msg_clean for k in ["i want a refund", "request a refund", "request full refund", "refund for my order", "refund my purchase", "⚡ refund", "want a refund"]) and not any(k in msg_clean for k in ["not received", "pending refund", "48-hour", "double", "charged", "bank"]):
+        ord_m = re.search(r"ORD-(\d+)", message, re.IGNORECASE)
+        if not ord_m:
+            yield (
+                "I would be glad to help you arrange a refund. Please select your delivered purchase below to proceed:\n\n"
+                "[ORDER_WIDGET: ORD-5915, ORD-6714, ORD-3891, ORD-9932] [ORDER_WIDGET_TITLE: Delivered purchases eligible for refund:]\n\n"
+                "[QUICK_OPTIONS: Spoilage / Food Quality, Item Damaged, Never Arrived, Search all purchases]"
+            )
+            return
+
+    # Streaming Post-Purchase Option: Wrong Item
+    if any(k in msg_clean for k in ["wrong item", "received the wrong item", "incorrect item", "different product", "📦 wrong item"]):
+        ord_m = re.search(r"ORD-(\d+)", message, re.IGNORECASE)
+        if not ord_m:
+            yield (
+                "I'm sorry you received the wrong item! Let's get this resolved with an immediate replacement or refund.\n\n"
+                "Please select your delivered order below:\n\n"
+                "[ORDER_WIDGET: ORD-5915, ORD-6714, ORD-3891, ORD-9932] [ORDER_WIDGET_TITLE: Delivered orders:]\n\n"
+                "[QUICK_OPTIONS: 📸 Upload Photo of Wrong Item, Request Immediate Replacement, Request Full Refund]"
+            )
+            return
+
+    # Streaming Post-Purchase Option: Missing Item
+    if any(k in msg_clean for k in ["missing item", "item missing", "item was missing", "empty box", "part missing", "❗ missing item"]):
+        ord_m = re.search(r"ORD-(\d+)", message, re.IGNORECASE)
+        if not ord_m:
+            yield (
+                "I'm sorry to hear that an item was missing from your delivery! Please select the affected order below so I can verify and initiate a replacement or refund:\n\n"
+                "[ORDER_WIDGET: ORD-5915, ORD-6714, ORD-3891, ORD-9932] [ORDER_WIDGET_TITLE: Delivered purchases:]\n\n"
+                "[QUICK_OPTIONS: Entire Order Missing, Specific Item Missing in Box, Damaged/Torn Seal]"
+            )
+            return
+
+    # Streaming Post-Purchase Option: Return
+    if any(k in msg_clean for k in ["return product", "return an item", "i want to return", "schedule return", "return pickup", "↩ return"]) and not any(k in msg_clean for k in ["status", "refund"]):
+        ord_m = re.search(r"ORD-(\d+)", message, re.IGNORECASE)
+        if not ord_m:
+            yield (
+                "I can help you arrange a doorstep return pickup. Please select your delivered purchase below to proceed:\n\n"
+                "[ORDER_WIDGET: ORD-6714, ORD-3891, ORD-9932] [ORDER_WIDGET_TITLE: Delivered purchases eligible for return:]\n\n"
+                "[QUICK_OPTIONS: Quality Not as Expected, Defective / Not Working, Changed Mind, Search all purchases]"
+            )
+            return
+
+    # Streaming Post-Purchase Option: Exchange
+    if any(k in msg_clean for k in ["exchange", "exchange my item", "exchange an item", "size exchange", "color exchange", "🔄 exchange"]):
+        ord_m = re.search(r"ORD-(\d+)", message, re.IGNORECASE)
+        if not ord_m:
+            yield (
+                "I would be glad to help you arrange an exchange for size, color, or variant! Please select your delivered purchase below to proceed:\n\n"
+                "[ORDER_WIDGET: ORD-6714, ORD-3891] [ORDER_WIDGET_TITLE: Eligible purchases for exchange (Fashion/Apparel):]\n\n"
+                "[QUICK_OPTIONS: Need Bigger Size, Need Smaller Size, Different Color, Defective Unit]"
+            )
+            return
 
     if any(k in msg_clean for k in ["delivery partner misbehavior", "rider misbehavior", "rude rider", "partner misbehavior"]):
         yield (
@@ -1745,15 +1938,16 @@ def run_agentic_brain_stream(user_id: str, message: str, history: List[Dict[str,
         "show my subscriptions", "show subscriptions", "my subscriptions",
         "manage subscriptions", "my active recurring subscriptions",
         "active recurring subscriptions", "manage or cancel my recurring subscription",
+        "manage or cancel my recurring subscriptions",
         "subscriptions & mandates", "subscriptions and mandates",
         "show my active recurring subscriptions and standing mandates"
-    ]) or msg_clean in ["recurring subscriptions", "standing mandates", "active subscriptions"]:
+    ]) or msg_clean in ["recurring subscriptions", "standing mandates", "active subscriptions", "subscriptions"]:
         yield (
-            "Here are your active recurring subscriptions and standing bank mandates. Under RBI e-mandate guidelines and the 48-Hour Auto-Renewal Grace Policy:\n\n"
+            "I can help you manage recurring auto-debits, cancel unwanted subscriptions, claim 48-hour renewal refunds, or check active bank mandates.\n\n"
+            "Under RBI e-mandate guidelines and the 48-Hour Auto-Renewal Grace Policy:\n"
             "* **48-Hour Grace Period**: If an unwanted renewal debited within the last 48 hours and zero platform usage occurred, you are entitled to a full refund.\n"
             "* **Revoke Bank Mandate**: We can halt future recurring charges immediately with the payment gateway.\n\n"
-            "Which subscription would you like to manage or cancel?\n\n"
-            "[ORDER_WIDGET: ORD-6103, ORD-6104, ORD-6101, ORD-6102] [ORDER_WIDGET_TITLE: Active recurring subscriptions & mandates:]\n\n"
+            "What would you like to do?\n\n"
             "[QUICK_OPTIONS: 🛑 Revoke Bank e-Mandate, ⏳ Claim 48-Hour Renewal Refund, Check Mandate Status, Change Billing Plan]"
         )
         return

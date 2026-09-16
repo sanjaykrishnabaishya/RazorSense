@@ -426,7 +426,31 @@ export default function ChatPanel({ messages, setMessages }: { messages: ChatMes
   };
 
   const handlePostPurchaseClick = () => {
-    sendText("I need post-purchase support for my delivered order");
+    setMessages((prev: any) => [
+      ...prev,
+      {
+        id: Date.now().toString(),
+        role: 'user',
+        kind: 'text',
+        text: 'I need post-purchase support for my delivered order',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      },
+      {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        kind: 'widget_post_purchase_bar',
+        text: 'I can help with refunds, replacements, returns, wrong item received, missing items, or exchanges. What would you like to do?',
+        options: [
+          { label: '⚡ Refund', prompt: 'I want a refund for my order' },
+          { label: '🔄 Replacement', prompt: 'I want to replace an item from my order' },
+          { label: '📦 Wrong Item', prompt: 'I received the wrong item in my delivery' },
+          { label: '❗ Missing Item', prompt: 'An item is missing from my delivery / order package' },
+          { label: '↩ Return', prompt: 'I want to return an item' },
+          { label: '🔄 Exchange', prompt: 'I want to exchange my item' },
+        ],
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+    ]);
   };
 
   const renderComposer = (isDocked: boolean) => (
@@ -876,6 +900,10 @@ function OrderSelectWidget({ orders, sendText, title }: { orders: any[], sendTex
       sendText(`I want to return order ${o.order_id} (${o.product})`);
     } else if (t.includes("exchange")) {
       sendText(`I want to exchange order ${o.order_id} (${o.product})`);
+    } else if (t.includes("wrong")) {
+      sendText(`I received the wrong item for order ${o.order_id} (${o.product})`);
+    } else if (t.includes("missing")) {
+      sendText(`An item is missing from order ${o.order_id} (${o.product})`);
     } else if (t.includes("recent") || t.includes("find") || t.includes("purchase")) {
       sendText(`Please show me the details and status for order ${o.order_id} (${o.product})`);
     } else {
