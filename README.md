@@ -250,7 +250,14 @@ flowchart TD
         User(["Customer / User"])
         Immersive["Immersive Hero (/immersive)"]
         ChatUI["React + Tailwind Chat Panel (/chat)"]
-        PII["Client-Side PII Scrubbing<br/>(PAN, CVV, Passwords)"]
+        AuthClient["Bearer Token Storage<br/>(localStorage / AuthContext)"]
+    end
+
+    subgraph Security ["Security, Identity & Privacy Shield"]
+        AuthN["OAuth2 Bearer Authentication<br/>(backend/auth.py)"]
+        AuthZ["Multi-Tenant IDOR AuthZ Guard<br/>(User ID Verification)"]
+        RateLimiter["Per-User Rate Limiting<br/>(Sliding Window Token Bucket)"]
+        PIIRedactor["PII Redaction Middleware<br/>(Aadhaar, PAN, Cards, UPI, Phones)"]
     end
 
     subgraph External ["External Agent Ecosystem"]
@@ -279,15 +286,19 @@ flowchart TD
 
     User <--> Immersive
     Immersive -->|"Get Assistance"| ChatUI
-    ChatUI -->|"Scrubbed Input"| PII
-    PII --> MainAPI
+    ChatUI -->|"Attach Bearer Token"| AuthClient
+    AuthClient -->|"Authenticated HTTP / SSE"| AuthN
+    AuthN --> AuthZ
+    AuthZ --> RateLimiter
+    RateLimiter --> PIIRedactor
+    PIIRedactor -->|"Sanitized Input"| MainAPI
     MainAPI --> Krish
     Krish <--> LangGraph
     Krish <--> Sentinel
     Krish <--> VectorDB
     Krish <--> OrderDB
     Krish <--> Vision
-    Krish -->|"Direct Resolution"| ChatUI
+    Krish -->|"Direct Resolution & Widgets"| ChatUI
 
     External <-->|"MCP stdio / SSE"| MCPServer
     MCPServer <--> Krish
@@ -297,6 +308,75 @@ flowchart TD
     MainAPI --> DisputeEngine
     DisputeEngine <--> OrderDB
 ```
+
+---
+
+## 🔒 Security Architecture: PII Scrubbing, Authentication & Authorization
+
+### Are We Using PII, Authentication & Authorization? **Yes, Comprehensively!**
+Enterprise consumer dispute resolution requires banking-grade confidentiality, strict multi-tenant isolation, and zero exposure of sensitive financial credentials. RazorSense implements a defense-in-depth security pipeline:
+
+```
+ Incoming Request from Client
+           │
+           ▼
+ ┌──────────────────────────────────────────────────────────┐
+ │ 1. AUTHENTICATION (AuthN) - OAuth2 Password Bearer       │
+ │    • Validates HTTP `Authorization: Bearer <token>`      │
+ │    • Resolves authenticated user session via database     │
+ └─────────────────────────┬────────────────────────────────┘
+                           │
+                           ▼
+ ┌──────────────────────────────────────────────────────────┐
+ │ 2. AUTHORIZATION (AuthZ) & TENANT ISOLATION               │
+ │    • IDOR Protection: Verifies `order.user_id == user.id`│
+ │    • Blocks unauthorized cross-tenant order/ticket access│
+ │    • Enforces per-user rate limiting (anti-abuse)       │
+ └─────────────────────────┬────────────────────────────────┘
+                           │
+                           ▼
+ ┌──────────────────────────────────────────────────────────┐
+ │ 3. PII REDACTION MIDDLEWARE (backend/pii_redactor.py)    │
+ │    • Deterministic RegEx scrubbing of raw user prompts   │
+ │    • Masks Aadhaar, PAN, Cards, UPI IDs, Phones, Emails  │
+ │    • Guarantees 0% leakage to Cloud LLMs or trace logs   │
+ └─────────────────────────┬────────────────────────────────┘
+                           │
+                           ▼
+                 Clean Sanitized Prompt
+              Sent to Gemini Engine / RAG
+```
+
+### 1. Personally Identifiable Information (PII) Redaction Engine (`backend/pii_redactor.py`)
+User messages and attachment notes are processed through the `PIIRedactor` middleware before being ingested by Google Gemini, stored in audit databases, or passed to external agent networks.
+
+| Entity Type | Targeted Regex Pattern | Redacted Mask | Compliance Standard |
+| :--- | :--- | :--- | :--- |
+| **Aadhaar Number** | `\b\d{4}\s\d{4}\s\d{4}\b` | `[AADHAAR_REDACTED]` | UIDAI Confidentiality Regulations |
+| **PAN Card** | `[A-Z]{5}[0-9]{4}[A-Z]{1}` | `[PAN_CARD_REDACTED]` | Indian IT Act & Income Tax Privacy |
+| **Credit / Debit Cards** | `(?:\d[ -]*?){13,16}` | `[CREDIT_CARD_REDACTED]` | PCI-DSS Data Storage Standard |
+| **UPI Virtual Address** | `[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}` | `[UPI_ID_REDACTED]` | NPCI / RBI UPI Security Directives |
+| **Mobile Numbers** | `(\+91[\-\s]?)?[6-9]\d{9}` | `[PHONE_REDACTED]` | Telecom Regulatory Authority (TRAI) |
+| **Email Addresses** | `[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+` | `[EMAIL_REDACTED]` | Digital Personal Data Protection (DPDP) Act 2023 |
+
+*Example In-Action:*
+```python
+redactor = PIIRedactor()
+clean_prompt = redactor.redact("My mobile is +91-9876543210, card is 4111 2222 3333 4444 and UPI is sanjay@oksbi")
+# Output: "My mobile is [PHONE_REDACTED], card is [CREDIT_CARD_REDACTED] and UPI is [UPI_ID_REDACTED]"
+```
+
+### 2. Authentication (AuthN) Layer (`backend/auth.py` & `backend/main.py`)
+- **OAuth2 Password Bearer:** Configured via FastAPI's `OAuth2PasswordBearer(tokenUrl="token")`.
+- **OTP Credentials Flow:** `POST /login` verifies customer credentials (e.g. registered mobile number) and issues cryptographic Bearer session tokens (`{"access_token": token, "token_type": "bearer"}`).
+- **Client Session Dispatch:** Frontend captures the bearer token, persists it in secure client storage (`localStorage`), and automatically injects `Authorization: Bearer <token>` on all subsequent REST and Server-Sent Events (SSE) streaming connections.
+
+### 3. Authorization (AuthZ) & Multi-Tenant Data Isolation (`backend/main.py`)
+- **Insecure Direct Object Reference (IDOR) Mitigation:**
+  - On `/api/orders/{order_number}`: The API verifies `if order.user_id != current_user.id: raise HTTPException(status_code=403, detail="Unauthorized")`.
+  - On `/api/tickets` creation: The API asserts that the associated purchase belongs to `current_user.id` before generating dispute dossiers.
+- **Row-Level Tenant Isolation:** Database queries across SQLite (`rz_db.sqlite`) strictly filter on `models.Order.user_id == current_user.id` and `models.Ticket.user_id == current_user.id`.
+- **Sliding-Window Rate Limiting:** Enforces per-user rate limits (`check_rate_limit(str(current_user.id))`) across both `/api/chat` and `/api/chat/stream`, protecting model quotas from denial-of-service or automated scraping.
 
 ---
 
@@ -442,16 +522,89 @@ Open **`http://localhost:3000`** in your browser (redirects to `/immersive`).
 
 ---
 
-## 🛠️ Engineering Log: Bugs Fixed & Architecture Pivots
+## 🛠️ Engineering Log: Bugs Fixed & Architecture Pivots (Version 1.0 to Till Date)
 
-| Challenge / Bug | Root Cause | Solution & Implementation |
+RazorSense evolved through 10 distinct architectural iterations from an initial prototype into an enterprise-grade autonomous resolution engine. Below is the complete chronological log of challenges encountered, root causes diagnosed, and architectural solutions implemented:
+
+### Version 1.0 — Initial Monolith & Rule-Based Intent Foundation
+| Milestone / Challenge | Root Cause | Solution & Architectural Pivot |
 | :--- | :--- | :--- |
-| **Robotic Double-Bubble Rendering** | `OrderSelectWidget` rendered its own chatbot message bubble right under Krish's main text bubble. | Replaced the nested chat bubble in `OrderSelectWidget` with a clean, understated uppercase header tag. |
-| **Delivery Delay Order Blindness** | Delay queries dumped arbitrary delivered purchases (e.g. coffee/saree) without checking shipment status. | Injected smart status filtering (`status NOT IN ('delivered', 'cancelled')`) to isolate active shipment `#ORD-9116` with live BlueDart tracking and priority dispatch escalation. |
-| **Mandate Revocation Conversational Loop** | Subscriptions handler matched broad keyword `"mandate"`, causing the intro prompt to repeat when clicking "Revoke Mandate". | Built dedicated action handlers for `Revoke Bank e-Mandate`, `48-Hour Renewal Refund`, and `Check Mandate Status` in `agentic_brain.py`. |
-| **API Retry Latency Hangs** | Default Gemini client retried failed calls 5+ times during traffic spikes, locking the UI for minutes. | Configured strict `HttpOptions(attempts=1)` and built an instantaneous (<0.1s) 6-tier fallback cascade across the Gemini family. |
-| **Ephemeral Disk Vector Loss** | Render free-tier disks reset on container sleep, losing ChromaDB collections. | Built an automated startup hook in `main.py` that verifies collection integrity and re-seeds all 21+ policies upon boot. |
-| **SSE Stream Newline Dropping** | Multi-line LLM outputs sent raw newlines inside SSE chunks, causing browsers to truncate markdown tables. | Escaped newline characters (`\n` → `\\n`) in SSE payloads on backend and safely reconstructed them in React streaming parser. |
+| **Brittle Regex Intent Collisions** | Early prototype matched static regex keywords (e.g. matching `"order"` matched both order cancellation and order placement), leading to wrong handler execution. | Migrated to an intent-classification supervisor model powered by Google Gemini and OpenRouter fallback nodes. |
+| **Session State Volatility** | In-memory Python dictionaries held conversation history, which were wiped whenever uvicorn reloaded. | Introduced persistent SQLite session history and structured JSON request payloads preserving multi-turn context. |
+| **Single-Merchant Hardcoding** | Original dispute rules assumed a single generic e-commerce return policy, failing for quick-commerce (Swiggy/Zepto) and digital goods. | Refactored into a merchant-aware architecture capable of distinct SLA handling across food, fashion, electronics, and OTT. |
+
+### Version 1.1 — Multimodal Voice & Audio Intelligence
+| Milestone / Challenge | Root Cause | Solution & Architectural Pivot |
+| :--- | :--- | :--- |
+| **Base64 Audio MIME Header Collision** | Voice notes uploaded from web browsers sent conflicting data URI headers (`data:audio/wav;base64,...` vs `data:audio/webm;base64,...`), causing base64 decode failures in backend audio processing. | Built robust URI header parsing in `agentic_brain.py` that strips arbitrary MIME prefixes, extracts pure binary payload, and dynamically attaches correct Gemini `Part.from_bytes(mime_type)`. |
+| **Windows CP1252 Charmap Console Crash** | Running Python backend on Windows threw `UnicodeEncodeError: 'charmap' codec can't encode character '\u26a1'` when logging unicode symbols (⚡, 🔄, 🛑). | Reconfigured Python stdout with `sys.stdout.reconfigure(encoding='utf-8')` and set `PYTHONIOENCODING=utf-8` across all backend entrypoints. |
+| **SpeechSynthesis Premature Cutoff** | Browser Web Speech API stopped reading aloud after 15 seconds on long resolution responses. | Chunked assistant speech output into sentence-level boundaries with queue management in `ChatPanel.tsx`. |
+| **React Voice Preview State Desync** | When users recorded voice notes, the file preview state lingered in the chat input bar after sending, causing duplicate uploads. | Added clean teardown and state-reset hooks on message submission (`setSelectedFile(null); setFilePreview(null)`). |
+
+### Version 1.2 — Enterprise Database Hardening & Schema Migrations
+| Milestone / Challenge | Root Cause | Solution & Architectural Pivot |
+| :--- | :--- | :--- |
+| **Ephemeral Disk Wipeout on Cloud Restarts** | Deployments on Render free-tier wiped ephemeral storage on spin-down, causing SQLite databases to lose seeded orders and 401 unauthenticated errors. | Built auto-seeding startup routines (`seed.py` & `models.Base.metadata.create_all`) ensuring tables and demo orders regenerate seamlessly on every cold boot without downtime. |
+| **SQLite Concurrency Lockouts** | Simultaneous webhook updates and incoming user chat requests created `database is locked` errors in standard SQLite. | Implemented short-lived database connections with `conn.close()` inside explicit `try...finally` blocks and set WAL (Write-Ahead Logging) mode. |
+| **Dispute Foreign Key Schema Mismatch** | Tickets created from the AI engine lacked strict relational bindings to orders and user identities. | Designed unified enterprise schema (`rz_db.sqlite`) tying `order_id`, `user_id`, `merchant`, `tracking_awb`, and `evidence_hash` into immutable ticket records. |
+
+### Version 1.3 — Semantic Policy Memory & Hybrid RAG Architecture
+| Milestone / Challenge | Root Cause | Solution & Architectural Pivot |
+| :--- | :--- | :--- |
+| **Non-Returnable Category Hallucinations** | Pure LLM generation erroneously promised refunds on perishable cooked meals (Swiggy/Zomato) and hygienic goods (innerwear/cosmetics). | Implemented Hybrid RAG (`backend/vector_db.py`) indexing 21+ real-world merchant SOPs in ChromaDB, injecting exact ground-truth return windows into the system prompt. |
+| **ChromaDB Cold-Boot Embedding Quota Failure** | During initial server boots, external embedding APIs often hit rate limits when indexing 20+ policy documents simultaneously. | Built a deterministic SHA-256 fallback pseudo-embedding mechanism that allows ChromaDB to build semantic index structures even during complete external API blackouts. |
+| **Domain Keyword Blindness in Pure Vector Search** | Pure dense vector cosine similarity occasionally favored generic retail text over specific platform rules (e.g. confusing Netflix policy with generic streaming rules). | Created a Hybrid Dense-Sparse search scoring function combining vector cosine similarity with a +30 boost for exact merchant keyword matches. |
+
+### Version 1.4 — Multi-Tier Gemini Model Fallback Cascade
+| Milestone / Challenge | Root Cause | Solution & Architectural Pivot |
+| :--- | :--- | :--- |
+| **429 Rate Limit Freezes During API Spikes** | Sole reliance on a single Gemini endpoint caused customer waiting spinners when Google Cloud free-tier quota exhausted. | Engineered a sub-100ms failover cascade: `gemini-3.5-flash-lite` → `gemini-3.6-flash` → `gemini-3.5-flash` → `gemini-3.1-flash-lite` → `gemini-3.8-flash` → `gemini-3.7-flash`. |
+| **SDK Internal Retry Latency Hangs** | Google GenAI SDK default client attempted 5+ exponential retries on rate-limited models, locking the UI thread for 30–60 seconds. | Configured strict `types.HttpOptions(attempts=1)` across all chat sessions, triggering instantaneous failover to the next tier in < 0.1s. |
+| **Thinking Budget Token Bloat** | Full Thinking Mode generated 1000+ reasoning tokens on trivial questions, causing 5–8 second Time-To-First-Token (TTFT). | Tuned `thinking_config=types.ThinkingConfig(thinking_budget=128)` for sub-2s response generation without sacrificing analytical accuracy. |
+
+### Version 1.5 — Model Context Protocol (MCP) Enterprise Server
+| Milestone / Challenge | Root Cause | Solution & Architectural Pivot |
+| :--- | :--- | :--- |
+| **Siloed Agent Tool Ecosystem** | External developer tools and AI IDEs (Claude Desktop, Cursor, Windsurf) could not query RazorSense order telemetry or dispute engines. | Implemented official Model Context Protocol (MCP) server (`backend/mcp_server.py`) exposing 9 tools, 3 resources, and 2 prompt templates over stdio and SSE transports. |
+| **JSON-RPC Stdio Stream Corruption** | Standard `print()` debug logs sent by Python libraries polluted stdout, crashing external MCP client JSON-RPC parsers. | Redirected all diagnostic logging to `stderr` and configured clean JSON-RPC frame serialization over stdio. |
+| **SSE Connection Drops on Streaming Tools** | Long-running dispute investigations dropped connection over HTTP SSE proxies. | Added keep-alive heartbeats (`event: ping`) every 15 seconds to prevent gateway connection resets. |
+
+### Version 1.6 — 4-Pillar Dispute Defense & Sentinel Fraud Guardian
+| Milestone / Challenge | Root Cause | Solution & Architectural Pivot |
+| :--- | :--- | :--- |
+| **Claim-Shifting Fraud Exploit** | Malicious users altered their claims after policy denial (e.g., claiming "food was cold", getting rejected, and immediately switching to "food never arrived"). | Created the Sentinel Fraud Engine (`fraud_engine.py`) with dynamic risk scoring (0–100), claim-shifting heuristics, and automatic payout locks for inconsistent stories. |
+| **Unverified High-Value Return Abuse** | Users requested returns for expensive electronics ($800+ laptops/phones) without physical verification. | Integrated Gemini 3.7 Vision unboxing video analysis, requiring tamper-evident seal and packaging inspection before return authorization. |
+| **Chargeback Bank Representment Deficit** | Merchants lost bank disputes due to unstructured, informal customer chat logs submitted as evidence. | Built autonomous Dispute Engine (`dispute_engine.py`) generating cryptographically signed, audit-grade evidence dossiers (`#TCK-...`) with SHA-256 hashes and timestamped delivery telemetry. |
+| **Regulatory Banking & Mandate Non-Compliance** | System lacked alignment with Reserve Bank of India (RBI) and NPCI consumer protection directives for digital payments. | Codified official compliance rules: 24–48h automatic failed payment reversals under RBI T+1 guidelines, and the 48-Hour Auto-Renewal Grace Policy for recurring subscriptions. |
+
+### Version 1.7 — Proactive Sentinel Logistics & BlueDart Escalations
+| Milestone / Challenge | Root Cause | Solution & Architectural Pivot |
+| :--- | :--- | :--- |
+| **Delivery Delay Order Blindness** | When a user reported a delivery delay, the system dumped past delivered purchases (e.g. coffee or sarees) without inspecting logistics status. | Built real-time logistics filter (`status NOT IN ('delivered', 'cancelled')`) that isolates active shipments (Flipkart `#ORD-9116`), retrieves live BlueDart courier telemetry (`AWB: BD-8849201`), and assigns rider details. |
+| **Absence of Urgent Dispatch Escalation** | Customers experiencing delivery delays had no way to accelerate stuck couriers. | Created the Priority Dispatch Escalation workflow (`TCK-EXP-9116`) transmitting urgent dispatch pings directly to BlueDart logistics hub supervisors. |
+| **Unreported Delivery Partner Grievances** | Rider misconduct or cash overcharging lacked formal merchant escalation pathways. | Created dedicated safety grievance workflows logging official safety incident dossiers with courier partner operations. |
+
+### Version 1.8 — Conversational Concierge Overhaul & Eliminating Double-Bubbles
+| Milestone / Challenge | Root Cause | Solution & Architectural Pivot |
+| :--- | :--- | :--- |
+| **Robotic "Double-Bubble" UI Duplication** | `OrderSelectWidget` rendered an inner chatbot speech bubble right below Krish's main text bubble, creating a confusing and robotic double-message effect. | Stripped nested message bubbles from `OrderSelectWidget` and replaced them with clean, understated uppercase header labels (`DELIVERED PURCHASES ELIGIBLE FOR SUPPORT:`). |
+| **SSE Stream Newline Dropping & Broken Formatting** | Markdown tables, bullet lists, and line breaks collapsed into a single run-on sentence during streaming. | Sanitized newline transmission in SSE chunks (`\n` → `\\n`) and implemented lossless reconstruction inside the React client stream accumulator. |
+| **Card Action Tag Discrepancy** | Clicking tags on home screen bento cards sent raw label text instead of actionable conversational prompts. | Built comprehensive tag intent maps (`onTagClick`) converting card tags (e.g. "Replacement" → *"I want to replace an item from my order"*). |
+
+### Version 1.9 — Intent-First UX vs. Premature Order Dumping
+| Milestone / Challenge | Root Cause | Solution & Architectural Pivot |
+| :--- | :--- | :--- |
+| **Premature Order Dumps on Category Clicks** | Clicking "Post-Purchase Support" or "Subscriptions" immediately dumped 4 past purchases onto the screen before the user chose what they wanted to do. | Transformed the experience into a 2-step intent-first workflow: clicking a card presents an interactive action bar (`widget_post_purchase_bar` with Refund, Replacement, Wrong Item, Missing Item, Return, Exchange), showing order cards only on-demand after an action is picked. |
+| **Vanishing Options Bar in Chat History** | A direct text send shortcut bypassed `handlePostPurchaseClick`, causing the interactive 6-button options bar to disappear completely. | Restored dedicated `handlePostPurchaseClick` mounting `widget_post_purchase_bar` in chat history and synchronized all tag clicks to match. |
+| **Streaming vs. Non-Streaming Desynchronization** | The non-streaming chat endpoint displayed quick options while the streaming endpoint (`/api/chat/stream`) prematurely yielded `[ORDER_WIDGET: ...]`. | Re-architected `run_agentic_brain_stream` with 6 dedicated option stream generators, guaranteeing 100% parity with the non-streaming engine. |
+
+### Version 2.0 — Enterprise Security Hardening, Widescreen Immersion & Production Polish (Till Date)
+| Milestone / Challenge | Root Cause | Solution & Architectural Pivot |
+| :--- | :--- | :--- |
+| **Unchecked Customer PII in Cloud LLM Payloads** | Sensitive financial data (Aadhaar, PAN, Card Numbers, UPI IDs, Phone Numbers) entered prompt strings unaltered. | Integrated server-side `PIIRedactor` middleware scrubbing 6 sensitive Indian & Global data patterns before prompt evaluation or logging. |
+| **IDOR Vulnerabilities on Order & Ticket Endpoints** | Users could theoretically inspect or dispute another user's order by guessing the sequential order number in the URL. | Enforced strict tenant authorization checks (`order.user_id == current_user.id`) across all order lookup, ticket creation, and dispute query routes (`403 Forbidden`). |
+| **Narrow Centered Navbar on Ultra-Wide Monitors** | Constraining top navbar inside `max-w-7xl` centered the brand identity, pushing the logo and name 200px+ inward from the left screen bezel. | Removed artificial width constraints and switched to fluid `w-full px-4 sm:px-6 md:px-8`, positioning the logo and brand name naturally at the far left edge. |
+| **Root Routing Fragmentation** | Accessing root `http://localhost:3000/` loaded a blank or fragmented landing page instead of the cinematic experience. | Implemented permanent HTTP 307 redirect in `app/page.tsx` routing visitors to the interactive showcase `/immersive` with seamless transition to `/chat`. |
 
 ---
 

@@ -30,7 +30,7 @@ export default function ImmersivePage() {
       />
       
       {/* Navigation */}
-      <nav className="fixed top-0 w-full p-6 px-10 flex justify-between items-center z-50 bg-transparent">
+      <nav className="fixed top-0 w-full pt-6 pb-4 px-4 sm:px-6 md:px-8 flex justify-between items-center z-50 bg-transparent">
         <div className="text-xl font-bold tracking-tighter flex items-center gap-2">
           <div className="relative flex items-center justify-center animate-pulse drop-shadow-[0_0_15px_rgba(59,130,246,0.8)] transition-all duration-500 hover:scale-110 hover:drop-shadow-[0_0_25px_rgba(0,191,255,1)]">
             <img src="/logo.png" alt="RazorSense Logo" className="w-10 h-10 object-contain drop-shadow-xl mix-blend-screen" style={{ filter: 'contrast(1.2) saturate(1.5)' }} />

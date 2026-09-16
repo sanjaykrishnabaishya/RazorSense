@@ -12,6 +12,9 @@ from dotenv import load_dotenv
 import datetime
 from typing import List, Dict, Any, Generator
 import fraud_engine
+from pii_redactor import PIIRedactor
+
+_pii_redactor = PIIRedactor()
 
 load_dotenv("../.env")
 
@@ -586,7 +589,7 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
                 print(f"Error history media: {e}")
         
         if "text" in h and h["text"]:
-            h_parts.append(types.Part.from_text(text=h["text"]))
+            h_parts.append(types.Part.from_text(text=_pii_redactor.redact(h["text"])))
             
         role = "user" if h["role"] == "user" else "model"
         if h_parts:
@@ -617,7 +620,9 @@ def run_agentic_brain(user_id: str, message: str, history: List[Dict[str, Any]] 
             print(f"Error parsing media: {e}")
             
     if message:
-        message_parts.append(types.Part.from_text(text=message))
+        # Scrub PII (Aadhaar, PAN, Card Numbers, UPI, Phone, Email) before Cloud LLM ingestion
+        scrubbed_message = _pii_redactor.redact(message)
+        message_parts.append(types.Part.from_text(text=scrubbed_message))
         
     formatted_history.append(types.Content(role="user", parts=message_parts))
             
